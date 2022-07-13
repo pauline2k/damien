@@ -42,6 +42,8 @@ export function updateContact(departmentId: number, contact: any) {
 }
 
 export function updateDepartmentNote(departmentId: number, note: string, termId?: string) {
+  console.log('OKAY note')
+  console.log(note)
   return axios.post(`${Vue.prototype.$config.apiBaseUrl}/api/department/${departmentId}/note`, {termId, note}).then(response => response.data, () => null)
 }
 
