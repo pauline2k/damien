@@ -134,14 +134,14 @@
 
 <script>
   import Context from '@/mixins/Context'
-  import DarkModeIcon from '../assets/lightbulb-outline.svg'
-  import ErrorIcon from '../assets/exclamation-circle-solid.svg'
+  import DarkModeIcon from '@/assets/lightbulb-outline.svg'
+  import ErrorIcon from '@/assets/exclamation-circle-solid.svg'
   import Footer from '@/components/util/Footer'
-  import GroupIcon from '../assets/account-group.svg'
-  import ListIcon from '../assets/playlist-edit.svg'
+  import GroupIcon from '@/assets/account-group.svg'
+  import ListIcon from '@/assets/playlist-edit.svg'
   import Snackbar from '@/components/util/Snackbar'
   import Spinner from '@/components/util/Spinner'
-  import StatusIcon from '../assets/list-status.svg'
+  import StatusIcon from '@/assets/list-status.svg'
   import Util from '@/mixins/Util'
   import {getCasLogoutUrl} from '@/api/auth'
   export default {

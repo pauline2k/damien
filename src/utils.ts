@@ -10,6 +10,7 @@ export default {
         router.push({path: '/404'})
       } else if (errorStatus >= 400) {
         const message = _.get(error, 'response.data.message') || error.message
+        // eslint-disable-next-line no-console
         console.error(message)
         router.push({
           path: '/error',
@@ -18,6 +19,7 @@ export default {
           }
         })
       } else if (errorStatus === 400) {
+        // eslint-disable-next-line no-console
         console.error(error)
       }
     } else {

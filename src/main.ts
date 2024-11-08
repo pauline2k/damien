@@ -52,6 +52,7 @@ axios.interceptors.response.use(
 // Vue config
 Vue.config.productionTip = false
 Vue.config.errorHandler = function(error, vm, info) {
+  // eslint-disable-next-line no-console
   console.error(error || info)
   router.push({
     path: '/error',
