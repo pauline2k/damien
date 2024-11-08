@@ -56,7 +56,7 @@
         <v-row class="my-0" no-gutters>
           <v-col class="pl-0" cols="12">
             <v-toolbar
-              v-if="$currentUser.isAdmin"
+              v-if="currentUser.isAdmin"
               :id="`dept-contact-${contact.id}-actions`"
               class="pl-0"
               dense
@@ -123,6 +123,7 @@ import ConfirmDialog from '@/components/util/ConfirmDialog'
 import Context from '@/mixins/Context.vue'
 import DepartmentEditSession from '@/mixins/DepartmentEditSession'
 import EditDepartmentContact from '@/components/admin/EditDepartmentContact'
+import store from '@/store'
 
 export default {
   name: 'DepartmentContact',
@@ -154,6 +155,9 @@ export default {
     }
   },
   computed: {
+    currentUser() {
+      return store.getters['context/currentUser']
+    },
     departmentForms() {
       return sortBy(this.contact.departmentForms, 'name')
     },

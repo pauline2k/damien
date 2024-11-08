@@ -75,7 +75,7 @@
                       />
                     </v-expansion-panels>
                   </v-expansion-panel-content>
-                  <div v-if="$currentUser.isAdmin" class="pl-4">
+                  <div v-if="currentUser.isAdmin" class="pl-4">
                     <v-btn
                       v-if="!isCreatingNotification"
                       id="open-notification-form-btn"
@@ -95,7 +95,7 @@
                 </template>
               </v-expansion-panel>
             </v-expansion-panels>
-            <div v-if="$currentUser.isAdmin" class="pl-4">
+            <div v-if="currentUser.isAdmin" class="pl-4">
               <v-btn
                 v-if="!isAddingContact"
                 id="add-dept-contact-btn"
@@ -160,6 +160,7 @@ import EvaluationTable from '@/components/evaluation/EvaluationTable'
 import NotificationForm from '@/components/admin/NotificationForm'
 import TermSelect from '@/components/util/TermSelect'
 import Util from '@/mixins/Util.vue'
+import store from '@/store'
 
 export default {
   name: 'Department',
@@ -179,6 +180,9 @@ export default {
     isCreatingNotification: false
   }),
   computed: {
+    currentUser() {
+      return store.getters['context/currentUser']
+    },
     notificationRecipients() {
       return {
         deptName: this.department.deptName,

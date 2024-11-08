@@ -32,7 +32,7 @@ axios.interceptors.response.use(
     if (includes([401, 403], errorStatus)) {
       // Refresh user in case his/her session expired.
       return axios.get(`${apiBaseUrl}/api/user/my_profile`).then(data => {
-        Vue.prototype.$currentUser = data
+        store.dispatch('context/setCurrentUser', data)
         axiosErrorHandler(error)
         return Promise.reject(error)
       })
@@ -61,7 +61,7 @@ Vue.config.errorHandler = function(error, vm, info) {
 }
 
 axios.get(`${apiBaseUrl}/api/user/my_profile`).then(data => {
-  Vue.prototype.$currentUser = data
+  store.dispatch('context/setCurrentUser', data)
 
   axios.get(`${apiBaseUrl}/api/config`).then(data => {
     Vue.prototype.$config = data

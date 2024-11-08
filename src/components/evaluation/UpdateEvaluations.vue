@@ -259,6 +259,7 @@ import Context from '@/mixins/Context'
 import DepartmentEditSession from '@/mixins/DepartmentEditSession'
 import PersonLookup from '@/components/admin/PersonLookup'
 import Util from '@/mixins/Util'
+import store from '@/store'
 
 export default {
   name: 'UpdateEvaluations',
@@ -359,7 +360,8 @@ export default {
   },
   computed: {
     allowEdits() {
-      return this.$currentUser.isAdmin || !this.isSelectedTermLocked
+      const currentUser = store.getters['context/currentUser']
+      return currentUser.isAdmin || !this.isSelectedTermLocked
     },
     disableApply() {
       return this.disableControls
