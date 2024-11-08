@@ -1,6 +1,7 @@
 import {addDepartmentForm, deleteDepartmentForm, getDepartmentForms} from '@/api/departmentForms'
 import {addEvaluationType, deleteEvaluationType, getEvaluationTypes} from '@/api/evaluationTypes'
 import {addInstructor, deleteInstructor, getInstructors} from '@/api/instructor'
+import {putFocusNextTick} from '@/utils'
 import store from '@/store'
 import Vue from 'vue'
 
@@ -120,7 +121,7 @@ const actions = {
         resolve(state.itemToDelete)
       }).finally(() => {
         commit('reset')
-        Vue.prototype.$putFocusNextTick('department-forms-card-title')
+        putFocusNextTick('department-forms-card-title')
       })
     })
   },
@@ -132,7 +133,7 @@ const actions = {
         resolve(state.itemToDelete)
       }).finally(() => {
         commit('reset')
-        Vue.prototype.$putFocusNextTick('evaluation-types-card-title')
+        putFocusNextTick('evaluation-types-card-title')
       })
     })
   },
@@ -144,7 +145,7 @@ const actions = {
         resolve(state.itemToDelete)
       }).finally(() => {
         commit('reset')
-        Vue.prototype.$putFocusNextTick('manually-added-instructors-title')
+        putFocusNextTick('manually-added-instructors-title')
       })
     })
   },

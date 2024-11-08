@@ -3,7 +3,7 @@
     <div class="align-center d-flex flex-wrap justify-space-between">
       <div>
         <h1
-          v-if="$_.get(department, 'deptName')"
+          v-if="get(department, 'deptName')"
           id="page-title"
           :style="{color: titleHexColor}"
           tabindex="-1"
@@ -12,7 +12,7 @@
             <div>
               <span>
                 {{ department.deptName }}&MediumSpace;
-                <span v-if="$_.size(getCatalogListings(department))">
+                <span v-if="size(getCatalogListings(department))">
                   ({{ getCatalogListings(department).join(', ') }})&MediumSpace;
                 </span>
               </span>
@@ -25,7 +25,7 @@
         </h1>
       </div>
       <div class="text-nowrap">
-        <TermSelect :after-select="refresh" :term-ids="$_.get(department, 'enrolledTerms')" />
+        <TermSelect :after-select="refresh" :term-ids="get(department, 'enrolledTerms')" />
       </div>
     </div>
     <v-container v-if="!loading" class="mx-0 px-0 pb-2" fluid>
@@ -71,7 +71,7 @@
                         :key="contact.id"
                         :contact="contact"
                         :index="index"
-                        :is-expanded="$_.includes(contactDetailsPanel, index)"
+                        :is-expanded="includes(contactDetailsPanel, index)"
                       />
                     </v-expansion-panels>
                   </v-expansion-panel-content>
@@ -80,7 +80,7 @@
                       v-if="!isCreatingNotification"
                       id="open-notification-form-btn"
                       class="ma-2 secondary text-capitalize"
-                      :disabled="disableControls || $_.isEmpty(contacts)"
+                      :disabled="disableControls || isEmpty(contacts)"
                       @click="() => isCreatingNotification = true"
                     >
                       Send notification
@@ -149,6 +149,8 @@
 </template>
 
 <script>
+import {filter as _filter, get, includes, isEmpty, size} from 'lodash'
+import {putFocusNextTick} from '@/utils'
 import Context from '@/mixins/Context.vue'
 import DepartmentContact from '@/components/admin/DepartmentContact'
 import DepartmentEditSession from '@/mixins/DepartmentEditSession'
@@ -181,46 +183,50 @@ export default {
       return {
         deptName: this.department.deptName,
         deptId: this.department.id,
-        recipients: this.$_.filter(this.contacts, 'canReceiveCommunications')
+        recipients: _filter(this.contacts, 'canReceiveCommunications')
       }
     }
   },
   created() {
     this.setShowTheOmenPoster(this.$route.query.n === this.NUMBER_OF_THE_BEAST)
-    this.$putFocusNextTick('page-title')
+    putFocusNextTick('page-title')
   },
   methods: {
+    size,
+    includes,
+    isEmpty,
     afterSaveContact() {
       this.isAddingContact = false
       this.contactsPanel = 0
       this.alertScreenReader('Contact saved.')
-      this.$putFocusNextTick('add-dept-contact-btn')
+      putFocusNextTick('add-dept-contact-btn')
     },
     afterSendNotification() {
       this.isCreatingNotification = false
       this.snackbarOpen('Notification sent.')
-      this.$putFocusNextTick('open-notification-form-btn')
+      putFocusNextTick('open-notification-form-btn')
     },
     cancelSendNotification() {
       this.isCreatingNotification = false
       this.alertScreenReader('Notification canceled.')
       this.scrollToTop(1000)
-      this.$putFocusNextTick('open-notification-form-btn')
+      putFocusNextTick('open-notification-form-btn')
     },
     collapseAllContacts() {
       if (this.contactsPanel === 0) {
         this.contactDetailsPanel = []
       }
     },
+    get,
     onCancelAddContact() {
       this.isAddingContact = false
       this.alertScreenReader('Canceled. Nothing saved.')
-      this.$putFocusNextTick('add-dept-contact-btn')
+      putFocusNextTick('add-dept-contact-btn')
     },
     refresh() {
       this.$loading()
       this.alertScreenReader(`Loading ${this.selectedTermName}`)
-      const departmentId = this.$_.get(this.$route, 'params.departmentId')
+      const departmentId = get(this.$route, 'params.departmentId')
       this.init(departmentId).then(department => {
         this.$ready(`${department.deptName} ${this.selectedTermName}`)
       })

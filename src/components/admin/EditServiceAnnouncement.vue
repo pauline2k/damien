@@ -20,7 +20,7 @@
     <v-btn
       id="service-announcement-save"
       color="secondary"
-      :disabled="!$_.trim(text)"
+      :disabled="!trim(text)"
       @click="save"
     >
       Save
@@ -29,9 +29,11 @@
 </template>
 
 <script>
+import {getServiceAnnouncement, updateServiceAnnouncement} from '@/api/config'
+import {trim} from 'lodash'
 import Context from '@/mixins/Context'
 import Util from '@/mixins/Util'
-import { getServiceAnnouncement, updateServiceAnnouncement } from '@/api/config'
+
 export default {
   name: 'EditServiceAnnouncement',
   mixins: [Context, Util],
@@ -52,7 +54,8 @@ export default {
         this.text = data.text
         this.isPublished = data.isLive
       })
-    }
+    },
+    trim
   }
 }
 </script>

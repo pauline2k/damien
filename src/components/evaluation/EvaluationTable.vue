@@ -36,7 +36,7 @@
                 id="select-all-evals-checkbox"
                 class="select-all-evals align-center mt-0 pt-0"
                 color="tertiary"
-                :disabled="$_.isEmpty(searchFilterResults)"
+                :disabled="isEmpty(searchFilterResults)"
                 :false-value="!someEvaluationsSelected && !allEvaluationsSelected"
                 hide-details
                 :indeterminate="someEvaluationsSelected"
@@ -70,7 +70,7 @@
             rounded
           >
             <v-btn
-              v-for="status in $_.keys(filterTypes)"
+              v-for="status in keys(filterTypes)"
               :id="`evaluations-filter-${status}`"
               :key="status"
               :aria-selected="filterTypes[status].enabled"
@@ -119,7 +119,7 @@
       aria-live="polite"
       class="sr-only"
     >
-      <span v-if="searchFilter">{{ pluralize('evaluation', $_.size(searchFilterResults)) }} displayed.</span>
+      <span v-if="searchFilter">{{ pluralize('evaluation', size(searchFilterResults)) }} displayed.</span>
     </div>
     <v-data-table
       id="evaluation-table"
@@ -155,8 +155,8 @@
                 :class="evaluationClass(evaluation, hover)"
               >
                 <td v-if="readonly" :id="`evaluation-${rowIndex}-department`" class="align-middle py-1">
-                  <router-link :to="`/department/${$_.get(evaluation.department, 'id')}`">
-                    {{ $_.get(evaluation.department, 'name') }}
+                  <router-link :to="`/department/${get(evaluation.department, 'id')}`">
+                    {{ get(evaluation.department, 'name') }}
                   </router-link>
                 </td>
                 <td v-if="!readonly && allowEdits && !(allowEdits && isEditing(evaluation))" class="align-middle text-center pr-1">
@@ -541,6 +541,8 @@
 
 <script>
 import {addInstructor} from '@/api/instructor'
+import {clone, cloneDeep, each, find, get, isEmpty, keys, pickBy, size, some} from 'lodash'
+import {putFocusNextTick} from '@/utils'
 import AddCourseSection from '@/components/evaluation/AddCourseSection'
 import ConfirmDialog from '@/components/util/ConfirmDialog'
 import Context from '@/mixins/Context'
@@ -609,28 +611,28 @@ export default {
   }),
   computed: {
     allEvaluationsSelected() {
-      return !!(this.$_.size(this.selectedEvaluationIds) && this.$_.size(this.selectedEvaluationIds) === this.$_.size(this.evaluations))
+      return !!(size(this.selectedEvaluationIds) && size(this.selectedEvaluationIds) === size(this.evaluations))
     },
     allowEdits() {
       return this.$currentUser.isAdmin || !this.isSelectedTermLocked
     },
     rowValid() {
-      const evaluation = this.$_.find(this.evaluations, ['id', this.editRowId])
+      const evaluation = find(this.evaluations, ['id', this.editRowId])
       return this.selectedStartDate >= this.minStartDate(evaluation) && this.selectedStartDate <= evaluation.maxStartDate
     },
     selectedFilterTypes: {
       get: function() {
-        return this.$_.keys(this.$_.pickBy(this.filterTypes, 'enabled'))
+        return keys(pickBy(this.filterTypes, 'enabled'))
       },
       set: function(types) {
         this.alertScreenReader(`Showing ${types.length ? `evaluations marked ${this.oxfordJoin(types)}` : 'no evaluations'}`)
-        this.$_.each(this.$_.keys(this.filterTypes), type => {
+        each(keys(this.filterTypes), type => {
           this.filterTypes[type].enabled = types.includes(type)
         })
       }
     },
     someEvaluationsSelected() {
-      return !!(this.$_.size(this.selectedEvaluationIds) && this.$_.size(this.selectedEvaluationIds) < this.$_.size(this.evaluations))
+      return !!(size(this.selectedEvaluationIds) && size(this.selectedEvaluationIds) < size(this.evaluations))
     }
   },
   methods: {
@@ -647,11 +649,11 @@ export default {
       this.selectedEvaluationType = null
       this.selectedStartDate = null
       this.focusedEditButtonEvaluationId = evaluation.id
-      this.$putFocusNextTick(`edit-evaluation-${this.focusedEditButtonEvaluationId}-btn`)
+      putFocusNextTick(`edit-evaluation-${this.focusedEditButtonEvaluationId}-btn`)
     },
     afterSelectDepartmentForm(selected) {
       this.alertScreenReader(`${selected.name} department form selected.`)
-      this.$putFocusNextTick('input-department-form')
+      putFocusNextTick('input-department-form')
     },
     customFilter(value, search, item) {
       if (!search) {
@@ -716,6 +718,7 @@ export default {
         'sr-only': hover && this.allowEdits && !this.readonly
       }
     },
+    get,
     instructorConfirmationText(instructor) {
       return `
         ${instructor.firstName} ${instructor.lastName} (${instructor.uid})
@@ -724,19 +727,21 @@ export default {
     isEditing(evaluation) {
       return this.editRowId === evaluation.id
     },
+    isEmpty,
     isStatusVisible(evaluation) {
       return !this.isEditing(evaluation)
         && evaluation.status
         && evaluation.id !== this.focusedEditButtonEvaluationId
     },
+    keys,
     minStartDate(evaluation) {
-      return new Date(this.$_.get(evaluation, 'meetingDates.start'))
+      return new Date(get(evaluation, 'meetingDates.start'))
     },
     onCancelConfirm() {
       this.isConfirmingCancelEdit = false
-      this.focusedEditButtonEvaluationId = this.$_.clone(this.pendingEditRowId)
+      this.focusedEditButtonEvaluationId = clone(this.pendingEditRowId)
       this.pendingEditRowId = null
-      this.$putFocusNextTick(`edit-evaluation-${this.focusedEditButtonEvaluationId}-btn`)
+      putFocusNextTick(`edit-evaluation-${this.focusedEditButtonEvaluationId}-btn`)
     },
     onCancelEdit(evaluation) {
       this.alertScreenReader('Edit canceled.')
@@ -748,20 +753,20 @@ export default {
     },
     onChangeSearchFilter(searchFilterResults) {
       this.searchFilterResults = searchFilterResults
-      if (this.$_.size(this.selectedEvaluationIds)) {
+      if (size(this.selectedEvaluationIds)) {
         this.filterSelectedEvaluations({
           searchFilterResults: this.searchFilterResults,
           enabledStatuses: this.selectedFilterTypes
         })
       }
-      if (!this.$_.some(this.searchFilterResults, {'id': this.editRowId})) {
+      if (!some(this.searchFilterResults, {'id': this.editRowId})) {
         this.editRowId = null
       }
     },
     onConfirm() {
       this.isConfirmingCancelEdit = false
       this.editRowId = null
-      const evaluation = this.$_.find(this.evaluations, ['id', this.pendingEditRowId])
+      const evaluation = find(this.evaluations, ['id', this.pendingEditRowId])
       this.onEditEvaluation(evaluation)
     },
     onConfirmNonSisInstructor() {
@@ -769,12 +774,12 @@ export default {
     },
     onEditEvaluation(evaluation) {
       if (this.editRowId) {
-        const editingEvaluation = this.$_.find(this.evaluations, ['id', this.editRowId])
+        const editingEvaluation = find(this.evaluations, ['id', this.editRowId])
         this.isConfirmingCancelEdit = editingEvaluation && (
-          this.$_.get(this.pendingInstructor, 'uid') !== this.$_.get(editingEvaluation, 'instructor.uid')
-          || this.selectedDepartmentForm !== this.$_.get(editingEvaluation, 'departmentForm.id')
-          || this.selectedEvaluationStatus !== this.$_.get(editingEvaluation, 'status')
-          || this.selectedEvaluationType !== this.$_.get(editingEvaluation, 'evaluationType.id')
+          get(this.pendingInstructor, 'uid') !== get(editingEvaluation, 'instructor.uid')
+          || this.selectedDepartmentForm !== get(editingEvaluation, 'departmentForm.id')
+          || this.selectedEvaluationStatus !== get(editingEvaluation, 'status')
+          || this.selectedEvaluationType !== get(editingEvaluation, 'evaluationType.id')
           || this.selectedStartDate !== editingEvaluation.startDate
         )
       }
@@ -783,11 +788,11 @@ export default {
       } else {
         this.editRowId = evaluation.id
         this.pendingInstructor = evaluation.instructor
-        this.selectedDepartmentForm = this.$_.get(evaluation, 'departmentForm.id')
-        this.selectedEvaluationStatus = this.$_.get(evaluation, 'status')
-        this.selectedEvaluationType = this.$_.get(evaluation, 'evaluationType.id')
+        this.selectedDepartmentForm = get(evaluation, 'departmentForm.id')
+        this.selectedEvaluationStatus = get(evaluation, 'status')
+        this.selectedEvaluationType = get(evaluation, 'evaluationType.id')
         this.selectedStartDate = evaluation.startDate
-        this.$putFocusNextTick(`${this.readonly ? '' : 'select-evaluation-status'}`)
+        putFocusNextTick(`${this.readonly ? '' : 'select-evaluation-status'}`)
       }
     },
     onProceedMarkAsDone() {
@@ -797,20 +802,21 @@ export default {
       this.updateEvaluation(evaluation, fields)
     },
     onSort() {
-      const selectedEvaluationIds = this.$_.cloneDeep(this.selectedEvaluationIds)
+      const selectedEvaluationIds = cloneDeep(this.selectedEvaluationIds)
       this.$nextTick(() => {
         this.setSelectedEvaluations(selectedEvaluationIds)
       })
     },
+    size,
     validateAndSave(evaluation) {
       this.markAsDoneWarning = undefined
-      const departmentFormId = this.selectedDepartmentForm || this.$_.get(evaluation, 'defaultDepartmentForm.id') || null
+      const departmentFormId = this.selectedDepartmentForm || get(evaluation, 'defaultDepartmentForm.id') || null
       const status = this.selectedEvaluationStatus === 'none' ? null : this.selectedEvaluationStatus
       const startDate = this.selectedStartDate ? this.$moment(this.selectedStartDate).format('YYYY-MM-DD') : null
       const fields = {
         departmentFormId,
         evaluationTypeId: this.selectedEvaluationType,
-        instructorUid: this.$_.get(this.pendingInstructor, 'uid'),
+        instructorUid: get(this.pendingInstructor, 'uid'),
         startDate,
         status
       }
@@ -850,7 +856,7 @@ export default {
           searchFilterResults: this.searchFilterResults,
           enabledStatuses: this.selectedFilterTypes
         })
-      if (this.$_.some(this.evaluations, {'id': this.editRowId, 'status': type})) {
+      if (some(this.evaluations, {'id': this.editRowId, 'status': type})) {
         this.editRowId = null
       }
       this.alertScreenReader(`Filter ${filter.label} ${filter.enabled ? 'enabled' : 'disabled'}.`)
@@ -889,7 +895,7 @@ export default {
             this.deselectAllEvaluations()
             resolve()
           }).catch(error => {
-            this.showErrorDialog(this.$_.get(error, 'response.data.message', 'An unknown error occurred.'))
+            this.showErrorDialog(get(error, 'response.data.message', 'An unknown error occurred.'))
             this.saving = false
             resolve()
           })
@@ -914,7 +920,7 @@ export default {
     this.evaluationTypes = [{id: null, name: 'Revert'}].concat(this.$config.evaluationTypes)
 
     this.rules.instructorUid = () => {
-      return this.$_.get(this.pendingInstructor, 'uid') ? true : 'Instructor is required.'}
+      return get(this.pendingInstructor, 'uid') ? true : 'Instructor is required.'}
   }
 }
 </script>

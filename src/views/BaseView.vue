@@ -50,7 +50,7 @@
           </v-list-item-content>
         </v-list-item>
         <v-list-item
-          :id="`sidebar-link-${$_.size(navItems)}`"
+          :id="`sidebar-link-${size(navItems)}`"
           class="primary-contrast--text sidebar-link pr-1"
           @click="toggleColorScheme"
           @keypress.enter.prevent="toggleColorScheme"
@@ -133,6 +133,8 @@
 </template>
 
 <script>
+  import {getCasLogoutUrl} from '@/api/auth'
+  import {map, noop, size} from 'lodash'
   import Context from '@/mixins/Context'
   import DarkModeIcon from '@/assets/lightbulb-outline.svg'
   import ErrorIcon from '@/assets/exclamation-circle-solid.svg'
@@ -143,7 +145,7 @@
   import Spinner from '@/components/util/Spinner'
   import StatusIcon from '@/assets/list-status.svg'
   import Util from '@/mixins/Util'
-  import {getCasLogoutUrl} from '@/api/auth'
+
   export default {
     name: 'BaseView',
     components: {
@@ -169,8 +171,8 @@
           { title: 'Group Management', icon: GroupIcon, path: '/departments' },
           { title: 'List Management', icon: ListIcon, path: '/lists' }
         ]
-      } else if (this.$_.size(this.$currentUser.departments)) {
-        this.navItems = this.$_.map(this.$currentUser.departments, department => {
+      } else if (size(this.$currentUser.departments)) {
+        this.navItems = map(this.$currentUser.departments, department => {
           const firstInitial = department.name.charAt(0).toLowerCase()
           return {
             title: department.name,
@@ -192,12 +194,13 @@
           this.$vuetify.theme.dark = window.matchMedia('(prefers-color-scheme: dark)').matches
         }
       },
+      size,
       toggleColorScheme() {
         this.$vuetify.theme.dark = !this.$vuetify.theme.dark
         window.localStorage.setItem('prefersDarkMode', this.$vuetify.theme.dark)
       },
       toRoute(path) {
-        this.$router.push({ path }, this.$_.noop)
+        this.$router.push({ path }, noop)
       }
     }
   }
@@ -210,7 +213,7 @@
 .service-announcement {
   background-color: #f0ad4e;
   color: #000;
-  margin: 0px;
+  margin: 0;
   padding: 10px 15px;
   position: sticky;
   top: 56px;

@@ -107,6 +107,7 @@
 
 <script>
 import {getSection} from '@/api/sections'
+import {putFocusNextTick} from '@/utils'
 import Context from '@/mixins/Context.vue'
 import DepartmentEditSession from '@/mixins/DepartmentEditSession'
 
@@ -135,7 +136,7 @@ export default {
     isAddingSection(isAddingSection) {
       if (isAddingSection) {
         this.alertScreenReader('Add course section form is ready.')
-        this.$putFocusNextTick('lookup-course-number-input')
+        putFocusNextTick('lookup-course-number-input')
       }
     }
   },
@@ -147,7 +148,7 @@ export default {
   created() {
     this.rules = {
       courseNumber: value => !value || /^\d+$/.test(value) || 'Invalid course number.',
-      notPresent: value => !this.$_.find(this.evaluations, {courseNumber: value}) || `Course number ${value} already present on page.`
+      notPresent: value => !find(this.evaluations, {courseNumber: value}) || `Course number ${value} already present on page.`
     }
   },
   methods: {
@@ -158,12 +159,12 @@ export default {
           this.alertScreenReader(`Section ${this.courseNumber} found.`)
           this.courseNumber = null
           this.section = data
-          this.$putFocusNextTick('add-section-title')
+          putFocusNextTick('add-section-title')
         }, () => {
           this.sectionError = true
           this.errorMessage = `Section ${this.courseNumber} not found.`
           this.alertScreenReader(this.errorMessage)
-          this.$putFocusNextTick('lookup-course-number-input')
+          putFocusNextTick('lookup-course-number-input')
         })
       }
     },
@@ -173,11 +174,11 @@ export default {
       if (this.section) {
         this.section = null
         this.alertScreenReader('Canceled. Add course section form is ready.')
-        this.$putFocusNextTick('lookup-course-number-input')
+        putFocusNextTick('lookup-course-number-input')
       } else {
         this.isAddingSection = false
         this.alertScreenReader('Section lookup canceled.')
-        this.$putFocusNextTick('add-course-section-btn')
+        putFocusNextTick('add-course-section-btn')
       }
     },
     onSubmit(courseNumber) {

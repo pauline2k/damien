@@ -36,9 +36,10 @@
 </template>
 
 <script>
+import {getCasLoginURL} from '@/api/auth'
+import {putFocusNextTick} from '@/utils'
 import Context from '@/mixins/Context'
 import DevAuth from '@/components/admin/DevAuth'
-import {getCasLoginURL} from '@/api/auth'
 import Snackbar from '@/components/util/Snackbar'
 
 export default {
@@ -49,7 +50,7 @@ export default {
     Snackbar
   },
   created() {
-    this.$putFocusNextTick('page-title')
+    putFocusNextTick('page-title')
     const error = this.$_.get(this.$route, 'query.error')
     if (error) {
       this.reportError(error)

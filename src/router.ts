@@ -1,4 +1,4 @@
-import _ from 'lodash'
+import {capitalize, get, size, trim} from 'lodash'
 import auth from './auth'
 import BaseView from '@/views/BaseView.vue'
 import Department from '@/views/Department.vue'
@@ -26,8 +26,8 @@ const router = new Router({
       component: Login,
       beforeEnter: (to: any, from: any, next: any) => {
         const currentUser = Vue.prototype.$currentUser
-        if (_.get(currentUser, 'isAuthenticated')) {
-          if (_.trim(to.query.redirect)) {
+        if (get(currentUser, 'isAuthenticated')) {
+          if (trim(to.query.redirect)) {
             next(to.query.redirect)
           } else {
             next('/home')
@@ -50,7 +50,7 @@ const router = new Router({
             const currentUser = Vue.prototype.$currentUser
             if (currentUser.isAdmin) {
               next('/status')
-            } else if (_.size(currentUser.departments)) {
+            } else if (size(currentUser.departments)) {
               next(`/department/${currentUser.departments[0].id}`)
             } else {
               next({
@@ -137,8 +137,8 @@ const router = new Router({
 })
 
 router.beforeEach((to: any, from: any, next: any) => {
-  const redirect = _.trim(to.query.redirect)
-  if (_.get(Vue.prototype.$currentUser, 'isAuthenticated') && redirect) {
+  const redirect = trim(to.query.redirect)
+  if (get(Vue.prototype.$currentUser, 'isAuthenticated') && redirect) {
     next(redirect)
   } else {
     next()
@@ -146,7 +146,7 @@ router.beforeEach((to: any, from: any, next: any) => {
 })
 
 router.afterEach((to: any) => {
-  const title = _.get(to, 'meta.title') || _.capitalize(to.name) || 'Welcome'
+  const title = get(to, 'meta.title') || capitalize(to.name) || 'Welcome'
   document.title = `${title} | Course Evaluations`
 })
 

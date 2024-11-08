@@ -117,6 +117,8 @@
 </template>
 
 <script>
+import {putFocusNextTick} from '@/utils'
+import {sortBy} from 'lodash'
 import ConfirmDialog from '@/components/util/ConfirmDialog'
 import Context from '@/mixins/Context.vue'
 import DepartmentEditSession from '@/mixins/DepartmentEditSession'
@@ -153,7 +155,7 @@ export default {
   },
   computed: {
     departmentForms() {
-      return this.$_.sortBy(this.contact.departmentForms, 'name')
+      return sortBy(this.contact.departmentForms, 'name')
     },
     fullName() {
       return `${this.contact.firstName} ${this.contact.lastName}`
@@ -163,24 +165,24 @@ export default {
     afterSave() {
       this.isEditing = false
       this.alertScreenReader(`Updated contact ${this.fullName}.`)
-      this.$putFocusNextTick(`edit-dept-contact-${this.contact.id}-btn`)
+      putFocusNextTick(`edit-dept-contact-${this.contact.id}-btn`)
     },
     onCancelDelete() {
       this.isConfirming = false
       this.alertScreenReader('Canceled. Nothing deleted.')
-      this.$putFocusNextTick(`delete-dept-contact-${this.contact.id}-btn`)
+      putFocusNextTick(`delete-dept-contact-${this.contact.id}-btn`)
     },
     onCancelEdit() {
       this.isEditing = false
       this.alertScreenReader('Canceled. Nothing saved.')
-      this.$putFocusNextTick(`edit-dept-contact-${this.contact.id}-btn`)
+      putFocusNextTick(`edit-dept-contact-${this.contact.id}-btn`)
     },
     onDelete() {
       const nameOfDeleted = this.fullName
       this.deleteContact(this.contact.userId).then(() => {
         this.isConfirming = false
         this.alertScreenReader(`Deleted contact ${nameOfDeleted}.`)
-        this.$putFocusNextTick('add-dept-contact-btn')
+        putFocusNextTick('add-dept-contact-btn')
       })
     }
   }

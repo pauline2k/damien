@@ -1,12 +1,12 @@
 <script>
-import _ from 'lodash'
+import {filter, get, includes, intersectionWith, some} from 'lodash'
 import {mapActions, mapGetters} from 'vuex'
 
 const $_isInvalid = (e, evaluationIds, fields) => {
-  return _.includes(evaluationIds, e.id) && !(
-    (e.departmentForm || _.get(fields, 'departmentFormId')) &&
-    (e.evaluationType || _.get(fields, 'evaluationTypeId')) &&
-    (e.instructor || _.get(fields, 'instructorUid'))
+  return includes(evaluationIds, e.id) && !(
+    (e.departmentForm || get(fields, 'departmentFormId')) &&
+    (e.evaluationType || get(fields, 'evaluationTypeId')) &&
+    (e.instructor || get(fields, 'instructorUid'))
   )
 }
 
@@ -40,7 +40,7 @@ export default {
   },
   methods: {
     validateConfirmable(evaluationIds, fields) {
-      if (this.$_.some(this.evaluations, e => $_isInvalid(e, evaluationIds, fields))) {
+      if (some(this.evaluations, e => $_isInvalid(e, evaluationIds, fields))) {
         this.showErrorDialog('Cannot confirm evaluations with missing fields.')
         return false
       }
@@ -50,10 +50,10 @@ export default {
       if (fields.midterm === 'true') {
         return true
       }
-      const duplicatingEvaluations = this.$_.filter(this.evaluations, e => this.$_.includes(evaluationIds, e.id))
-      const conflicts = this.$_.intersectionWith(duplicatingEvaluations, this.evaluations, (dupe, e) => {
+      const duplicatingEvaluations = filter(this.evaluations, e => includes(evaluationIds, e.id))
+      const conflicts = intersectionWith(duplicatingEvaluations, this.evaluations, (dupe, e) => {
         return e.courseNumber === dupe.courseNumber
-            && this.$_.get(e.instructor, 'uid', NaN) === (fields.instructorUid || this.$_.get(dupe.instructor, 'uid', NaN))
+            && get(e.instructor, 'uid', NaN) === (fields.instructorUid || get(dupe.instructor, 'uid', NaN))
       })
       if (conflicts.length) {
         this.showErrorDialog('Cannot create identical duplicate evaluations.')
@@ -64,7 +64,7 @@ export default {
     validateMarkAsDone(selectedEvaluations) {
       let warningMessage
       const now = this.$moment()
-      const evaluationsInProgress = this.$_.filter(selectedEvaluations, e => now.isAfter(e.startDate))
+      const evaluationsInProgress = filter(selectedEvaluations, e => now.isAfter(e.startDate))
       if (evaluationsInProgress.length) {
         // Grab the first in-progress evaluation, to give the user an example of the problem.
         const e = evaluationsInProgress[0]

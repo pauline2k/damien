@@ -43,8 +43,10 @@
 </template>
 
 <script>
-import Context from '@/mixins/Context'
 import {devAuthLogIn} from '@/api/auth'
+import {get, noop, trim} from 'lodash'
+import {putFocusNextTick} from '@/utils'
+import Context from '@/mixins/Context'
 import Damien from '../../assets/damien.svg'
 
 export default {
@@ -59,23 +61,23 @@ export default {
   }),
   methods: {
     logIn() {
-      let uid = this.$_.trim(this.uid)
-      let password = this.$_.trim(this.password)
+      let uid = trim(this.uid)
+      let password = trim(this.password)
       if (uid && password) {
         devAuthLogIn(uid, password).then(user => {
           if (user.isAuthenticated) {
-            const redirect = this.$_.get(this.$router, 'currentRoute.query.redirect')
-            this.$router.push({path: redirect || '/'}, this.$_.noop)
+            const redirect = get(this.$router, 'currentRoute.query.redirect')
+            this.$router.push({path: redirect || '/'}, noop)
           } else {
             this.reportError('Sorry, user is not authorized to use Course Evaluations.')
           }
         })
       } else if (uid) {
         this.reportError('Password required')
-        this.$putFocusNextTick('dev-auth-password')
+        putFocusNextTick('dev-auth-password')
       } else {
         this.reportError('Both UID and password are required')
-        this.$putFocusNextTick('dev-auth-uid')
+        putFocusNextTick('dev-auth-uid')
       }
     }
   }

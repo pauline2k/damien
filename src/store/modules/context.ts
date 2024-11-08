@@ -1,6 +1,7 @@
-import _ from 'lodash'
-import { getServiceAnnouncement } from '@/api/config'
 import Vue from 'vue'
+import {find} from 'lodash'
+import {getServiceAnnouncement} from '@/api/config'
+import {putFocusNextTick} from '@/utils'
 
 const state = {
   isSelectedTermLocked: false,
@@ -37,14 +38,14 @@ const mutations = {
     } else if (pageTitle) {
       state.screenReaderAlert = `${pageTitle} page is ready`
     }
-    Vue.prototype.$putFocusNextTick('page-title')
+    putFocusNextTick('page-title')
   },
   loadingStart: (state: any) => (state.loading = true),
   setIsSelectedTermLocked: (state: any, isLocked: boolean) => (state.isSelectedTermLocked = isLocked),
   setScreenReaderAlert: (state: any, alert: string) => (state.screenReaderAlert = alert),
   setSelectedTerm: (state: any, termId: string) => {
     return new Promise<void>(resolve => {
-      const term = _.find(Vue.prototype.$config.availableTerms, {'id': termId || Vue.prototype.$config.currentTermId})
+      const term = find(Vue.prototype.$config.availableTerms, {'id': termId || Vue.prototype.$config.currentTermId})
       if (term) {
         state.selectedTermId = term.id
         state.selectedTermName = term.name

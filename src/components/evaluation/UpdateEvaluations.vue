@@ -15,7 +15,7 @@
         <v-container class="px-8 pb-4">
           <slot name="status" :status="selectedEvaluationStatus" :on="{change: e => selectedEvaluationStatus = e.target.value}"></slot>
           <PersonLookup
-            v-if="$_.isObject(instructor)"
+            v-if="isObject(instructor)"
             id="update-evaluations-instructor-lookup-autocomplete"
             container-class="flex-row py-1"
             :disabled="disableControls"
@@ -44,7 +44,7 @@
               />
             </v-col>
           </v-row>
-          <slot name="form" :form="selectedDepartmentForm" :on="{change: e => selectedDepartmentForm = $_.toInteger(e.target.value)}"></slot>
+          <slot name="form" :form="selectedDepartmentForm" :on="{change: e => selectedDepartmentForm = toInteger(e.target.value)}"></slot>
           <v-row class="d-flex align-center" dense>
             <v-col cols="4">
               <label
@@ -80,8 +80,8 @@
               <c-date-picker
                 v-model="selectedStartDate"
                 class="bulk-action-form-input"
-                :min-date="$_.get(validStartDates, 'min')"
-                :max-date="$_.get(validStartDates, 'max')"
+                :min-date="get(validStartDates, 'min')"
+                :max-date="get(validStartDates, 'max')"
                 :popover="{positionFixed: true}"
                 title-position="left"
               >
@@ -100,7 +100,7 @@
             </v-col>
           </v-row>
         </v-container>
-        <div v-if="$_.size(selectedEvaluations)" class="bulk-action-preview pt-2">
+        <div v-if="size(selectedEvaluations)" class="bulk-action-preview pt-2">
           <v-simple-table dense class="bulk-action-preview-table">
             <caption class="bulk-action-preview-caption text-left"><div class="px-6 pb-3">Preview Your Changes</div></caption>
             <thead>
@@ -132,7 +132,7 @@
                     <div>{{ evaluation.instructionFormat }} {{ evaluation.sectionNumber }}</div>
                   </td>
                   <td :id="`preview-${index}-instructor`" class="bulk-action-instructor-col px-1">
-                    <div v-if="$_.get(evaluation, 'instructor.uid')" :class="{'text-decoration-line-through accent--text': action === 'Edit' && showSelectedInstructor(evaluation)}">
+                    <div v-if="get(evaluation, 'instructor.uid')" :class="{'text-decoration-line-through accent--text': action === 'Edit' && showSelectedInstructor(evaluation)}">
                       {{ evaluation.instructor.firstName }} {{ evaluation.instructor.lastName }}
                       ({{ evaluation.instructor.uid }})
                     </div>
@@ -184,16 +184,16 @@
                     </div>
                   </td>
                   <td :id="`preview-${index}-dupe-departmentForm`" class="bulk-action-departmentForm-col px-1">
-                    <template v-if="midtermFormEnabled && $_.get(evaluation, 'departmentForm.name')">
-                      {{ $_.endsWith(evaluation.departmentForm.name, '_MID') ? evaluation.departmentForm.name : `${evaluation.departmentForm.name}_MID` }}
+                    <template v-if="midtermFormEnabled && get(evaluation, 'departmentForm.name')">
+                      {{ endsWith(evaluation.departmentForm.name, '_MID') ? evaluation.departmentForm.name : `${evaluation.departmentForm.name}_MID` }}
                     </template>
                     <template v-else>
-                      {{ $_.get(evaluation, 'departmentForm.name') }}
+                      {{ get(evaluation, 'departmentForm.name') }}
                     </template>
                   </td>
                   <td :id="`preview-${index}-dupe-evaluationType`" class="bulk-action-evaluationType-col px-1">
                     <div>
-                      {{ showSelectedEvaluationType(evaluation) ? selectedEvaluationTypeName : $_.get(evaluation, 'evaluationType.name') }}
+                      {{ showSelectedEvaluationType(evaluation) ? selectedEvaluationTypeName : get(evaluation, 'evaluationType.name') }}
                     </div>
                   </td>
                   <td :id="`preview-${index}-dupe-startDate`" class="bulk-action-startDate-col px-1">
@@ -253,6 +253,7 @@
 
 <script>
 import {addInstructor} from '@/api/instructor'
+import {endsWith, find, get, isEmpty, isObject, map, reduce, size, toInteger} from 'lodash'
 import ConfirmDialog from '@/components/util/ConfirmDialog'
 import Context from '@/mixins/Context'
 import DepartmentEditSession from '@/mixins/DepartmentEditSession'
@@ -363,19 +364,19 @@ export default {
     disableApply() {
       return this.disableControls
           || !this.allowEdits
-          || (this.isInstructorRequired && !this.$_.get(this.selectedInstructor, 'uid'))
+          || (this.isInstructorRequired && !get(this.selectedInstructor, 'uid'))
     },
     selectedDepartmentFormName() {
-      return this.$_.get(this.$_.find(this.$config.departmentForms, df => df.id === this.selectedDepartmentForm), 'name')
+      return get(find(this.$config.departmentForms, df => df.id === this.selectedDepartmentForm), 'name')
     },
     selectedEvaluationsDescription() {
-      if (this.$_.isEmpty(this.selectedEvaluationIds)) {
+      if (isEmpty(this.selectedEvaluationIds)) {
         return ''
       }
       return `${this.selectedEvaluationIds.length} ${this.selectedEvaluationIds.length === 1 ? 'row' : 'rows'}`
     },
     selectedEvaluationTypeName() {
-      return this.$_.get(this.$_.find(this.$config.evaluationTypes, et => et.id === this.selectedEvaluationType), 'name')
+      return get(find(this.$config.evaluationTypes, et => et.id === this.selectedEvaluationType), 'name')
     },
     selectedStartDay() {
       return this.selectedStartDate ? this.$moment.utc(this.selectedStartDate).dayOfYear() : null
@@ -383,20 +384,23 @@ export default {
     validStartDates() {
       // The intersection of the selected rows' allowed evaluation start dates
       return {
-        'max': this.$moment.min(this.$_.map(this.selectedEvaluations, e => this.$moment(e.maxStartDate))).toDate(),
-        'min': this.$moment.max(this.$_.map(this.selectedEvaluations, e => this.$moment(e.meetingDates.start))).toDate()
+        'max': this.$moment.min(map(this.selectedEvaluations, e => this.$moment(e.maxStartDate))).toDate(),
+        'min': this.$moment.max(map(this.selectedEvaluations, e => this.$moment(e.meetingDates.start))).toDate()
       }
     }
   },
   methods: {
+    endsWith,
+    get,
     getStatusText(status) {
-      return status === 'none' ? null : this.$_.get(this.$_.find(this.evaluationStatuses, es => es.value === status), 'text')
+      return status === 'none' ? null : get(find(this.evaluationStatuses, es => es.value === status), 'text')
     },
     instructorConfirmationText(instructor) {
       return `
         ${instructor.firstName} ${instructor.lastName} (${instructor.uid})
         is not currently listed in SIS data as an instructor for any courses.`
     },
+    isObject,
     onCancelNonSisInstructor() {
       this.isConfirmingNonSisInstructor = false
       this.selectedInstructor = null
@@ -428,13 +432,13 @@ export default {
       this.isConfirmingNonSisInstructor = false
     },
     showSelectedDepartmentForm(evaluation) {
-      return this.selectedDepartmentForm && this.selectedDepartmentForm !== this.$_.get(evaluation, 'departmentForm.id')
+      return this.selectedDepartmentForm && this.selectedDepartmentForm !== get(evaluation, 'departmentForm.id')
     },
     showSelectedEvaluationType(evaluation) {
-      return this.selectedEvaluationType && this.selectedEvaluationType !== this.$_.get(evaluation, 'evaluationType.id')
+      return this.selectedEvaluationType && this.selectedEvaluationType !== get(evaluation, 'evaluationType.id')
     },
     showSelectedInstructor(evaluation) {
-      return this.$_.get(this.selectedInstructor, 'uid') && this.selectedInstructor.uid !== this.$_.get(evaluation, 'instructor.uid')
+      return get(this.selectedInstructor, 'uid') && this.selectedInstructor.uid !== get(evaluation, 'instructor.uid')
     },
     showSelectedStartDate(evaluation) {
       return this.selectedStartDate && this.selectedStartDay !== this.$moment.utc(evaluation.startDate).dayOfYear()
@@ -443,7 +447,7 @@ export default {
       return this.selectedEvaluationStatus && this.selectedEvaluationStatus !== evaluation.status
     },
     reset() {
-      this.selectedEvaluations = this.$_.reduce(this.evaluations, (evaluations, e) => {
+      this.selectedEvaluations = reduce(this.evaluations, (evaluations, e) => {
         if (e.isSelected) {
           evaluations.push(e)
         }
@@ -465,7 +469,9 @@ export default {
           this.isConfirmingNonSisInstructor = true
         }
       }
-    }
+    },
+    size,
+    toInteger
   }
 }
 </script>

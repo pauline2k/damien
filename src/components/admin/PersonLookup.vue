@@ -24,7 +24,7 @@
         :class="inputClass"
         dense
         :disabled="disabled"
-        :error="required && !suppressValidation && !!$_.size(errors)"
+        :error="required && !suppressValidation && !!size(errors)"
         :error-messages="required && !suppressValidation ? errors : []"
         hide-details
         :hide-no-data="isSearching || !search"
@@ -75,6 +75,7 @@
 </template>
 
 <script>
+import {debounce, delay, join, size, split, trim} from 'lodash'
 import {searchInstructors} from '@/api/instructor'
 import {searchUsers} from '@/api/user'
 
@@ -169,8 +170,8 @@ export default {
       if (snippet) {
         const apiSearch = this.instructorLookup ? searchInstructors : searchUsers
         apiSearch(snippet, this.excludeUids).then(results => {
-          const searchTokens = this.$_.split(this.$_.trim(snippet), /\W/g)
-          this.searchTokenMatcher = RegExp(this.$_.join(searchTokens, '|'), 'gi')
+          const searchTokens = split(trim(snippet), /\W/g)
+          this.searchTokenMatcher = RegExp(join(searchTokens, '|'), 'gi')
           this.suggestions = results
           this.isSearching = false
         })
@@ -192,11 +193,12 @@ export default {
     suggest(user) {
       return this.toLabel(user).replace(this.searchTokenMatcher, match => `<strong>${match}</strong>`)
     },
+    size,
     toLabel(user) {
       return user && user instanceof Object ? `${user.firstName || ''} ${user.lastName || ''} (${user.uid})`.trim() : user
     },
     validate(suggestion) {
-      this.$_.delay(() => {
+      delay(() => {
         if (!suggestion && this.required && !this.suppressValidation) {
           this.errors = ['Required']
         } else {
@@ -206,7 +208,7 @@ export default {
     }
   },
   created() {
-    this.debouncedSearch = this.$_.debounce(this.executeSearch, 300)
+    this.debouncedSearch = debounce(this.executeSearch, 300)
   }
 }
 </script>

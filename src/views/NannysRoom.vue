@@ -411,14 +411,16 @@
       :disabled="disableControls"
       :on-click-cancel="cancelDelete"
       :on-click-confirm="confirmDelete"
-      :text="`Are you sure you want to delete ${$_.get(itemToDelete, 'name')}?`"
-      :title="`Delete ${$_.get(itemToDelete, 'description')}?`"
+      :text="`Are you sure you want to delete ${get(itemToDelete, 'name')}?`"
+      :title="`Delete ${get(itemToDelete, 'description')}?`"
     />
   </div>
 </template>
 
 <script>
-import { getAutoPublishStatus, setAutoPublishStatus } from '@/api/config'
+import {get} from 'lodash'
+import {getAutoPublishStatus, setAutoPublishStatus} from '@/api/config'
+import {putFocusNextTick} from '@/utils'
 import ConfirmDialog from '@/components/util/ConfirmDialog'
 import Context from '@/mixins/Context.vue'
 import EditServiceAnnouncement from '@/components/admin/EditServiceAnnouncement'
@@ -465,7 +467,7 @@ export default {
     this.resetNewInstructor()
     this.init().then(() => {
       this.$ready('List Management')
-      this.$putFocusNextTick('page-title')
+      putFocusNextTick('page-title')
     })
     getAutoPublishStatus().then(data => {
       this.autoPublishEnabled = data.enabled
@@ -481,10 +483,10 @@ export default {
       this.resetNewInstructor()
       this.reset()
       this.alertScreenReader('Canceled. Nothing saved.')
-      this.$putFocusNextTick(elementId)
+      putFocusNextTick(elementId)
     },
     cancelDelete() {
-      this.$putFocusNextTick(this.itemToDelete.elementId)
+      putFocusNextTick(this.itemToDelete.elementId)
       this.reset()
       this.alertScreenReader('Canceled. Nothing deleted.')
     },
@@ -492,22 +494,23 @@ export default {
       this.setDisableControls(true)
       this.onDelete().then(this.afterDelete)
     },
+    get,
     onClickAddDepartmentForm() {
       this.setAddingDepartmentForm().then(() => {
         this.newItemName = ''
-        this.$putFocusNextTick('input-dept-form-name')
+        putFocusNextTick('input-dept-form-name')
       })
     },
     onClickAddEvaluationType() {
       this.setAddingEvaluationType().then(() => {
         this.newItemName = ''
-        this.$putFocusNextTick('input-eval-type-name')
+        putFocusNextTick('input-eval-type-name')
       })
     },
     onClickAddInstructor() {
       this.setAddingInstructor().then(() => {
         this.resetNewInstructor()
-        this.$putFocusNextTick('input-instructor-uid')
+        putFocusNextTick('input-instructor-uid')
       })
     },
     onSubmitAddDepartmentForm() {
@@ -515,7 +518,7 @@ export default {
         this.addDepartmentForm(this.newItemName).then(() => {
           this.alertScreenReader(`Created department form ${this.newItemName}.`)
           this.newItemName = ''
-          this.$putFocusNextTick('add-dept-form-btn')
+          putFocusNextTick('add-dept-form-btn')
         })
       }
     },
@@ -524,7 +527,7 @@ export default {
         this.addInstructor(this.newInstructor).then(() => {
           this.alertScreenReader(`Added instructor with UID ${this.newInstructor.uid}.`)
           this.resetNewInstructor()
-          this.$putFocusNextTick('add-instructor-btn')
+          putFocusNextTick('add-instructor-btn')
         })
       }
     },
@@ -533,7 +536,7 @@ export default {
         this.addEvaluationType(this.newItemName).then(() => {
           this.alertScreenReader(`Created evaluation type ${this.newItemName}.`)
           this.newItemName = ''
-          this.$putFocusNextTick('add-eval-type-btn')
+          putFocusNextTick('add-eval-type-btn')
         })
       }
     },
