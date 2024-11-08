@@ -110,6 +110,8 @@
 </template>
 
 <script>
+import {chain, each, every, filter as _filter, get, has, includes, map, uniq} from 'lodash'
+import {putFocusNextTick} from '@/utils'
 import {updateEvaluations} from '@/api/departments'
 import ConfirmDialog from '@/components/util/ConfirmDialog'
 import Context from '@/mixins/Context'
@@ -198,19 +200,19 @@ export default {
       return this.$currentUser.isAdmin || !this.isSelectedTermLocked
     },
     selectedEvaluations() {
-      return this.$_.filter(this.evaluations, e => this.selectedEvaluationIds.includes(e.id))
+      return _filter(this.evaluations, e => this.selectedEvaluationIds.includes(e.id))
     }
   },
   methods: {
     onCancelDuplicate() {
       this.reset()
       this.alertScreenReader('Canceled duplication.')
-      this.$putFocusNextTick('apply-course-action-btn-duplicate')
+      putFocusNextTick('apply-course-action-btn-duplicate')
     },
     onCancelEdit() {
       this.reset()
       this.alertScreenReader('Canceled edit.')
-      this.$putFocusNextTick('apply-course-action-btn-edit')
+      putFocusNextTick('apply-course-action-btn-edit')
     },
     onClickDuplicate() {
       this.showUpdateOptions()
@@ -218,9 +220,9 @@ export default {
       this.midtermFormAvailable = this.department.usesMidtermForms
       if (this.midtermFormAvailable) {
         // Show midterm form option only if a midterm form exists for all selected evals.
-        const availableFormNames = this.$_.map(this.activeDepartmentForms, 'name')
-        this.$_.each(this.selectedEvaluations, e => {
-          const formName = this.$_.get(e, 'departmentForm.name')
+        const availableFormNames = map(this.activeDepartmentForms, 'name')
+        each(this.selectedEvaluations, e => {
+          const formName = get(e, 'departmentForm.name')
           if (!formName || !(formName.endsWith('_MID') || availableFormNames.includes(formName + '_MID'))) {
             this.midtermFormAvailable = false
             return false
@@ -228,32 +230,32 @@ export default {
         })
       }
       this.isDuplicating = true
-      this.$putFocusNextTick('update-evaluations-instructor-lookup-autocomplete')
+      putFocusNextTick('update-evaluations-instructor-lookup-autocomplete')
     },
     onClickEdit() {
       this.showUpdateOptions()
       // Pre-populate form if shared by all selected evals
-      const uniqueForms = this.$_.chain(this.selectedEvaluations).map(e => this.$_.get(e, 'departmentForm.id')).uniq().value()
+      const uniqueForms = chain(this.selectedEvaluations).map(e => get(e, 'departmentForm.id')).uniq().value()
       if (uniqueForms.length === 1) {
-        this.bulkUpdateOptions.departmentForm = this.$_.get(this.selectedEvaluations, '0.departmentForm.id')
+        this.bulkUpdateOptions.departmentForm = get(this.selectedEvaluations, '0.departmentForm.id')
       }
       // Show instructor lookup if instructor is missing from all selected evals
-      if (this.$_.every(this.selectedEvaluations, {'instructor': null})) {
+      if (every(this.selectedEvaluations, {'instructor': null})) {
         this.bulkUpdateOptions.instructor = {}
       }
       // Pre-populate status if shared by all selected evals
-      const uniqueStatuses = this.$_.chain(this.selectedEvaluations).map(e => this.$_.get(e, 'status')).uniq().value()
+      const uniqueStatuses = chain(this.selectedEvaluations).map(e => get(e, 'status')).uniq().value()
       if (uniqueStatuses.length === 1) {
-        this.bulkUpdateOptions.evaluationStatus = this.$_.get(this.selectedEvaluations, '0.status', 'none')
+        this.bulkUpdateOptions.evaluationStatus = get(this.selectedEvaluations, '0.status', 'none')
       }
       this.isEditing = true
-      this.$putFocusNextTick('update-evaluations-select-status')
+      putFocusNextTick('update-evaluations-select-status')
     },
     onClickIgnore(key) {
       this.validateAndUpdate(key)
     },
     onClickMarkDone(key) {
-      const selected = this.$_.filter(this.evaluations, e => this.$_.includes(this.selectedEvaluationIds, e.id))
+      const selected = _filter(this.evaluations, e => includes(this.selectedEvaluationIds, e.id))
       this.markAsDoneWarning = this.validateMarkAsDone(selected)
       if (!this.markAsDoneWarning) {
         this.validateAndUpdate(key)
@@ -270,7 +272,7 @@ export default {
       this.validateAndUpdate('duplicate')
     },
     onConfirmEdit(options) {
-      const selected = this.$_.filter(this.evaluations, e => this.$_.includes(this.selectedEvaluationIds, e.id))
+      const selected = _filter(this.evaluations, e => includes(this.selectedEvaluationIds, e.id))
       this.bulkUpdateOptions = options
       if ('confirmed' === this.bulkUpdateOptions.evaluationStatus) {
         this.markAsDoneWarning = this.validateMarkAsDone(selected)
@@ -290,14 +292,14 @@ export default {
         if (this.bulkUpdateOptions.departmentForm) {
           fields.departmentFormId = this.bulkUpdateOptions.departmentForm
         }
-        if (this.$_.has(this.bulkUpdateOptions, 'evaluationStatus')) {
+        if (has(this.bulkUpdateOptions, 'evaluationStatus')) {
           fields.status = this.bulkUpdateOptions.evaluationStatus
         }
         if (this.bulkUpdateOptions.evaluationType) {
           fields.evaluationTypeId = this.bulkUpdateOptions.evaluationType
         }
         if (this.bulkUpdateOptions.instructor) {
-          fields.instructorUid = this.$_.get(this.bulkUpdateOptions.instructor, 'uid')
+          fields.instructorUid = get(this.bulkUpdateOptions.instructor, 'uid')
         }
         if (this.bulkUpdateOptions.startDate) {
           fields.startDate = this.$moment(this.bulkUpdateOptions.startDate).format('YYYY-MM-DD')
@@ -311,7 +313,7 @@ export default {
       return fields
     },
     isInvalidAction(action) {
-      const uniqueStatuses = this.$_.uniq(this.evaluations
+      const uniqueStatuses = uniq(this.evaluations
                   .filter(e => this.selectedEvaluationIds.includes(e.id))
                   .map(e => e.status))
       return (uniqueStatuses.length === 1 && uniqueStatuses[0] === action.status)
@@ -335,24 +337,24 @@ export default {
     },
     selectInstructor(suggestion) {
       this.bulkUpdateOptions.instructor = suggestion
-      this.$putFocusNextTick('update-evaluations-instructor-lookup-autocomplete')
+      putFocusNextTick('update-evaluations-instructor-lookup-autocomplete')
     },
     showUpdateOptions() {
       // Pre-populate start date if shared by all selected evals.
-      const uniqueStartDates = this.$_.chain(this.selectedEvaluations).map(e => new Date(e.startDate).toDateString()).uniq().value()
+      const uniqueStartDates = chain(this.selectedEvaluations).map(e => new Date(e.startDate).toDateString()).uniq().value()
       if (uniqueStartDates.length === 1) {
         this.bulkUpdateOptions.startDate = new Date(uniqueStartDates[0])
       }
       // Pre-populate type if shared by all selected evals
-      const uniqueTypes = this.$_.chain(this.selectedEvaluations).map(e => this.$_.get(e, 'evaluationType.id')).uniq().value()
+      const uniqueTypes = chain(this.selectedEvaluations).map(e => get(e, 'evaluationType.id')).uniq().value()
       if (uniqueTypes.length === 1) {
-        this.bulkUpdateOptions.evaluationType = this.$_.get(this.selectedEvaluations, '0.evaluationType.id')
+        this.bulkUpdateOptions.evaluationType = get(this.selectedEvaluations, '0.evaluationType.id')
       }
     },
     update(fields, key) {
       this.setDisableControls(true)
       this.isLoading = true
-      const selectedCourseNumbers = this.$_.uniq(this.evaluations
+      const selectedCourseNumbers = uniq(this.evaluations
         .filter(e => this.selectedEvaluationIds.includes(e.id))
         .map(e => e.courseNumber))
       const refresh = () => {
@@ -372,7 +374,7 @@ export default {
             const selectedRowCount = this.applyingAction.key === 'duplicate' ? ((response.length || 0) / 2) : (response.length || 0)
             const target = `${selectedRowCount} ${selectedRowCount === 1 ? 'row' : 'rows'}`
             this.alertScreenReader(`${this.applyingAction.completedText} ${target}`)
-            this.$putFocusNextTick('select-all-evals-checkbox')
+            putFocusNextTick('select-all-evals-checkbox')
             this.reset()
           }).finally(() => {
             this.isApplying = false
@@ -380,7 +382,7 @@ export default {
           })
         },
         error => {
-          this.showErrorDialog(this.$_.get(error, 'response.data.message', 'An unknown error occurred.'))
+          this.showErrorDialog(get(error, 'response.data.message', 'An unknown error occurred.'))
           this.setDisableControls(false)
           this.isApplying = false
           this.isLoading = false

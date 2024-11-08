@@ -109,6 +109,7 @@
 </template>
 
 <script>
+import {putFocusNextTick} from '@/utils'
 import ConfirmDialog from '@/components/util/ConfirmDialog'
 import Context from '@/mixins/Context.vue'
 import DepartmentEditSession from '@/mixins/DepartmentEditSession'
@@ -129,29 +130,29 @@ export default {
   methods: {
     onCancelDelete() {
       this.alertScreenReader('Canceled. Nothing deleted.')
-      this.$putFocusNextTick('delete-dept-note-btn')
+      putFocusNextTick('delete-dept-note-btn')
       this.reset()
     },
     onCancelSave() {
       this.alertScreenReader('Canceled. Nothing saved.')
-      this.$putFocusNextTick('edit-dept-note-btn')
+      putFocusNextTick('edit-dept-note-btn')
       this.reset()
     },
     onDelete() {
       this.updateNote({note: null, termId: this.selectedTermId}).then(() => {
         this.alertScreenReader('Note deleted.')
-        this.$putFocusNextTick('notes-title')
+        putFocusNextTick('notes-title')
         this.reset()
       })
     },
     onEdit() {
       this.isEditing = true
-      this.$putFocusNextTick('dept-note-textarea')
+      putFocusNextTick('dept-note-textarea')
     },
     onSave() {
       this.updateNote({note: this.item, termId: this.selectedTermId}).then(() => {
         this.alertScreenReader('Note saved.')
-        this.$putFocusNextTick('edit-dept-note-btn')
+        putFocusNextTick('edit-dept-note-btn')
         this.reset()
       })
     },

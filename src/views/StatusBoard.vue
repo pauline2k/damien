@@ -50,7 +50,7 @@
                   id="open-notification-form-btn"
                   class="ma-2 secondary text-capitalize"
                   color="secondary"
-                  :disabled="$_.isEmpty(selectedDepartmentIds) || loading"
+                  :disabled="isEmpty(selectedDepartmentIds) || loading"
                   small
                   @click="() => isCreatingNotification = true"
                   @keypress.enter.prevent="() => isCreatingNotification = true"
@@ -66,11 +66,11 @@
             <template v-for="(department, index) in items">
               <tr :id="`department-${index}`" :key="department.name">
                 <td>
-                  <label class="sr-only" :for="`checkbox-select-dept-${$_.kebabCase(department.deptName)}`">
+                  <label class="sr-only" :for="`checkbox-select-dept-${kebabCase(department.deptName)}`">
                     {{ department.deptName }}
                   </label>
                   <v-checkbox
-                    :id="`checkbox-select-dept-${$_.kebabCase(department.deptName)}`"
+                    :id="`checkbox-select-dept-${kebabCase(department.deptName)}`"
                     class="align-center mt-0 pt-0"
                     color="tertiary"
                     :disabled="loading"
@@ -82,9 +82,9 @@
                 </td>
                 <td class="department-name">
                   <div class="d-flex align-top">
-                    <router-link :id="`link-to-dept-${$_.kebabCase(department.deptName)}`" :to="`/department/${department.id}`">
+                    <router-link :id="`link-to-dept-${kebabCase(department.deptName)}`" :to="`/department/${department.id}`">
                       {{ department.deptName }}
-                      <span v-if="$_.size(getCatalogListings(department))">({{ getCatalogListings(department).join(', ') }})</span>
+                      <span v-if="size(getCatalogListings(department))">({{ getCatalogListings(department).join(', ') }})</span>
                     </router-link>
                   </div>
                 </td>
@@ -129,7 +129,7 @@
                   </span>
                 </td>
                 <td class="department-note">
-                  <pre class="body-2 text-condensed truncate-with-ellipsis">{{ $_.get(department, 'note.note') }}</pre>
+                  <pre class="body-2 text-condensed truncate-with-ellipsis">{{ get(department, 'note.note') }}</pre>
                 </td>
               </tr>
             </template>
@@ -153,7 +153,9 @@
 </template>
 
 <script>
+import {each, filter as _filter, get, includes, indexOf, isEmpty, kebabCase, map, size} from 'lodash'
 import {getDepartmentsEnrolled} from '@/api/departments'
+import {putFocusNextTick} from '@/utils'
 import Context from '@/mixins/Context'
 import NotificationForm from '@/components/admin/NotificationForm'
 import SortableTableHeader from '@/components/util/SortableTableHeader'
@@ -183,18 +185,18 @@ export default {
   }),
   computed: {
     allDepartmentsSelected() {
-      return !!(this.$_.size(this.selectedDepartmentIds) && this.$_.size(this.selectedDepartmentIds) === this.$_.size(this.departments))
+      return !!(size(this.selectedDepartmentIds) && size(this.selectedDepartmentIds) === size(this.departments))
     },
     notificationRecipients() {
       let recipients = []
-      this.$_.each(this.departments, d => {
+      each(this.departments, d => {
         if (this.isSelected(d)) {
-          const departmentRecipients = this.$_.filter(d.contacts, 'canReceiveCommunications')
+          const departmentRecipients = _filter(d.contacts, 'canReceiveCommunications')
           if (departmentRecipients.length) {
             recipients.push({
               'deptId': d.id,
               'deptName': d.deptName,
-              'recipients': this.$_.filter(d.contacts, 'canReceiveCommunications')
+              'recipients': _filter(d.contacts, 'canReceiveCommunications')
             })
           }
         }
@@ -202,7 +204,7 @@ export default {
       return recipients
     },
     someDepartmentsSelected() {
-      return !!(this.$_.size(this.selectedDepartmentIds) && this.$_.size(this.selectedDepartmentIds) < this.$_.size(this.departments))
+      return !!(size(this.selectedDepartmentIds) && size(this.selectedDepartmentIds) < size(this.departments))
     }
   },
   created() {
@@ -213,7 +215,7 @@ export default {
       this.departments = data
       this.loadBlockers().then(() => {
         this.$ready(`Evaluation Status Dashboard for ${this.selectedTermName}`)
-        this.$putFocusNextTick('page-title')
+        putFocusNextTick('page-title')
       })
     })
   },
@@ -222,20 +224,23 @@ export default {
       this.selectedDepartmentIds = []
       this.isCreatingNotification = false
       this.alertScreenReader('Notification sent.')
-      this.$putFocusNextTick('open-notification-form-btn')
+      putFocusNextTick('open-notification-form-btn')
     },
     cancelSendNotification() {
       this.isCreatingNotification = false
       this.alertScreenReader('Notification canceled.')
-      this.$putFocusNextTick('open-notification-form-btn')
+      putFocusNextTick('open-notification-form-btn')
     },
+    get,
+    isEmpty,
     isSelected(department) {
-      return this.$_.includes(this.selectedDepartmentIds, department.id)
+      return includes(this.selectedDepartmentIds, department.id)
     },
+    kebabCase,
     loadBlockers() {
       return new Promise(resolve => {
         this.blockers = {}
-        this.$_.each(this.departments, d => {
+        each(this.departments, d => {
           if (d.totalBlockers) {
             this.blockers[d.deptName] = d.totalBlockers
           }
@@ -243,12 +248,13 @@ export default {
         resolve()
       })
     },
+    size,
     sort(sortBy, sortDesc) {
       this.sortBy = sortBy
       this.sortDesc = sortDesc
     },
     toggleSelect(department) {
-      const index = this.$_.indexOf(this.selectedDepartmentIds, department.id)
+      const index = indexOf(this.selectedDepartmentIds, department.id)
       const isSelecting = index === -1
       if (isSelecting) {
         this.selectedDepartmentIds.push(department.id)
@@ -258,7 +264,7 @@ export default {
       this.alertScreenReader(`${department.name} ${isSelecting ? '' : 'un'}selected`)
     },
     toggleSelectAll() {
-      this.selectedDepartmentIds = this.allDepartmentsSelected ? [] : this.$_.map(this.departments, 'id')
+      this.selectedDepartmentIds = this.allDepartmentsSelected ? [] : map(this.departments, 'id')
       this.alertScreenReader(`All departments ${this.allDepartmentsSelected ? '' : 'un'}selected.`)
     }
   }

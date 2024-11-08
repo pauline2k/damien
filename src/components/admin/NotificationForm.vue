@@ -8,7 +8,7 @@
         size="64"
         width="4"
         color="secondary"
-      ></v-progress-circular>
+      />
     </div>
     <v-card-title class="pa-3" :class="isSending ? 'muted--text' : ''">
       <h3
@@ -125,7 +125,9 @@
 </template>
 
 <script>
+import {cloneDeep, indexOf, size, trim} from 'lodash'
 import {notifyContacts} from '@/api/departments'
+import {putFocusNextTick} from '@/utils'
 import Context from '@/mixins/Context.vue'
 
 export default {
@@ -153,13 +155,13 @@ export default {
   }),
   computed: {
     disabled() {
-      return this.isSending || !this.$_.trim(this.subject) || !this.$_.trim(this.message) || !this.$_.size(this.selectedRecipients)
+      return this.isSending || !trim(this.subject) || !trim(this.message) || !size(this.selectedRecipients)
     }
   },
   created() {
-    this.selectedRecipients = this.$_.cloneDeep(this.recipients)
+    this.selectedRecipients = cloneDeep(this.recipients)
     this.alertScreenReader('Send notification form is ready.')
-    this.$putFocusNextTick('send-notification-section-header')
+    putFocusNextTick('send-notification-section-header')
   },
   methods: {
     recipientLabel(recipient) {
@@ -167,8 +169,8 @@ export default {
     },
     removeRecipient(department, recipient, index) {
       const label = this.recipientLabel(recipient)
-      const indexOfDepartment = this.$_.indexOf(this.selectedRecipients, department)
-      if (this.$_.size(department.recipients) === 1) {
+      const indexOfDepartment = indexOf(this.selectedRecipients, department)
+      if (size(department.recipients) === 1) {
         this.selectedRecipients.splice(indexOfDepartment, 1)
       } else {
         this.selectedRecipients[indexOfDepartment].recipients.splice(index, 1)

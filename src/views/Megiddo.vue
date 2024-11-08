@@ -12,7 +12,7 @@
     </v-row>
     <v-row>
       <v-col cols="auto" class="mr-auto">
-        <div v-if="$_.size(confirmed)">
+        <div v-if="size(confirmed)">
           Rows confirmed for publication:
           <ul id="confirmed-list" class="pl-4">
             <li v-for="(department, index) in confirmed" :key="index">
@@ -20,7 +20,7 @@
             </li>
           </ul>
         </div>
-        <div v-if="$_.size(blockers)">
+        <div v-if="size(blockers)">
           <v-icon color="error">
             mdi-alert-circle
           </v-icon>
@@ -35,7 +35,7 @@
           id="publish-btn"
           class="publish-btn align-self-end my-4 mr-2"
           color="secondary"
-          :disabled="isExporting || loading || !!$_.size(blockers)"
+          :disabled="isExporting || loading || !!size(blockers)"
           @click="publish"
           @keypress.enter.prevent="publish"
         >
@@ -78,8 +78,8 @@
               <h2>Term Exports</h2>
             </v-expansion-panel-header>
             <v-expansion-panel-content>
-              <div v-if="$_.isEmpty(termExports)" id="term-exports-no-data">There are no {{ selectedTermName }} exports.</div>
-              <ul v-if="!$_.isEmpty(termExports)" id="term-exports-list" class="pl-2">
+              <div v-if="isEmpty(termExports)" id="term-exports-no-data">There are no {{ selectedTermName }} exports.</div>
+              <ul v-if="!isEmpty(termExports)" id="term-exports-list" class="pl-2">
                 <li v-for="(e, index) in termExports" :key="index">
                   <a
                     :id="`term-export-${index}`"
@@ -114,6 +114,8 @@
 
 <script>
 import {exportEvaluations, getConfirmed, getExportStatus, getExports, getValidation} from '@/api/evaluations'
+import {isEmpty, size, sortBy} from 'lodash'
+import {putFocusNextTick} from '@/utils'
 import Context from '@/mixins/Context.vue'
 import DepartmentEditSession from '@/mixins/DepartmentEditSession'
 import EvaluationTable from '@/components/evaluation/EvaluationTable'
@@ -140,33 +142,35 @@ export default {
     this.updateStatus()
   },
   methods: {
+    isEmpty,
     onUpdateStatus() {
       this.isUpdatingStatus = true
       this.updateStatus()
-      this.$putFocusNextTick('status-btn')
+      putFocusNextTick('status-btn')
     },
     publish() {
       this.isExporting = true
       this.alertScreenReader('Publishing.')
       exportEvaluations(this.selectedTermId).then(() => {
         this.snackbarOpen('Publication has started and will run in the background.')
-        this.$putFocusNextTick('publish-btn')
+        putFocusNextTick('publish-btn')
       })
     },
     refresh() {
       this.$loading()
       this.alertScreenReader(`Loading ${this.selectedTermName}`)
       Promise.all([getValidation(this.selectedTermId), getConfirmed(this.selectedTermId), getExports(this.selectedTermId)]).then(responses => {
-        this.setEvaluations(this.$_.sortBy(responses[0], 'sortableCourseName'))
+        this.setEvaluations(sortBy(responses[0], 'sortableCourseName'))
         this.confirmed = responses[1]
         this.termExports = responses[2]
         this.$ready(`Publish ${this.selectedTermName || ''}`)
       })
     },
+    size,
     updateStatus() {
       getExportStatus().then(response => {
         this.isExporting = false
-        if (this.$_.isEmpty(response)) {
+        if (isEmpty(response)) {
           return false
         }
         const lastUpdate = this.$moment(response.updatedAt)
@@ -182,7 +186,7 @@ export default {
     },
     showStatus(termExport) {
       const exportLabel = this.$moment(termExport.createdAt).format(this.dateFormat)
-      const term = this.$_.find(this.$config.availableTerms, {'id': termExport.termId})
+      const term = find(this.$config.availableTerms, {'id': termExport.termId})
       if (termExport.status === 'success') {
         this.snackbarOpen(
           `Success! Publication of ${term.name} term export <b>${exportLabel || ''}</b> is complete.`,

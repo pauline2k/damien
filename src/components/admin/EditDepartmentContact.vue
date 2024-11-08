@@ -10,7 +10,7 @@
       </h3>
       <PersonLookup
         class="mt-1 mb-4"
-        :exclude-uids="$_.map(contacts, 'uid')"
+        :exclude-uids="map(contacts, 'uid')"
         :on-select-result="onSelectSearchResult"
       />
     </div>
@@ -67,7 +67,7 @@
       >
         <v-radio
           :id="`radio-no-blue-${contactId}`"
-          :aria-checked="$_.isNil(permissions)"
+          :aria-checked="isNil(permissions)"
           class="mb-1"
           color="tertiary"
           label="No access to Blue"
@@ -158,7 +158,18 @@
 </template>
 
 <script>
+import {
+  cloneDeep,
+  differenceBy,
+  findIndex,
+  get,
+  isNil,
+  last,
+  map,
+  sortBy
+} from 'lodash'
 import {getUserDepartmentForms} from '@/api/user'
+import {putFocusNextTick} from '@/utils'
 import Context from '@/mixins/Context.vue'
 import DepartmentEditSession from '@/mixins/DepartmentEditSession'
 import PersonLookup from '@/components/admin/PersonLookup'
@@ -201,10 +212,10 @@ export default {
   }),
   computed: {
     availableDepartmentForms() {
-      return this.$_.differenceBy(this.allDepartmentForms, this.contactDepartmentForms, item => item.name)
+      return differenceBy(this.allDepartmentForms, this.contactDepartmentForms, item => item.name)
     },
     contactId() {
-      return this.$_.get(this.contact, 'uid', 'add-contact')
+      return get(this.contact, 'uid', 'add-contact')
     },
     fullName() {
       return this.firstName && this.lastName ? `${this.firstName} ${this.lastName}`.trim() : ''
@@ -212,7 +223,7 @@ export default {
   },
   created() {
     this.populateForm(this.contact)
-    this.$putFocusNextTick('add-contact-sub-header')
+    putFocusNextTick('add-contact-sub-header')
     this.alertScreenReader(`${this.contact ? 'Edit' : 'Add'} department contact form is ready`)
   },
   watch: {
@@ -223,14 +234,14 @@ export default {
       if (!val || !prev || val.length === prev.length) return
       this.contactDepartmentForms = val.map(item => {
         if (typeof item === 'string') {
-          return this.$_.find(this.availableDepartmentForms, {'name': item})
+          return find(this.availableDepartmentForms, {'name': item})
         } else {
           return item
         }
       }).filter(v => v)
     },
     permissions(value) {
-      if (this.$_.isNil(value)) {
+      if (isNil(value)) {
         this.srAlert('have access to Blue', false)
       } else if (value === 'reports_only') {
         this.srAlert('be able to view reports', true)
@@ -240,10 +251,11 @@ export default {
     }
   },
   methods: {
+    isNil,
     afterSelectDepartmentForm(departmentForms) {
-      const selected = this.$_.last(departmentForms)
+      const selected = last(departmentForms)
       this.alertScreenReader(`Added ${selected.name}.`)
-      this.$putFocusNextTick(`input-deptForms-${this.contactId}`)
+      putFocusNextTick(`input-deptForms-${this.contactId}`)
     },
     fetchUserDepartmentForms(uid) {
       getUserDepartmentForms(uid).then(data => {
@@ -251,7 +263,7 @@ export default {
       })
     },
     onChangeContactDepartmentForms(selectedValues) {
-      const names = this.$_.map(selectedValues, 'name')
+      const names = map(selectedValues, 'name')
       if (names.length) {
         this.alertScreenReader(`Selected department form${names.length === 1 ? 's are' : 'is'} ${this.oxfordJoin(names)}.`)
       } else {
@@ -280,7 +292,7 @@ export default {
       if (contact) {
         this.fetchUserDepartmentForms(contact.uid)
         this.csid = contact.csid
-        this.contactDepartmentForms = this.$_.cloneDeep(this.$_.sortBy(contact.departmentForms, 'name'))
+        this.contactDepartmentForms = cloneDeep(sortBy(contact.departmentForms, 'name'))
         this.email = contact.email
         this.firstName = contact.firstName
         this.lastName = contact.lastName
@@ -292,7 +304,7 @@ export default {
         if (contact.canViewReports) {
           this.permissions = contact.canViewResponseRates ? 'response_rates' : 'reports_only'
         }
-        this.$putFocusNextTick('input-person-lookup-autocomplete')
+        putFocusNextTick('input-person-lookup-autocomplete')
       } else {
         this.csid = null
         this.canReceiveCommunications = true
@@ -307,10 +319,10 @@ export default {
     },
     remove(departmentForm) {
       const formName = departmentForm.name
-      const indexOf = this.$_.findIndex(this.contactDepartmentForms, {'name': formName})
+      const indexOf = findIndex(this.contactDepartmentForms, {'name': formName})
       this.contactDepartmentForms.splice(indexOf, 1)
       this.alertScreenReader(`Removed ${formName} from ${this.fullName} department forms.`)
-      this.$putFocusNextTick(`input-deptForms-${this.contactId}`)
+      putFocusNextTick(`input-deptForms-${this.contactId}`)
     },
     srAlert(label, isSelected) {
       if (this.firstName || this.lastName) {

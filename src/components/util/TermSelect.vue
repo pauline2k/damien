@@ -21,7 +21,7 @@
           :id="`term-option-${term.id}`"
           :key="term.id"
           :value="term.id"
-          :disabled="termIds && !$_.includes(termIds, term.id)"
+          :disabled="termIds && !includes(termIds, term.id)"
         >
           {{ term.name }}
         </option>
@@ -64,7 +64,9 @@
 </template>
 
 <script>
+import {find, get, includes} from 'lodash'
 import {getEvaluationTerm, lockEvaluationTerm, unlockEvaluationTerm} from '@/api/evaluationTerms'
+import {putFocusNextTick} from '@/utils'
 import Context from '@/mixins/Context.vue'
 
 export default {
@@ -86,8 +88,8 @@ export default {
     isTogglingLock: false
   }),
   created() {
-    const termId = this.$_.get(this.$route.query, 'term')
-    if (termId && this.$_.find(this.$config.availableTerms, {id: termId})) {
+    const termId = get(this.$route.query, 'term')
+    if (termId && find(this.$config.availableTerms, {id: termId})) {
       this.setTerm(termId)
     } else {
       this.$router.push({
@@ -96,14 +98,15 @@ export default {
     }
   },
   methods: {
+    includes,
     onChangeTerm(event) {
       const termId = event.target.value
-      if (termId && termId !== this.$_.get(this.$route.query, 'term')) {
+      if (termId && termId !== get(this.$route.query, 'term')) {
         this.$router.push({
           query: {...this.$route.query, term: termId}
         })
         this.selectTerm(termId)
-        this.$putFocusNextTick('select-term')
+        putFocusNextTick('select-term')
       }
     },
     setTerm(termId) {
@@ -137,10 +140,6 @@ export default {
 </script>
 
 <style scoped>
-.lock-label {
-  min-width: 6.5rem;
-  text-align: end;
-}
 .select-term {
   max-width: 200px;
 }

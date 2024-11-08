@@ -1,6 +1,6 @@
 <script>
-  import _ from 'lodash'
   import VueScrollTo from 'vue-scrollto'
+  import {concat, filter, head, initial, join, keys, last, split, trim} from 'lodash'
 
   export default {
     name: 'Utils',
@@ -12,13 +12,13 @@
     },
     methods: {
       getCatalogListings(department) {
-        return _.filter(this.$_.keys(department.catalogListings), _.trim)
+        return filter(keys(department.catalogListings), trim)
       },
       oxfordJoin: arr => {
         switch(arr.length) {
-        case 1: return _.head(arr)
-        case 2: return `${_.head(arr)} and ${_.last(arr)}`
-        default: return _.join(_.concat(_.initial(arr), ` and ${_.last(arr)}`), ', ')
+        case 1: return head(arr)
+        case 2: return `${head(arr)} and ${last(arr)}`
+        default: return join(concat(initial(arr), ` and ${last(arr)}`), ', ')
         }
       },
       pluralize: (noun, count, substitutions = {}, pluralSuffix = 's') => {
@@ -26,7 +26,7 @@
       },
       scrollTo: anchor => VueScrollTo.scrollTo(anchor, 400),
       scrollToTop: delay => VueScrollTo.scrollTo('#app', (delay || 400)),
-      stripAnchorRef: path => _.split(path, '#', 1)[0]
+      stripAnchorRef: path => split(path, '#', 1)[0]
     }
   }
 </script>

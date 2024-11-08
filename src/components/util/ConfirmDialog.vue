@@ -49,6 +49,8 @@
 </template>
 
 <script>
+import {putFocusNextTick} from '@/utils'
+
 export default {
   name: 'ConfirmDialog',
   props: {
@@ -93,7 +95,7 @@ export default {
   }),
   created() {
     this.model = true
-    this.$putFocusNextTick('confirm-dialog-title')
+    putFocusNextTick('confirm-dialog-title')
   },
   methods: {
     cancel() {

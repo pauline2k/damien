@@ -27,7 +27,7 @@
           <tbody class="h-100vh" @mouseleave="() => hoveredDept = null" @focusout="() => hoveredDept = null">
             <template v-for="(department, deptIndex) in items">
               <tr
-                v-if="$_.isEmpty(department.contacts)"
+                v-if="isEmpty(department.contacts)"
                 :key="`${deptIndex}-0`"
                 class="compact-row"
                 @mouseover="() => hoveredDept = department.id"
@@ -42,7 +42,7 @@
                 >
                   <router-link :to="`/department/${department.id}`">
                     {{ department.deptName }}
-                    <span v-if="$_.size(getCatalogListings(department))">({{ getCatalogListings(department).join(', ') }})</span>
+                    <span v-if="size(getCatalogListings(department))">({{ getCatalogListings(department).join(', ') }})</span>
                   </router-link>
                 </th>
                 <td
@@ -72,7 +72,7 @@
                 >
                   <router-link :to="`/department/${department.id}`">
                     {{ department.deptName }}
-                    <span v-if="$_.size(getCatalogListings(department))">({{ getCatalogListings(department).join(', ') }})</span>
+                    <span v-if="size(getCatalogListings(department))">({{ getCatalogListings(department).join(', ') }})</span>
                   </router-link>
                 </th>
                 <td
@@ -118,10 +118,11 @@
 </template>
 
 <script>
+import {getDepartmentsEnrolled} from '@/api/departments'
+import {isEmpty, size} from 'lodash'
 import BooleanIcon from '@/components/util/BooleanIcon'
 import Context from '@/mixins/Context'
 import Util from '@/mixins/Util'
-import {getDepartmentsEnrolled} from '@/api/departments'
 
 export default {
   name: 'TheMonastery',
@@ -148,6 +149,8 @@ export default {
     })
   },
   methods: {
+    isEmpty,
+    size,
     subRowClass(subIndex, subItems) {
       return subIndex + 1 < subItems.length ? 'borderless' : ''
     }
