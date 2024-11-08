@@ -1,12 +1,13 @@
 import axios from 'axios'
 import Vue from 'vue'
+import store from '@/store'
 
 export function devAuthLogIn(uid: string, password: string) {
   return axios
       .post(`${Vue.prototype.$config.apiBaseUrl}/api/auth/dev_auth_login`, {uid, password})
         .then(data => {
-          Vue.prototype.$currentUser = data
-          return Vue.prototype.$currentUser
+          store.dispatch('context/setCurrentUser', data)
+          return store.getters['context/currentUser']
         }, error => error)
 }
 

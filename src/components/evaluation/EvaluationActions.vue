@@ -118,6 +118,7 @@ import Context from '@/mixins/Context'
 import DepartmentEditSession from '@/mixins/DepartmentEditSession'
 import UpdateEvaluations from '@/components/evaluation/UpdateEvaluations'
 import Util from '@/mixins/Util'
+import store from '@/store'
 
 export default {
   name: 'EvaluationActions',
@@ -197,7 +198,8 @@ export default {
   },
   computed: {
     allowEdits() {
-      return this.$currentUser.isAdmin || !this.isSelectedTermLocked
+      const currentUser = store.getters['context/currentUser']
+      return currentUser.isAdmin || !this.isSelectedTermLocked
     },
     selectedEvaluations() {
       return _filter(this.evaluations, e => this.selectedEvaluationIds.includes(e.id))

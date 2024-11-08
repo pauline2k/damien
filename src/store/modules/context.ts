@@ -4,6 +4,10 @@ import {getServiceAnnouncement} from '@/api/config'
 import {putFocusNextTick} from '@/utils'
 
 const state = {
+  currentUser: {
+    isAdmin: false,
+    isAuthenticated: false
+  },
   isSelectedTermLocked: false,
   loading: undefined,
   screenReaderAlert: undefined,
@@ -19,6 +23,7 @@ const state = {
 }
 
 const getters = {
+  currentUser: (state: any): boolean => state.currentUser,
   isSelectedTermLocked: (state: any): boolean => state.isSelectedTermLocked,
   loading: (state: any): boolean => state.loading,
   screenReaderAlert: (state: any): string => state.screenReaderAlert,
@@ -41,6 +46,7 @@ const mutations = {
     putFocusNextTick('page-title')
   },
   loadingStart: (state: any) => (state.loading = true),
+  setCurrentUser: (state: any, currentUser: any) => state.currentUser = currentUser,
   setIsSelectedTermLocked: (state: any, isLocked: boolean) => (state.isSelectedTermLocked = isLocked),
   setScreenReaderAlert: (state: any, alert: string) => (state.screenReaderAlert = alert),
   setSelectedTerm: (state: any, termId: string) => {
@@ -81,6 +87,7 @@ const actions = {
     })
   },
   selectTerm: ({ commit }, termId) => commit('setSelectedTerm', termId),
+  setCurrentUser: ({ commit }, currentUser) => commit('setCurrentUser', currentUser),
   setIsSelectedTermLocked: ({ commit }, isLocked: boolean) => commit('setIsSelectedTermLocked', isLocked),
   snackbarClose: ({ commit }) => commit('snackbarClose'),
   snackbarOpen: ({ commit }, {text, color}) => commit('snackbarOpen', {text, color}),

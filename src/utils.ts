@@ -1,10 +1,12 @@
 import {get} from 'lodash'
 import router from './router'
 import Vue from 'vue'
+import store from '@/store'
 
 export function axiosErrorHandler(error) {
   const errorStatus = get(error, 'response.status')
-  if (get(Vue.prototype, '$currentUser.isAuthenticated')) {
+    const currentUser = store.getters['context/currentUser']
+  if (currentUser.isAuthenticated) {
     if (errorStatus === 404) {
       router.push({path: '/404'})
     } else if (errorStatus >= 400) {

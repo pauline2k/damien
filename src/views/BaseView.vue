@@ -97,7 +97,7 @@
               dark
               v-on="on"
             >
-              <span class="sr-only">User profile for </span>{{ $currentUser.firstName }}
+              <span class="sr-only">User profile for </span>{{ currentUser.firstName }}
             </v-btn>
           </template>
           <v-list>
@@ -145,6 +145,7 @@
   import Spinner from '@/components/util/Spinner'
   import StatusIcon from '@/assets/list-status.svg'
   import Util from '@/mixins/Util'
+  import store from '@/store'
 
   export default {
     name: 'BaseView',
@@ -162,17 +163,22 @@
     data: () => ({
       navItems: undefined,
     }),
+    computed: {
+      currentUser() {
+        return store.getters['context/currentUser']
+      }
+    },
     created() {
       this.prefersColorScheme()
-      if (this.$currentUser.isAdmin) {
+      if (this.currentUser.isAdmin) {
         this.navItems = [
           { title: 'Status Board', icon: StatusIcon, path: '/status' },
           { title: 'Publish', icon: ErrorIcon, path: '/publish' },
           { title: 'Group Management', icon: GroupIcon, path: '/departments' },
           { title: 'List Management', icon: ListIcon, path: '/lists' }
         ]
-      } else if (size(this.$currentUser.departments)) {
-        this.navItems = map(this.$currentUser.departments, department => {
+      } else if (size(this.currentUser.departments)) {
+        this.navItems = map(this.currentUser.departments, department => {
           const firstInitial = department.name.charAt(0).toLowerCase()
           return {
             title: department.name,

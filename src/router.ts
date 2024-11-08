@@ -11,6 +11,7 @@ import StatusBoard from '@/views/StatusBoard.vue'
 import TheMonastery from '@/views/TheMonastery.vue'
 import Router from 'vue-router'
 import Vue from 'vue'
+import store from '@/store'
 
 Vue.use(Router)
 
@@ -25,7 +26,7 @@ const router = new Router({
       path: '/login',
       component: Login,
       beforeEnter: (to: any, from: any, next: any) => {
-        const currentUser = Vue.prototype.$currentUser
+        const currentUser = store.getters['context/currentUser']
         if (get(currentUser, 'isAuthenticated')) {
           if (trim(to.query.redirect)) {
             next(to.query.redirect)
@@ -47,7 +48,7 @@ const router = new Router({
       children: [
         {
           beforeEnter: (to: any, from: any, next: any) => {
-            const currentUser = Vue.prototype.$currentUser
+            const currentUser = store.getters['context/currentUser']
             if (currentUser.isAdmin) {
               next('/status')
             } else if (size(currentUser.departments)) {
@@ -138,7 +139,8 @@ const router = new Router({
 
 router.beforeEach((to: any, from: any, next: any) => {
   const redirect = trim(to.query.redirect)
-  if (get(Vue.prototype.$currentUser, 'isAuthenticated') && redirect) {
+  const currentUser = store.getters['context/currentUser']
+  if (currentUser.isAuthenticated && redirect) {
     next(redirect)
   } else {
     next()

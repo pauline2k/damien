@@ -552,6 +552,7 @@ import EvaluationError from '@/components/evaluation/EvaluationError'
 import PersonLookup from '@/components/admin/PersonLookup'
 import SortableTableHeader from '@/components/util/SortableTableHeader'
 import Util from '@/mixins/Util'
+import store from '@/store'
 
 export default {
   name: 'EvaluationTable',
@@ -614,7 +615,8 @@ export default {
       return !!(size(this.selectedEvaluationIds) && size(this.selectedEvaluationIds) === size(this.evaluations))
     },
     allowEdits() {
-      return this.$currentUser.isAdmin || !this.isSelectedTermLocked
+      const currentUser = store.getters['context/currentUser']
+      return currentUser.isAdmin || !this.isSelectedTermLocked
     },
     rowValid() {
       const evaluation = find(this.evaluations, ['id', this.editRowId])

@@ -1,5 +1,5 @@
-import _ from 'lodash'
-import Vue from 'vue'
+import {get, some, toInteger} from 'lodash'
+import store from '@/store'
 
 const $_goToLogin = (to: any, next: any) => {
   next({
@@ -13,8 +13,9 @@ const $_goToLogin = (to: any, next: any) => {
 
 export default {
   requiresAdmin: (to: any, from: any, next: any) => {
-    if (_.get(Vue.prototype.$currentUser, 'isAuthenticated')) {
-      if (_.get(Vue.prototype.$currentUser, 'isAdmin')) {
+    const currentUser = store.getters['context/currentUser']
+    if (currentUser.isAuthenticated) {
+      if (currentUser.isAdmin) {
         next()
       } else {
         next({path: '/404'})
@@ -24,16 +25,18 @@ export default {
     }
   },
   requiresAuthenticated: (to: any, from: any, next: any) => {
-    if (_.get(Vue.prototype.$currentUser, 'isAuthenticated')) {
+    const currentUser = store.getters['context/currentUser']
+    if (currentUser.isAuthenticated) {
       next()
     } else {
       $_goToLogin(to, next)
     }
   },
   requiresDepartmentMembership: (to: any, from: any, next: any) => {
-    const departmentId = _.get(to, 'params.departmentId')
-    if (Vue.prototype.$currentUser.isAdmin || _.some(Vue.prototype.$currentUser.departments, department => {
-      return department.id === _.toInteger(departmentId)
+    const currentUser = store.getters['context/currentUser']
+    const departmentId = get(to, 'params.departmentId')
+    if (currentUser.isAdmin || some(currentUser.departments, department => {
+      return department.id === toInteger(departmentId)
     })) {
       next()
     } else {

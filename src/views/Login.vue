@@ -36,6 +36,7 @@
 </template>
 
 <script>
+import {get} from 'lodash'
 import {getCasLoginURL} from '@/api/auth'
 import {putFocusNextTick} from '@/utils'
 import Context from '@/mixins/Context'
@@ -51,7 +52,7 @@ export default {
   },
   created() {
     putFocusNextTick('page-title')
-    const error = this.$_.get(this.$route, 'query.error')
+    const error = get(this.$route, 'query.error')
     if (error) {
       this.reportError(error)
     } else {
