@@ -18,7 +18,6 @@ Vue.use(VueMoment, {moment})
 Vue.directive('linkified', linkify)
 
 const apiBaseUrl = process.env.VUE_APP_API_BASE_URL
-const isDebugMode = trim(process.env.VUE_APP_DEBUG).toLowerCase() === 'true'
 
 Vue.prototype.$loading = () => store.dispatch('context/loadingStart')
 Vue.prototype.$ready = (pageTitle, alert) => store.dispatch('context/loadingComplete', {pageTitle, alert})
@@ -64,9 +63,9 @@ axios.get(`${apiBaseUrl}/api/user/my_profile`).then(data => {
   store.dispatch('context/setCurrentUser', data)
 
   axios.get(`${apiBaseUrl}/api/config`).then(data => {
-    Vue.prototype.$config = data
-    Vue.prototype.$config.apiBaseUrl = apiBaseUrl
-    Vue.prototype.$config.isVueAppDebugMode = isDebugMode
+    const isVueAppDebugMode = trim(process.env.VUE_APP_DEBUG).toLowerCase() === 'true'
+    const config = {...data, ...{apiBaseUrl, isVueAppDebugMode}}
+    store.dispatch('context/setConfig', config)
 
     new Vue({
       router,

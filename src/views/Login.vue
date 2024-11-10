@@ -11,7 +11,7 @@
           <div class="text-center">
             <h1 id="page-title">
               <strong>Welcome to Course Evaluations</strong>
-              {{ $config.currentTermName }}
+              {{ config.currentTermName }}
             </h1>
           </div>
           <v-card-actions class="px-16 pt-12 d-flex flex-column">
@@ -27,7 +27,7 @@
               Sign In
               <v-icon class="pl-2">mdi-arrow-right-circle-outline</v-icon>
             </v-btn>
-            <DevAuth v-if="$config.devAuthEnabled" />
+            <DevAuth v-if="config.devAuthEnabled" />
           </v-card-actions>
         </v-card>
       </v-main>
@@ -56,7 +56,7 @@ export default {
     if (error) {
       this.reportError(error)
     } else {
-      this.alertScreenReader(`Welcome to Course Evaluations - ${this.$config.currentTermName}. Please log in.`)
+      this.alertScreenReader(`Welcome to Course Evaluations - ${this.config.currentTermName}. Please log in.`)
     }
 
   },

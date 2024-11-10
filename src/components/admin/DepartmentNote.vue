@@ -158,7 +158,7 @@ export default {
     },
     reset() {
       this.isConfirming = false
-      this.isEditable = this.selectedTermId === this.$config.currentTermId
+      this.isEditable = this.selectedTermId === this.config.currentTermId
       this.isEditing = false
       this.item = this.note
     }

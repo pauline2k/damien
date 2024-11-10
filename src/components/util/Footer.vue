@@ -13,19 +13,19 @@
           <a
             id="damien-support-mailto"
             class="white--text"
-            :href="`mailto:${$config.emailSupport}`"
+            :href="`mailto:${config.emailSupport}`"
             target="_blank"
           >
-            Email us at {{ $config.emailSupport }}
+            Email us at {{ config.emailSupport }}
             <span class="sr-only"> (opens a new window)</span>
           </a>
         </v-col>
         <v-col>
           <div class="float-right">
-            <span v-if="$config.isVueAppDebugMode && screenReaderAlert">
+            <span v-if="config.isVueAppDebugMode && screenReaderAlert">
               {{ screenReaderAlert }}
             </span>
-            <span v-if="!$config.isVueAppDebugMode || !screenReaderAlert">
+            <span v-if="!config.isVueAppDebugMode || !screenReaderAlert">
               <v-icon small>mdi-copyright</v-icon> {{ new Date().getFullYear() }}
               The Regents of the University of California
             </span>

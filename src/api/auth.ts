@@ -1,10 +1,10 @@
 import axios from 'axios'
-import Vue from 'vue'
 import store from '@/store'
+import {getApiBaseUrl} from '@/api/api-utils'
 
 export function devAuthLogIn(uid: string, password: string) {
   return axios
-      .post(`${Vue.prototype.$config.apiBaseUrl}/api/auth/dev_auth_login`, {uid, password})
+      .post(`${getApiBaseUrl()}/api/auth/dev_auth_login`, {uid, password})
         .then(data => {
           store.dispatch('context/setCurrentUser', data)
           return store.getters['context/currentUser']
@@ -12,9 +12,9 @@ export function devAuthLogIn(uid: string, password: string) {
 }
 
 export function getCasLoginURL() {
-  return axios.get(`${Vue.prototype.$config.apiBaseUrl}/api/auth/cas_login_url`)
+  return axios.get(`${getApiBaseUrl()}/api/auth/cas_login_url`)
 }
 
 export function getCasLogoutUrl() {
-  return axios.get(`${Vue.prototype.$config.apiBaseUrl}/api/auth/logout`)
+  return axios.get(`${getApiBaseUrl()}/api/auth/logout`)
 }

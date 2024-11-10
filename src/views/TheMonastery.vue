@@ -4,12 +4,12 @@
       <h1 id="page-title" :style="{color: titleHexColor}">Group Management</h1>
       <v-spacer class="d-flex justify-center"></v-spacer>
       <v-banner
-        v-if="$config.isVueAppDebugMode && $config.easterEggMonastery && $vuetify.theme.dark"
+        v-if="config.isVueAppDebugMode && config.easterEggMonastery && $vuetify.theme.dark"
         shaped
         single-line
         class="pr-4 my-auto"
       >
-        Welcome to <a :href="$config.easterEggMonastery" target="_blank">The Monastery</a>
+        Welcome to <a :href="config.easterEggMonastery" target="_blank">The Monastery</a>
       </v-banner>
     </div>
     <v-card outlined class="elevation-1">

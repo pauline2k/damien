@@ -355,7 +355,7 @@ export default {
     }
   },
   created() {
-    this.evaluationTypes = [{id: null, name: 'Default'}].concat(this.$config.evaluationTypes)
+    this.evaluationTypes = [{id: null, name: 'Default'}].concat(this.config.evaluationTypes)
     this.model = this.isUpdating
   },
   computed: {
@@ -369,7 +369,7 @@ export default {
           || (this.isInstructorRequired && !get(this.selectedInstructor, 'uid'))
     },
     selectedDepartmentFormName() {
-      return get(find(this.$config.departmentForms, df => df.id === this.selectedDepartmentForm), 'name')
+      return get(find(this.config.departmentForms, df => df.id === this.selectedDepartmentForm), 'name')
     },
     selectedEvaluationsDescription() {
       if (isEmpty(this.selectedEvaluationIds)) {
@@ -378,7 +378,7 @@ export default {
       return `${this.selectedEvaluationIds.length} ${this.selectedEvaluationIds.length === 1 ? 'row' : 'rows'}`
     },
     selectedEvaluationTypeName() {
-      return get(find(this.$config.evaluationTypes, et => et.id === this.selectedEvaluationType), 'name')
+      return get(find(this.config.evaluationTypes, et => et.id === this.selectedEvaluationType), 'name')
     },
     selectedStartDay() {
       return this.selectedStartDate ? this.$moment.utc(this.selectedStartDate).dayOfYear() : null

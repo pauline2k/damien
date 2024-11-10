@@ -77,7 +77,7 @@
       <div>
         <v-spacer>
           <v-chip
-            v-if="$config.isVueAppDebugMode && screenReaderAlert"
+            v-if="config.isVueAppDebugMode && screenReaderAlert"
             id="screen-reader-alert-debug"
             class="sr-debug font-italic"
             color="primary-contrast"
