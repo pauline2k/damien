@@ -420,12 +420,13 @@
 <script>
 import {get} from 'lodash'
 import {getAutoPublishStatus, setAutoPublishStatus} from '@/api/config'
-import {putFocusNextTick} from '@/utils'
+import {putFocusNextTick} from '@/lib/utils'
 import ConfirmDialog from '@/components/util/ConfirmDialog'
 import Context from '@/mixins/Context.vue'
 import EditServiceAnnouncement from '@/components/admin/EditServiceAnnouncement'
 import ListManagementSession from '@/mixins/ListManagementSession'
 import SortableTableHeader from '@/components/util/SortableTableHeader'
+import store from '@/store'
 import Util from '@/mixins/Util'
 
 export default {
@@ -464,9 +465,10 @@ export default {
     }
   }),
   created() {
+    store.dispatch('context/loadingStart')
     this.resetNewInstructor()
     this.init().then(() => {
-      this.$ready('List Management')
+      store.dispatch('context/loadingComplete', {pageTitle: 'List Management'})
       putFocusNextTick('page-title')
     })
     getAutoPublishStatus().then(data => {

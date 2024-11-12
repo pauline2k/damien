@@ -3,15 +3,18 @@ import {addDepartmentForm, deleteDepartmentForm, getDepartmentForms} from '@/api
 import {addEvaluationType, deleteEvaluationType, getEvaluationTypes} from '@/api/evaluationTypes'
 import {addInstructor, deleteInstructor, getInstructors} from '@/api/instructor'
 import {getConfig} from '@/api/api-utils'
-import {putFocusNextTick} from '@/utils'
+import {putFocusNextTick} from '@/lib/utils'
 
 const $_refreshAll = (commit) => {
   return Promise.all([getDepartmentForms(), getEvaluationTypes(), getInstructors()]).then(response => {
-    getConfig().departmentForms = response[0]
-    getConfig().evaluationTypes = response[1]
-    commit('setDepartmentForms', response[0])
-    commit('setEvaluationTypes', response[1])
-    commit('setInstructors', response[2])
+    const departmentForms = response[0]
+    const evaluationTypes = response[1]
+    const instructors = response[2]
+    commit('setDepartmentForms', departmentForms)
+    commit('setEvaluationTypes', evaluationTypes)
+    commit('setInstructors', instructors)
+    store.dispatch('context/updateConfig', {key: 'departmentForms', value: departmentForms})
+    store.dispatch('context/updateConfig', {key: 'evaluationTypes', value: evaluationTypes})
   })
 }
 

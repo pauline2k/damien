@@ -1,4 +1,5 @@
 <script>
+import {DateTime} from 'luxon'
 import {filter, get, includes, intersectionWith, some} from 'lodash'
 import {mapActions, mapGetters} from 'vuex'
 
@@ -63,14 +64,14 @@ export default {
     },
     validateMarkAsDone(selectedEvaluations) {
       let warningMessage
-      const now = this.$moment()
+      const now = DateTime.now()
       const evaluationsInProgress = filter(selectedEvaluations, e => now.isAfter(e.startDate))
       if (evaluationsInProgress.length) {
         // Grab the first in-progress evaluation, to give the user an example of the problem.
         const e = evaluationsInProgress[0]
         const course = `${e.subjectArea} ${e.catalogId} ${e.instructionFormat} ${e.sectionNumber}`
-        let startDate = this.$moment(e.startDate)
-        startDate = startDate.format(startDate.year() === now.year() ? 'MMMM Do' : 'MMMM Do, YYYY')
+        let startDate = DateTime.fromISO(e.startDate)
+        startDate = startDate.toFormat(startDate.year === now.year ? 'MMMM d' : 'DDD')
 
         if (evaluationsInProgress.length === 1) {
           warningMessage = `The ${course} evaluation period started on ${startDate}.

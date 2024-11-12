@@ -111,7 +111,7 @@
 
 <script>
 import {chain, each, every, filter as _filter, get, has, includes, map, uniq} from 'lodash'
-import {putFocusNextTick} from '@/utils'
+import {putFocusNextTick} from '@/lib/utils'
 import {updateEvaluations} from '@/api/departments'
 import ConfirmDialog from '@/components/util/ConfirmDialog'
 import Context from '@/mixins/Context'
@@ -119,6 +119,7 @@ import DepartmentEditSession from '@/mixins/DepartmentEditSession'
 import UpdateEvaluations from '@/components/evaluation/UpdateEvaluations'
 import Util from '@/mixins/Util'
 import store from '@/store'
+import {toFormatFromISO} from '@/lib/utils'
 
 export default {
   name: 'EvaluationActions',
@@ -304,7 +305,7 @@ export default {
           fields.instructorUid = get(this.bulkUpdateOptions.instructor, 'uid')
         }
         if (this.bulkUpdateOptions.startDate) {
-          fields.startDate = this.$moment(this.bulkUpdateOptions.startDate).format('YYYY-MM-DD')
+          fields.startDate = toFormatFromISO(this.bulkUpdateOptions.startDate, 'y-LL-dd')
         }
         if (key === 'duplicate') {
           if (this.bulkUpdateOptions.midtermFormEnabled) {

@@ -49,7 +49,7 @@
 </template>
 
 <script>
-import {putFocusNextTick} from '@/utils'
+import {putFocusNextTick} from '@/lib/utils'
 
 export default {
   name: 'ConfirmDialog',

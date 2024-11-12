@@ -23,6 +23,7 @@
 
 <script>
 import Util from '@/mixins/Util'
+import store from '@/store'
 
 export default {
   name: 'Error',
@@ -32,7 +33,7 @@ export default {
   }),
   mounted() {
     this.message = this.$route.query.m
-    this.$ready('Error')
+    store.dispatch('context/loadingComplete', {pageTitle: 'Error'})
   }
 }
 </script>

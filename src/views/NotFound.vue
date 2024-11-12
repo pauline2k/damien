@@ -4,7 +4,7 @@
       <span
         aria-live="polite"
         role="alert"
-      ><span class="sr-only">Sorry, page not found. Contact us if the system is misbehaving.</span></span>  
+      ><span class="sr-only">Sorry, page not found. Contact us if the system is misbehaving.</span></span>
       <v-img
         alt="404 Page Not Found, with superimposed quote: 'It is the greatest mystery of all because no human being will ever solve it."
         src="@/assets/404_page_foreground_text.png"
@@ -16,9 +16,6 @@
 <script>
 export default {
   name: 'NotFound',
-  created() {
-    this.$ready('404')
-  }
 }
 </script>
 

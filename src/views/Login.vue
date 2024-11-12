@@ -38,7 +38,7 @@
 <script>
 import {get} from 'lodash'
 import {getCasLoginURL} from '@/api/auth'
-import {putFocusNextTick} from '@/utils'
+import {putFocusNextTick} from '@/lib/utils'
 import Context from '@/mixins/Context'
 import DevAuth from '@/components/admin/DevAuth'
 import Snackbar from '@/components/util/Snackbar'

@@ -57,7 +57,7 @@
           class="separator mx-2"
           role="presentation"
           vertical
-        ></v-divider>
+        />
         <v-btn
           v-if="item"
           id="delete-dept-note-btn"
@@ -109,7 +109,7 @@
 </template>
 
 <script>
-import {putFocusNextTick} from '@/utils'
+import {putFocusNextTick} from '@/lib/utils'
 import ConfirmDialog from '@/components/util/ConfirmDialog'
 import Context from '@/mixins/Context.vue'
 import DepartmentEditSession from '@/mixins/DepartmentEditSession'

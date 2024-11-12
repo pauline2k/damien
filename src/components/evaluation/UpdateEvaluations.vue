@@ -159,10 +159,10 @@
                   </td>
                   <td :id="`preview-${index}-startDate`" class="bulk-action-startDate-col px-1">
                     <div v-if="evaluation.startDate" :class="{'text-decoration-line-through accent--text': action === 'Edit' && showSelectedStartDate(evaluation)}">
-                      {{ evaluation.startDate | moment('MM/DD/YY') }}
+                      {{ toLocaleFromISO(evaluation.startDate, 'LL/dd/yyyy') }}
                     </div>
                     <div v-if="action === 'Edit' && showSelectedStartDate(evaluation)">
-                      {{ selectedStartDate | moment('MM/DD/YY') }}
+                      {{ toLocaleFromISO(selectedStartDate, 'LL/dd/yyyy') }}
                     </div>
                   </td>
                 </tr>
@@ -198,7 +198,7 @@
                   </td>
                   <td :id="`preview-${index}-dupe-startDate`" class="bulk-action-startDate-col px-1">
                     <div>
-                      {{ (selectedStartDate || evaluation.startDate) | moment('MM/DD/YY') }}
+                      {{ toLocaleFromISO(selectedStartDate || evaluation.startDate, 'LL/dd/yyyy') }}
                     </div>
                   </td>
                 </tr>
@@ -253,7 +253,8 @@
 
 <script>
 import {addInstructor} from '@/api/instructor'
-import {endsWith, find, get, isEmpty, isObject, map, reduce, size, toInteger} from 'lodash'
+import {endsWith, find, get, isEmpty, isObject, map, max, min, reduce, size, toInteger} from 'lodash'
+import {toLocaleFromISO, toFormatFromISO} from '@/lib/utils'
 import ConfirmDialog from '@/components/util/ConfirmDialog'
 import Context from '@/mixins/Context'
 import DepartmentEditSession from '@/mixins/DepartmentEditSession'
@@ -381,13 +382,13 @@ export default {
       return get(find(this.config.evaluationTypes, et => et.id === this.selectedEvaluationType), 'name')
     },
     selectedStartDay() {
-      return this.selectedStartDate ? this.$moment.utc(this.selectedStartDate).dayOfYear() : null
+      return this.selectedStartDate ? toFormatFromISO(this.selectedStartDate, 'o') : null
     },
     validStartDates() {
       // The intersection of the selected rows' allowed evaluation start dates
       return {
-        'max': this.$moment.min(map(this.selectedEvaluations, e => this.$moment(e.maxStartDate))).toDate(),
-        'min': this.$moment.max(map(this.selectedEvaluations, e => this.$moment(e.meetingDates.start))).toDate()
+        'max': min(map(this.selectedEvaluations, e => e.maxStartDate)),
+        'min': max(map(this.selectedEvaluations, e => e.meetingDates.start))
       }
     }
   },
@@ -443,7 +444,7 @@ export default {
       return get(this.selectedInstructor, 'uid') && this.selectedInstructor.uid !== get(evaluation, 'instructor.uid')
     },
     showSelectedStartDate(evaluation) {
-      return this.selectedStartDate && this.selectedStartDay !== this.$moment.utc(evaluation.startDate).dayOfYear()
+      return this.selectedStartDate && this.selectedStartDay !== toFormatFromISO(evaluation.startDate, 'o')
     },
     showSelectedStatus(evaluation) {
       return this.selectedEvaluationStatus && this.selectedEvaluationStatus !== evaluation.status
@@ -473,7 +474,8 @@ export default {
       }
     },
     size,
-    toInteger
+    toInteger,
+    toLocaleFromISO
   }
 }
 </script>
