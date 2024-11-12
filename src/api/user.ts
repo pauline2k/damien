@@ -1,10 +1,10 @@
 import axios from 'axios'
-import Vue from 'vue'
+import {getApiBaseUrl} from '@/api/api-utils'
 
 export function getUserDepartmentForms(uid: string) {
-  return axios.get(`${Vue.prototype.$config.apiBaseUrl}/api/user/${uid}/forms`)
+  return axios.get(`${getApiBaseUrl()}/api/user/${uid}/forms`)
 }
 
 export function searchUsers(snippet: string, excludeUids: string[]) {
-  return axios.post(`${Vue.prototype.$config.apiBaseUrl}/api/user/search`, {snippet, excludeUids}).then(response => response, () => null)
+  return axios.post(`${getApiBaseUrl()}/api/user/search`, {snippet, excludeUids}).then(response => response, () => null)
 }

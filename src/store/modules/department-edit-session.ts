@@ -10,6 +10,7 @@ import {
 } from '@/api/departments'
 import store from '@/store'
 import Vue from 'vue'
+import {getConfig} from '@/api/api-utils'
 
 const $_decorateEvaluation = (e, allEvaluations) => {
   e.isSelected = false
@@ -67,7 +68,7 @@ const $_decorateEvaluation = (e, allEvaluations) => {
   const courseEndDate = Vue.prototype.$moment(e.meetingDates.end)
   e.meetingDates.end = courseEndDate.toDate()
 
-  const selectedTerm = _.find(Vue.prototype.$config.availableTerms, {'id': e.termId})
+  const selectedTerm = _.find(getConfig().availableTerms, {'id': e.termId})
   const defaultEndDate = Vue.prototype.$moment(_.get(selectedTerm, 'defaultDates.end'))
   const courseLength = courseEndDate.diff(e.meetingDates.start, 'days')
   let lastEndDate = courseEndDate > defaultEndDate ? courseEndDate : defaultEndDate
@@ -79,7 +80,7 @@ const $_decorateEvaluation = (e, allEvaluations) => {
 
 const $_refresh = (commit, departmentId) => {
   return new Promise<void>(resolve => {
-    const termId = store.getters['context/selectedTermId'] || Vue.prototype.$config.currentTermId
+    const termId = store.getters['context/selectedTermId'] || getConfig().currentTermId
     getDepartment(departmentId, termId).then((department: any) => {
       commit('reset', department)
       commit('updateSelectedEvaluationIds')
@@ -168,8 +169,8 @@ const actions = {
   },
   init: ({commit}, departmentId: number) => {
     commit('setDepartment', null)
-    commit('setActiveDepartmentForms', _.reject(Vue.prototype.$config.departmentForms, 'deletedAt'))
-    commit('setAllDepartmentForms', Vue.prototype.$config.departmentForms)
+    commit('setActiveDepartmentForms', _.reject(getConfig().departmentForms, 'deletedAt'))
+    commit('setAllDepartmentForms', getConfig().departmentForms)
     return new Promise<void>(resolve => {
       $_refresh(commit, departmentId)
         .then(commit('updateSelectedEvaluationIds'))

@@ -919,7 +919,7 @@ export default {
     }
 
     this.departmentForms = [{id: null, name: 'Revert'}].concat(this.activeDepartmentForms)
-    this.evaluationTypes = [{id: null, name: 'Revert'}].concat(this.$config.evaluationTypes)
+    this.evaluationTypes = [{id: null, name: 'Revert'}].concat(this.config.evaluationTypes)
 
     this.rules.instructorUid = () => {
       return get(this.pendingInstructor, 'uid') ? true : 'Instructor is required.'}

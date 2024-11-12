@@ -84,7 +84,7 @@
                   <a
                     :id="`term-export-${index}`"
                     download
-                    :href="`${$config.apiBaseUrl}/api/export/${encodeURIComponent(e.s3Path)}`"
+                    :href="`${config.apiBaseUrl}/api/export/${encodeURIComponent(e.s3Path)}`"
                   >
                     <v-icon
                       aria-hidden="false"
@@ -186,7 +186,7 @@ export default {
     },
     showStatus(termExport) {
       const exportLabel = this.$moment(termExport.createdAt).format(this.dateFormat)
-      const term = find(this.$config.availableTerms, {'id': termExport.termId})
+      const term = find(this.config.availableTerms, {'id': termExport.termId})
       if (termExport.status === 'success') {
         this.snackbarOpen(
           `Success! Publication of ${term.name} term export <b>${exportLabel || ''}</b> is complete.`,

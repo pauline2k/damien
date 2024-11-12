@@ -17,7 +17,7 @@
         @change="onChangeTerm"
       >
         <option
-          v-for="term in $config.availableTerms"
+          v-for="term in config.availableTerms"
           :id="`term-option-${term.id}`"
           :key="term.id"
           :value="term.id"
@@ -89,11 +89,11 @@ export default {
   }),
   created() {
     const termId = get(this.$route.query, 'term')
-    if (termId && find(this.$config.availableTerms, {id: termId})) {
+    if (termId && find(this.config.availableTerms, {id: termId})) {
       this.setTerm(termId)
     } else {
       this.$router.push({
-        query: {...this.$route.query, term: this.selectedTermId || this.$config.currentTermId}
+        query: {...this.$route.query, term: this.selectedTermId || this.config.currentTermId}
       })
     }
   },

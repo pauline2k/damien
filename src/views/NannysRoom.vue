@@ -10,12 +10,12 @@
       </h1>
       <v-spacer class="d-flex justify-center"></v-spacer>
       <v-banner
-        v-if="$config.isVueAppDebugMode && $config.easterEggMonastery && $vuetify.theme.dark"
+        v-if="config.isVueAppDebugMode && config.easterEggMonastery && $vuetify.theme.dark"
         shaped
         single-line
         class="pr-4 my-auto"
       >
-        <a :href="$config.easterEggNannysRoom" target="_blank">The Nanny's Room</a>
+        <a :href="config.easterEggNannysRoom" target="_blank">The Nanny's Room</a>
       </v-banner>
     </div>
     <v-container class="px-0 mx-0" fluid>
@@ -382,12 +382,12 @@
           <v-card elevation="2" class="mr-4 mt-4">
             <v-card-title>Automatically Publish</v-card-title>
             <v-card-text>
-              <span v-if="$config.scheduleLochRefresh">
+              <span v-if="config.scheduleLochRefresh">
                 When enabled, publication will run daily at
-                {{ `${String($config.scheduleLochRefresh.hour).padStart(2, '0')}:${String($config.scheduleLochRefresh.minute).padStart(2, '0')}` }}
+                {{ `${String(config.scheduleLochRefresh.hour).padStart(2, '0')}:${String(config.scheduleLochRefresh.minute).padStart(2, '0')}` }}
                 local time, immediately before loch refresh.
               </span>
-              <span v-if="!$config.scheduleLochRefresh">
+              <span v-if="!config.scheduleLochRefresh">
                 Nightly loch refresh must be scheduled in app configs to enable auto-publish.
               </span>
               <v-switch
@@ -396,7 +396,7 @@
                 :aria-label="`Auto-publish is ${autoPublishEnabled ? 'enabled' : 'disabled'}`"
                 color="success"
                 density="compact"
-                :disabled="!$config.scheduleLochRefresh"
+                :disabled="!config.scheduleLochRefresh"
                 hide-details
                 :label="autoPublishEnabled ? 'Enabled' : 'Disabled'"
                 @change="toggleAutoPublishEnabled(autoPublishEnabled)"

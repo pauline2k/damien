@@ -1,9 +1,11 @@
-import Vue from 'vue'
 import {find} from 'lodash'
 import {getServiceAnnouncement} from '@/api/config'
 import {putFocusNextTick} from '@/utils'
 
 const state = {
+  config: {
+
+  },
   currentUser: {
     isAdmin: false,
     isAuthenticated: false
@@ -23,6 +25,7 @@ const state = {
 }
 
 const getters = {
+  config: (state: any): boolean => state.config,
   currentUser: (state: any): boolean => state.currentUser,
   isSelectedTermLocked: (state: any): boolean => state.isSelectedTermLocked,
   loading: (state: any): boolean => state.loading,
@@ -46,12 +49,13 @@ const mutations = {
     putFocusNextTick('page-title')
   },
   loadingStart: (state: any) => (state.loading = true),
+  setConfig: (state: any, config: any) => state.config = config,
   setCurrentUser: (state: any, currentUser: any) => state.currentUser = currentUser,
   setIsSelectedTermLocked: (state: any, isLocked: boolean) => (state.isSelectedTermLocked = isLocked),
   setScreenReaderAlert: (state: any, alert: string) => (state.screenReaderAlert = alert),
   setSelectedTerm: (state: any, termId: string) => {
     return new Promise<void>(resolve => {
-      const term = find(Vue.prototype.$config.availableTerms, {'id': termId || Vue.prototype.$config.currentTermId})
+      const term = find(state.config.availableTerms, {'id': termId || state.config.currentTermId})
       if (term) {
         state.selectedTermId = term.id
         state.selectedTermName = term.name
@@ -87,6 +91,7 @@ const actions = {
     })
   },
   selectTerm: ({ commit }, termId) => commit('setSelectedTerm', termId),
+  setConfig: ({ commit }, config) => commit('setConfig', config),
   setCurrentUser: ({ commit }, currentUser) => commit('setCurrentUser', currentUser),
   setIsSelectedTermLocked: ({ commit }, isLocked: boolean) => commit('setIsSelectedTermLocked', isLocked),
   snackbarClose: ({ commit }) => commit('snackbarClose'),
