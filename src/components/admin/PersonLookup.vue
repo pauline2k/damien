@@ -62,7 +62,7 @@
     </div>
     <div :class="{'col col-2 pl-0': inline}">
       <div
-        v-if="required && !this.suppressValidation && errors && errors[0]"
+        v-if="required && !suppressValidation && errors && errors[0]"
         :id="`${id}-error`"
         class="v-messages error--text px-3 mt-1"
         :class="$vuetify.theme.dark ? 'text--lighten-2' : ''"
@@ -165,6 +165,9 @@ export default {
       this.onSelectResult(suggestion)
     }
   },
+  created() {
+    this.debouncedSearch = debounce(this.executeSearch, 300)
+  },
   methods: {
     executeSearch(snippet) {
       if (snippet) {
@@ -206,9 +209,6 @@ export default {
         }
       }, 300)
     }
-  },
-  created() {
-    this.debouncedSearch = debounce(this.executeSearch, 300)
   }
 }
 </script>

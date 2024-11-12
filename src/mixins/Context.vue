@@ -1,11 +1,12 @@
 <script>
-import store from '@/store'
-import Vue from 'vue'
-import {mapActions, mapGetters} from 'vuex'
+import {useContextStore} from '@/stores/context'
+import {mapActions, mapState} from 'pinia'
+import {nextTick} from 'vue'
+
 export default {
   name: 'Context',
   computed: {
-    ...mapGetters('context', [
+    ...mapState('context', [
       'config',
       'isSelectedTermLocked',
       'loading',
@@ -15,22 +16,26 @@ export default {
       'snackbar'
     ]),
     snackbarShow: {
-      get: () => store.getters['context/snackbarShow'],
-      set: show => store.dispatch(show ? 'context/snackbarOpen' : 'context/snackbarClose')
+      get: () => useContextStore().snackbarShow,
+      set: show => show ? useContextStore().snackbarOpen() : useContextStore().snackbarClose()
     },
     selectedTermId: {
-      get: () => store.getters['context/selectedTermId'],
-      set: termId => store.dispatch('context/selectTerm', {termId: termId})
+      get: () => useContextStore().selectedTermId,
+      set: termId => useContextStore().setSelectedTerm(termId)
     }
   },
   methods: {
-    ...mapActions('context', ['setIsSelectedTermLocked', 'snackbarClose', 'selectTerm']),
+    ...mapActions('context', [
+      'setIsSelectedTermLocked',
+      'snackbarClose',
+      'selectTerm'
+    ]),
     alertScreenReader(message) {
-      store.dispatch('context/alertScreenReader', '')
-      Vue.nextTick(() => store.dispatch('context/alertScreenReader', message))
+      useContextStore().setScreenReaderAlert('')
+      nextTick(() => useContextStore().setScreenReaderAlert(message))
     },
-    reportError: message => store.dispatch('context/snackbarReportError', message),
-    snackbarOpen: (text, color) => store.dispatch('context/snackbarOpen', {text, color})
+    reportError: message => useContextStore().snackbarReportError(message),
+    snackbarOpen: (text, color) => useContextStore().snackbarOpen(text, color)
   }
 }
 </script>

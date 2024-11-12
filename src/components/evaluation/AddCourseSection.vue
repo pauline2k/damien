@@ -128,6 +128,11 @@ export default {
     section: null,
     sectionError: false
   }),
+  computed: {
+    courseNumberReady() {
+      return this.courseNumber && /^\d{5}/.test(this.courseNumber) && (this.rules.notPresent(this.courseNumber) === true)
+    }
+  },
   watch: {
     courseNumber() {
       this.errorMessage = null
@@ -138,11 +143,6 @@ export default {
         this.alertScreenReader('Add course section form is ready.')
         putFocusNextTick('lookup-course-number-input')
       }
-    }
-  },
-  computed: {
-    courseNumberReady() {
-      return this.courseNumber && /^\d{5}/.test(this.courseNumber) && (this.rules.notPresent(this.courseNumber) === true)
     }
   },
   created() {
@@ -184,16 +184,16 @@ export default {
     onSubmit(courseNumber) {
       this.alertScreenReader(`Adding section ${courseNumber}.`)
       this.addSection({
-          sectionId: courseNumber,
-          termId: this.selectedTermId
-        }).then(() => {
+        sectionId: courseNumber,
+        termId: this.selectedTermId
+      }).then(() => {
         this.isAddingSection = false
         this.courseNumber = null
         this.errorMessage = null
         this.section = null
         this.alertScreenReader(`Section ${courseNumber} added.`)
       }, error => this.showErrorDialog(error.response.data.message))
-      .finally(() => this.setDisableControls(false))
+        .finally(() => this.setDisableControls(false))
     }
   }
 }

@@ -426,8 +426,8 @@ import Context from '@/mixins/Context.vue'
 import EditServiceAnnouncement from '@/components/admin/EditServiceAnnouncement'
 import ListManagementSession from '@/mixins/ListManagementSession'
 import SortableTableHeader from '@/components/util/SortableTableHeader'
-import store from '@/store'
 import Util from '@/mixins/Util'
+import {useContextStore} from '@/stores/context'
 
 export default {
   name: 'NannysRoom',
@@ -465,10 +465,11 @@ export default {
     }
   }),
   created() {
-    store.dispatch('context/loadingStart')
+    const contextStore = useContextStore()
+    contextStore.loadingStart()
     this.resetNewInstructor()
     this.init().then(() => {
-      store.dispatch('context/loadingComplete', {pageTitle: 'List Management'})
+      contextStore.loadingComplete('List Management')
       putFocusNextTick('page-title')
     })
     getAutoPublishStatus().then(data => {

@@ -118,8 +118,8 @@ import Context from '@/mixins/Context'
 import DepartmentEditSession from '@/mixins/DepartmentEditSession'
 import UpdateEvaluations from '@/components/evaluation/UpdateEvaluations'
 import Util from '@/mixins/Util'
-import store from '@/store'
 import {toFormatFromISO} from '@/lib/utils'
+import {useContextStore} from '@/stores/context'
 
 export default {
   name: 'EvaluationActions',
@@ -146,6 +146,15 @@ export default {
     markAsDoneWarning: undefined,
     midtermFormAvailable: false
   }),
+  computed: {
+    allowEdits() {
+      const currentUser = useContextStore().currentUser
+      return currentUser.isAdmin || !this.isSelectedTermLocked
+    },
+    selectedEvaluations() {
+      return _filter(this.evaluations, e => this.selectedEvaluationIds.includes(e.id))
+    }
+  },
   created() {
     this.courseActions = {
       // TO DO: Clean up dictionary keys and statuses
@@ -195,15 +204,6 @@ export default {
         key: 'edit',
         text: 'Edit'
       }
-    }
-  },
-  computed: {
-    allowEdits() {
-      const currentUser = store.getters['context/currentUser']
-      return currentUser.isAdmin || !this.isSelectedTermLocked
-    },
-    selectedEvaluations() {
-      return _filter(this.evaluations, e => this.selectedEvaluationIds.includes(e.id))
     }
   },
   methods: {
@@ -316,9 +316,7 @@ export default {
       return fields
     },
     isInvalidAction(action) {
-      const uniqueStatuses = uniq(this.evaluations
-                  .filter(e => this.selectedEvaluationIds.includes(e.id))
-                  .map(e => e.status))
+      const uniqueStatuses = uniq(this.evaluations.filter(e => this.selectedEvaluationIds.includes(e.id)).map(e => e.status))
       return (uniqueStatuses.length === 1 && uniqueStatuses[0] === action.status)
     },
     reset() {

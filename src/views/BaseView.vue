@@ -1,5 +1,5 @@
 <template>
-  <v-app :style="{background: this.$vuetify.theme.dark ? this.$vuetify.theme.themes.dark.background : this.$vuetify.theme.themes.light.background}">
+  <v-app :style="{background: $vuetify.theme.dark ? $vuetify.theme.themes.dark.background : $vuetify.theme.themes.light.background}">
     <a
       id="skip-to-content-link"
       href="#content"
@@ -133,83 +133,83 @@
 </template>
 
 <script>
-  import {getCasLogoutUrl} from '@/api/auth'
-  import {map, noop, size} from 'lodash'
-  import Context from '@/mixins/Context'
-  import DarkModeIcon from '@/assets/lightbulb-outline.svg'
-  import ErrorIcon from '@/assets/exclamation-circle-solid.svg'
-  import Footer from '@/components/util/Footer'
-  import GroupIcon from '@/assets/account-group.svg'
-  import ListIcon from '@/assets/playlist-edit.svg'
-  import Snackbar from '@/components/util/Snackbar'
-  import Spinner from '@/components/util/Spinner'
-  import StatusIcon from '@/assets/list-status.svg'
-  import Util from '@/mixins/Util'
-  import store from '@/store'
+import {getCasLogoutUrl} from '@/api/auth'
+import {map, noop, size} from 'lodash'
+import Context from '@/mixins/Context'
+import DamienFooter from '@/components/util/DamienFooter'
+import DarkModeIcon from '@/assets/lightbulb-outline.svg'
+import ErrorIcon from '@/assets/exclamation-circle-solid.svg'
+import GroupIcon from '@/assets/account-group.svg'
+import ListIcon from '@/assets/playlist-edit.svg'
+import Snackbar from '@/components/util/Snackbar'
+import Spinner from '@/components/util/Spinner'
+import StatusIcon from '@/assets/list-status.svg'
+import Util from '@/mixins/Util'
+import {useContextStore} from '@/stores/context'
 
-  export default {
-    name: 'BaseView',
-    components: {
-      DarkModeIcon,
-      ErrorIcon,
-      Footer,
-      GroupIcon,
-      ListIcon,
-      Snackbar,
-      Spinner,
-      StatusIcon
-     },
-    mixins: [Context, Util],
-    data: () => ({
-      navItems: undefined,
-    }),
-    computed: {
-      currentUser() {
-        return store.getters['context/currentUser']
-      }
-    },
-    created() {
-      this.prefersColorScheme()
-      if (this.currentUser.isAdmin) {
-        this.navItems = [
-          { title: 'Status Board', icon: StatusIcon, path: '/status' },
-          { title: 'Publish', icon: ErrorIcon, path: '/publish' },
-          { title: 'Group Management', icon: GroupIcon, path: '/departments' },
-          { title: 'List Management', icon: ListIcon, path: '/lists' }
-        ]
-      } else if (size(this.currentUser.departments)) {
-        this.navItems = map(this.currentUser.departments, department => {
-          const firstInitial = department.name.charAt(0).toLowerCase()
-          return {
-            title: department.name,
-            icon: `mdi-alpha-${firstInitial}-circle`,
-            path: `/department/${department.id}`
-          }
-        })
-      }
-    },
-    methods: {
-      logOut() {
-        this.alertScreenReader('Logging out')
-        getCasLogoutUrl().then(data => window.location.href = data.casLogoutUrl)
-      },
-      prefersColorScheme() {
-        if (window.localStorage.getItem('prefersDarkMode')) {
-          this.$vuetify.theme.dark = window.localStorage.getItem('prefersDarkMode') === 'true'
-        } else {
-          this.$vuetify.theme.dark = window.matchMedia('(prefers-color-scheme: dark)').matches
+export default {
+  name: 'BaseView',
+  components: {
+    DamienFooter,
+    DarkModeIcon,
+    ErrorIcon,
+    GroupIcon,
+    ListIcon,
+    Snackbar,
+    Spinner,
+    StatusIcon
+  },
+  mixins: [Context, Util],
+  data: () => ({
+    navItems: undefined,
+  }),
+  computed: {
+    currentUser() {
+      return useContextStore().currentUser()
+    }
+  },
+  created() {
+    this.prefersColorScheme()
+    if (this.currentUser.isAdmin) {
+      this.navItems = [
+        {title: 'Status Board', icon: StatusIcon, path: '/status'},
+        {title: 'Publish', icon: ErrorIcon, path: '/publish'},
+        {title: 'Group Management', icon: GroupIcon, path: '/departments'},
+        {title: 'List Management', icon: ListIcon, path: '/lists'}
+      ]
+    } else if (size(this.currentUser.departments)) {
+      this.navItems = map(this.currentUser.departments, department => {
+        const firstInitial = department.name.charAt(0).toLowerCase()
+        return {
+          title: department.name,
+          icon: `mdi-alpha-${firstInitial}-circle`,
+          path: `/department/${department.id}`
         }
-      },
-      size,
-      toggleColorScheme() {
-        this.$vuetify.theme.dark = !this.$vuetify.theme.dark
-        window.localStorage.setItem('prefersDarkMode', this.$vuetify.theme.dark)
-      },
-      toRoute(path) {
-        this.$router.push({ path }, noop)
+      })
+    }
+  },
+  methods: {
+    logOut() {
+      this.alertScreenReader('Logging out')
+      getCasLogoutUrl().then(data => window.location.href = data.casLogoutUrl)
+    },
+    prefersColorScheme() {
+      if (window.localStorage.getItem('prefersDarkMode')) {
+        this.$vuetify.theme.dark = window.localStorage.getItem('prefersDarkMode') === 'true'
+      } else {
+        this.$vuetify.theme.dark = window.matchMedia('(prefers-color-scheme: dark)').matches
       }
+    },
+    size,
+    toggleColorScheme() {
+      this.$vuetify.theme.dark = !this.$vuetify.theme.dark
+      window.localStorage.setItem('prefersDarkMode', this.$vuetify.theme.dark)
+    },
+    toRoute(path) {
+      this.$router.push({path}, noop)
     }
   }
+}
 </script>
 
 <style scoped>

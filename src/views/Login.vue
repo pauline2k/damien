@@ -45,11 +45,11 @@ import Snackbar from '@/components/util/Snackbar'
 
 export default {
   name: 'Login',
-  mixins: [Context],
   components: {
     DevAuth,
     Snackbar
   },
+  mixins: [Context],
   created() {
     putFocusNextTick('page-title')
     const error = get(this.$route, 'query.error')

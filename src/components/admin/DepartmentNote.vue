@@ -116,8 +116,8 @@ import DepartmentEditSession from '@/mixins/DepartmentEditSession'
 
 export default {
   name: 'DepartmentNote',
-  mixins: [Context, DepartmentEditSession],
   components: {ConfirmDialog},
+  mixins: [Context, DepartmentEditSession],
   data: () => ({
     isConfirming: false,
     isEditable: false,

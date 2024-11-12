@@ -9,137 +9,137 @@ import NannysRoom from '@/views/NannysRoom.vue'
 import NotFound from '@/views/NotFound.vue'
 import StatusBoard from '@/views/StatusBoard.vue'
 import TheMonastery from '@/views/TheMonastery.vue'
-import Router from 'vue-router'
-import Vue from 'vue'
-import store from '@/store'
+import {createRouter, createWebHistory, RouteRecordRaw} from 'vue-router'
+import {useContextStore} from '@/stores/context'
 
-Vue.use(Router)
-
-const router = new Router({
-  mode: 'history',
-  routes: [
-    {
-      path: '/',
-      redirect: '/home'
-    },
-    {
-      path: '/login',
-      component: Login,
-      beforeEnter: (to: any, from: any, next: any) => {
-        const currentUser = store.getters['context/currentUser']
-        if (get(currentUser, 'isAuthenticated')) {
-          if (trim(to.query.redirect)) {
-            next(to.query.redirect)
-          } else {
-            next('/home')
-          }
+const routes:RouteRecordRaw[] = [
+  {
+    path: '/',
+    redirect: '/home'
+  },
+  {
+    path: '/login',
+    component: Login,
+    beforeEnter: (to: any, from: any, next: any) => {
+      const currentUser = useContextStore().currentUser
+      if (get(currentUser, 'isAuthenticated')) {
+        if (trim(to.query.redirect)) {
+          next(to.query.redirect)
         } else {
-          next()
+          next('/home')
         }
-      },
-      meta: {
-        title: 'Welcome'
+      } else {
+        next()
       }
     },
-    {
-      path: '/',
-      component: BaseView,
-      beforeEnter: auth.requiresAuthenticated,
-      children: [
-        {
-          beforeEnter: (to: any, from: any, next: any) => {
-            const currentUser = store.getters['context/currentUser']
-            if (currentUser.isAdmin) {
-              next('/status')
-            } else if (size(currentUser.departments)) {
-              next(`/department/${currentUser.departments[0].id}`)
-            } else {
-              next({
-                path: '/error',
-                query: {
-                  m: 'Sorry, we could not find any departments that you belong to.'
-                }
-              })
-            }
-          },
-          path: '/home',
-          name: 'home'
-        },
-        {
-          path: '/department/:departmentId',
-          component: Department,
-          beforeEnter: auth.requiresDepartmentMembership,
-          meta: {
-            title: 'Department'
-          }
-        }
-      ]
-        },
-    {
-      path: '/',
-      component: BaseView,
-      beforeEnter: auth.requiresAdmin,
-      children: [
-        {
-          path: '/departments',
-          component: TheMonastery,
-          meta: {
-            title: 'Group Management'
-          }
-        },
-        {
-          path: '/publish',
-            component: Megiddo,
-          meta: {
-            title: 'Publish'
-          }
-        },
-        {
-          path: '/lists',
-          component: NannysRoom,
-          meta: {
-            title: 'List Management'
-          }
-        },
-        {
-          path: '/status',
-          component: StatusBoard,
-          meta: {
-            title: 'Status Board'
-          }
-        }
-      ]
-    },
-    {
-      path: '/',
-      component: BaseView,
-      children: [
-        {
-          path: '/404',
-          component: NotFound,
-          meta: {
-            title: 'Page not found'
-          }
-        },
-        {
-          path: '/error',
-          component: Error,
-          meta: {
-            title: 'Error'
-          }
-        },
-        {
-          path: '*',
-          redirect: '/404'
-        }
-      ]
+    meta: {
+      title: 'Welcome'
     }
-  ]
+  },
+  {
+    path: '/',
+    component: BaseView,
+    beforeEnter: (to: any, from: any, next: any) => {
+      const currentUser = useContextStore().currentUser
+      if (currentUser.isAdmin) {
+        next('/status')
+      } else if (size(currentUser.departments)) {
+        next(`/department/${currentUser.departments[0].id}`)
+      } else {
+        next({
+          path: '/error',
+          query: {
+            m: 'Sorry, we could not find any departments that you belong to.'
+          }
+        })
+      }
+    },
+    children: [
+      {
+        // TODO: Remove this route. There is no home view.
+        component: Error,
+        path: '/home',
+        name: 'home'
+      },
+      {
+        path: '/department/:departmentId',
+        component: Department,
+        beforeEnter: auth.requiresDepartmentMembership,
+        meta: {
+          title: 'Department'
+        }
+      }
+    ]
+  },
+  {
+    path: '/',
+    component: BaseView,
+    beforeEnter: auth.requiresAdmin,
+    children: [
+      {
+        path: '/departments',
+        component: TheMonastery,
+        meta: {
+          title: 'Group Management'
+        }
+      },
+      {
+        path: '/publish',
+          component: Megiddo,
+        meta: {
+          title: 'Publish'
+        }
+      },
+      {
+        path: '/lists',
+        component: NannysRoom,
+        meta: {
+          title: 'List Management'
+        }
+      },
+      {
+        path: '/status',
+        component: StatusBoard,
+        meta: {
+          title: 'Status Board'
+        }
+      }
+    ]
+  },
+  {
+    path: '/',
+    component: BaseView,
+    children: [
+      {
+        path: '/404',
+        component: NotFound,
+        meta: {
+          title: 'Page not found'
+        }
+      },
+      {
+        path: '/error',
+        component: Error,
+        meta: {
+          title: 'Error'
+        }
+      },
+      {
+        path: '*',
+        redirect: '/404'
+      }
+    ]
+  }
+]
+
+const router = createRouter({
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes
 })
 
 router.beforeEach((to: any, from: any, next: any) => {
   const redirect = trim(to.query.redirect)
-  const currentUser = store.getters['context/currentUser']
+  const currentUser = useContextStore().currentUser
   if (currentUser.isAuthenticated && redirect) {
     next(redirect)
   } else {

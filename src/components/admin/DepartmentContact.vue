@@ -2,7 +2,7 @@
   <v-expansion-panel
     :id="`department-contact-${index}`"
     class="text-condensed my-1"
-    :class="{'theme--light v-sheet--outlined': isEditing && !this.$vuetify.theme.dark, 'theme--dark v-sheet--outlined': isEditing && this.$vuetify.theme.dark}"
+    :class="{'theme--light v-sheet--outlined': isEditing && !$vuetify.theme.dark, 'theme--dark v-sheet--outlined': isEditing && $vuetify.theme.dark}"
   >
     <v-expansion-panel-header class="py-1 rounded-b-0 height-unset">
       <strong :id="`dept-contact-${contact.id}-name`">{{ fullName }}</strong>
@@ -123,7 +123,7 @@ import ConfirmDialog from '@/components/util/ConfirmDialog'
 import Context from '@/mixins/Context.vue'
 import DepartmentEditSession from '@/mixins/DepartmentEditSession'
 import EditDepartmentContact from '@/components/admin/EditDepartmentContact'
-import store from '@/store'
+import {useContextStore} from '@/stores/context'
 
 export default {
   name: 'DepartmentContact',
@@ -147,22 +147,22 @@ export default {
     isConfirming: false,
     isEditing: false
   }),
-  watch: {
-    isExpanded(isExpanded) {
-      if (!isExpanded) {
-        this.isEditing = false
-      }
-    }
-  },
   computed: {
     currentUser() {
-      return store.getters['context/currentUser']
+      return useContextStore().currentUser
     },
     departmentForms() {
       return sortBy(this.contact.departmentForms, 'name')
     },
     fullName() {
       return `${this.contact.firstName} ${this.contact.lastName}`
+    }
+  },
+  watch: {
+    isExpanded(isExpanded) {
+      if (!isExpanded) {
+        this.isEditing = false
+      }
     }
   },
   methods: {

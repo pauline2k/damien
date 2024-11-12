@@ -26,7 +26,7 @@ ENHANCEMENTS, OR MODIFICATIONS.
 # Development environment.
 DEBUG = True
 
-INDEX_HTML = 'public/index.html'
+INDEX_HTML = 'index.html'
 
 SCHEDULE_LOCH_REFRESH = None
 

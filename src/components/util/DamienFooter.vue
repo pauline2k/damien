@@ -37,11 +37,19 @@
 </template>
 
 <script>
-  import Context from '@/mixins/Context'
-  export default {
-    name: 'Footer',
-    mixins: [Context]
+import Context from '@/mixins/Context'
+import {useContextStore} from '@/stores/context'
+
+export default {
+  name: 'DamienFooter',
+  mixins: [Context],
+  data: () => ({
+    config: undefined
+  }),
+  created() {
+    this.config = useContextStore().config
   }
+}
 </script>
 
 <style scoped>

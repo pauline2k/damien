@@ -6,14 +6,8 @@
     size="64"
     width="8"
     color="tertiary"
-  ></v-progress-circular>
+  />
 </template>
-
-<script>
-  export default {
-    name: 'Spinner'
-  }
-</script>
 
 <style scoped>
   .spinner {

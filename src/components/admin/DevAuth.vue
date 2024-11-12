@@ -13,7 +13,7 @@
       placeholder="UID"
       :rules="[v => !!v || 'Required']"
       @keyup.enter="logIn"
-    ></v-text-field>
+    />
     <v-text-field
       id="dev-auth-password"
       v-model="password"
@@ -25,7 +25,7 @@
       :rules="[v => !!v || 'Required']"
       type="password"
       @keyup.enter="logIn"
-    ></v-text-field>
+    />
     <v-btn
       id="btn-dev-auth-login"
       block
@@ -51,10 +51,10 @@ import Damien from '../../assets/damien.svg'
 
 export default {
   name: 'DevAuth',
-  mixins: [Context],
   components: {
     Damien
   },
+  mixins: [Context],
   data: () => ({
     uid: null,
     password: null

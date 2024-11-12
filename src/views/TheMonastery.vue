@@ -122,13 +122,13 @@ import {getDepartmentsEnrolled} from '@/api/departments'
 import {isEmpty, size} from 'lodash'
 import BooleanIcon from '@/components/util/BooleanIcon'
 import Context from '@/mixins/Context'
-import store from '@/store'
 import Util from '@/mixins/Util'
+import {useContextStore} from '@/stores/context'
 
 export default {
   name: 'TheMonastery',
-  mixins: [Context, Util],
   components: {BooleanIcon},
+  mixins: [Context, Util],
   data: () => ({
     departments: [],
     headers: [
@@ -143,10 +143,11 @@ export default {
     hoveredDept: undefined
   }),
   created() {
-    store.dispatch('context/loadingStart')
+    const contextStore = useContextStore()
+    contextStore.loadingStart()
     getDepartmentsEnrolled(true, true).then(data => {
       this.departments = data
-      store.dispatch('context/loadingComplete', {pageTitle: 'Group Management'})
+      contextStore.loadingComplete('Group Management')
     })
   },
   methods: {

@@ -160,7 +160,7 @@ import EvaluationTable from '@/components/evaluation/EvaluationTable'
 import NotificationForm from '@/components/admin/NotificationForm'
 import TermSelect from '@/components/util/TermSelect'
 import Util from '@/mixins/Util.vue'
-import store from '@/store'
+import {useContextStore} from '@/stores/context'
 
 export default {
   name: 'Department',
@@ -181,7 +181,7 @@ export default {
   }),
   computed: {
     currentUser() {
-      return store.getters['context/currentUser']
+      return useContextStore().currentUser
     },
     notificationRecipients() {
       return {
@@ -228,11 +228,12 @@ export default {
       putFocusNextTick('add-dept-contact-btn')
     },
     refresh() {
-      store.dispatch('context/loadingStart')
+      const contextStore = useContextStore()
+      contextStore.loadingStart()
       this.alertScreenReader(`Loading ${this.selectedTermName}`)
       const departmentId = get(this.$route, 'params.departmentId')
       this.init(departmentId).then(department => {
-        store.dispatch('context/loadingComplete', {pageTitle: `${department.deptName} ${this.selectedTermName}`})
+        contextStore.loadingComplete(`${department.deptName} ${this.selectedTermName}`)
       })
     }
   }

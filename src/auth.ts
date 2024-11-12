@@ -1,5 +1,5 @@
 import {get, some, toInteger} from 'lodash'
-import store from '@/store'
+import {useContextStore} from '@/stores/context'
 
 const $_goToLogin = (to: any, next: any) => {
   next({
@@ -13,7 +13,7 @@ const $_goToLogin = (to: any, next: any) => {
 
 export default {
   requiresAdmin: (to: any, from: any, next: any) => {
-    const currentUser = store.getters['context/currentUser']
+    const currentUser = useContextStore().currentUser
     if (currentUser.isAuthenticated) {
       if (currentUser.isAdmin) {
         next()
@@ -25,7 +25,7 @@ export default {
     }
   },
   requiresAuthenticated: (to: any, from: any, next: any) => {
-    const currentUser = store.getters['context/currentUser']
+    const currentUser = useContextStore().currentUser
     if (currentUser.isAuthenticated) {
       next()
     } else {
@@ -33,7 +33,7 @@ export default {
     }
   },
   requiresDepartmentMembership: (to: any, from: any, next: any) => {
-    const currentUser = store.getters['context/currentUser']
+    const currentUser = useContextStore().currentUser
     const departmentId = get(to, 'params.departmentId')
     if (currentUser.isAdmin || some(currentUser.departments, department => {
       return department.id === toInteger(departmentId)

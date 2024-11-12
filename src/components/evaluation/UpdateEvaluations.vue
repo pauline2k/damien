@@ -116,8 +116,8 @@
               </tr>
             </thead>
             <tbody>
-              <template v-for="(evaluation, index) in selectedEvaluations">
-                <tr :key="index">
+              <template v-for="(evaluation, index) in selectedEvaluations" :key="index">
+                <tr>
                   <td :id="`preview-${index}-status`" class="bulk-action-status-col pr-1">
                     <div v-if="evaluation.status" :class="{'text-decoration-line-through accent--text': action === 'Edit' && showSelectedStatus(evaluation)}">
                       {{ getStatusText(evaluation.status) }}
@@ -260,7 +260,7 @@ import Context from '@/mixins/Context'
 import DepartmentEditSession from '@/mixins/DepartmentEditSession'
 import PersonLookup from '@/components/admin/PersonLookup'
 import Util from '@/mixins/Util'
-import store from '@/store'
+import {useContextStore} from '@/stores/context'
 
 export default {
   name: 'UpdateEvaluations',
@@ -342,32 +342,15 @@ export default {
     selectedInstructor: undefined,
     selectedStartDate: undefined
   }),
-  watch: {
-    midtermFormEnabled(midtermFormEnabled) {
-      if (this.midtermFormAvailable) {
-        this.isInstructorRequired = !midtermFormEnabled
-      }
-    },
-    isUpdating(isUpdating) {
-      this.model = isUpdating
-    },
-    model() {
-      this.reset()
-    }
-  },
-  created() {
-    this.evaluationTypes = [{id: null, name: 'Default'}].concat(this.config.evaluationTypes)
-    this.model = this.isUpdating
-  },
   computed: {
     allowEdits() {
-      const currentUser = store.getters['context/currentUser']
+      const currentUser = useContextStore().currentUser
       return currentUser.isAdmin || !this.isSelectedTermLocked
     },
     disableApply() {
-      return this.disableControls
-          || !this.allowEdits
-          || (this.isInstructorRequired && !get(this.selectedInstructor, 'uid'))
+      return this.disableControls ||
+        !this.allowEdits ||
+        (this.isInstructorRequired && !get(this.selectedInstructor, 'uid'))
     },
     selectedDepartmentFormName() {
       return get(find(this.config.departmentForms, df => df.id === this.selectedDepartmentForm), 'name')
@@ -391,6 +374,23 @@ export default {
         'min': max(map(this.selectedEvaluations, e => e.meetingDates.start))
       }
     }
+  },
+  watch: {
+    midtermFormEnabled(midtermFormEnabled) {
+      if (this.midtermFormAvailable) {
+        this.isInstructorRequired = !midtermFormEnabled
+      }
+    },
+    isUpdating(isUpdating) {
+      this.model = isUpdating
+    },
+    model() {
+      this.reset()
+    }
+  },
+  created() {
+    this.evaluationTypes = [{id: null, name: 'Default'}].concat(this.config.evaluationTypes)
+    this.model = this.isUpdating
   },
   methods: {
     endsWith,

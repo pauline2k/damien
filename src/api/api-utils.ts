@@ -1,9 +1,9 @@
-import store from '@/store'
+import {useContextStore} from '@/stores/context'
 
 export function getApiBaseUrl() {
-  return store.getters['context/config'].apiBaseUrl
+  return useContextStore().config.apiBaseUrl
 }
 
 export function getConfig() {
-  return store.getters['context/config']
+  return useContextStore().config
 }
