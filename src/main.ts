@@ -1,70 +1,39 @@
-import {axiosErrorHandler} from '@/utils'
-import {get, includes, trim} from 'lodash'
 import App from '@/App.vue'
 import axios from 'axios'
-import linkify from 'vue-linkify'
+import axiosPlugin from '@/plugins/axios'
+import linkifyHtml from 'linkify-html'
 import router from '@/router'
-import store from '@/store'
-import Vue from 'vue'
 import vuetify from '@/plugins/vuetify'
+import {appErrorHandler, initializeAxios} from '@/utils'
+import {createApp} from 'vue'
+import {createPinia} from 'pinia'
+import {setupCalendar} from 'v-calendar'
+import {trim} from 'lodash'
+import {useContextStore} from '@/stores/context'
 
-import VCalendar from 'v-calendar'
-Vue.use(VCalendar, {componentPrefix: 'c'})
+const apiBaseUrl: string = import.meta.env.VITE_APP_API_BASE_URL
+const isVueAppDebugMode: boolean = trim(import.meta.env.VITE_APP_DEBUG).toLowerCase() === 'true'
 
-Vue.directive('linkified', linkify)
-
-const apiBaseUrl = process.env.VUE_APP_API_BASE_URL
-
-// Axios
-axios.defaults.withCredentials = true
-axios.interceptors.response.use(
-  response => response.headers['content-type'] === 'application/json' ? response.data : response,
-  error => {
-    const errorStatus = get(error, 'response.status')
-    if (includes([401, 403], errorStatus)) {
-      // Refresh user in case his/her session expired.
-      return axios.get(`${apiBaseUrl}/api/user/my_profile`).then(data => {
-        store.dispatch('context/setCurrentUser', data)
-        axiosErrorHandler(error)
-        return Promise.reject(error)
-      })
-    } else {
-      const errorUrl = get(error, 'response.config.url')
-      // 400 and 404 from the section or department evaluations API should be handled by the individual component.
-      if (!(errorUrl && (errorUrl.includes('/api/section') || (errorUrl.includes('/api/department') && errorUrl.includes('/evaluations'))))) {
-        axiosErrorHandler(error)
-      }
-      return Promise.reject(error)
-    }
-  }
-)
-
-// Vue config
-Vue.config.productionTip = false
-Vue.config.errorHandler = function(error, vm, info) {
-  // eslint-disable-next-line no-console
-  console.error(error || info)
-  router.push({
-    path: '/error',
-    query: {
-      m: get(error, 'message') || info
-    }
+const app = createApp(App)
+  .use(axiosPlugin, {baseUrl: apiBaseUrl})
+  .use(createPinia())
+  .use(setupCalendar, {})
+  .use(vuetify)
+  .directive('linkified', {
+    // See https://github.com/Hypercontext/linkifyjs?tab=readme-ov-file#installation-and-usage
+    beforeMount: el => el.innerHTML = linkifyHtml(el.innerHTML, {defaultProtocol: 'https', target: '_blank'})
   })
-}
+
+app.config.errorHandler = appErrorHandler
+
+initializeAxios(axios)
 
 axios.get(`${apiBaseUrl}/api/user/my_profile`).then(data => {
-  store.dispatch('context/setCurrentUser', data)
+  useContextStore().setCurrentUser(data)
 
   axios.get(`${apiBaseUrl}/api/config`).then(data => {
-    const isVueAppDebugMode = trim(process.env.VUE_APP_DEBUG).toLowerCase() === 'true'
     const config = {...data, ...{apiBaseUrl, isVueAppDebugMode}}
-    store.dispatch('context/setConfig', config)
-
-    new Vue({
-      router,
-      store,
-      vuetify,
-      render: h => h(App),
-    }).$mount('#app')
+    useContextStore().setConfig(config)
+    app.use(router).mount('#app')
   })
 })

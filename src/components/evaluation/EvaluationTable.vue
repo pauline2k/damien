@@ -555,12 +555,12 @@ import EvaluationError from '@/components/evaluation/EvaluationError'
 import PersonLookup from '@/components/admin/PersonLookup'
 import SortableTableHeader from '@/components/util/SortableTableHeader'
 import Util from '@/mixins/Util'
-import store from '@/store'
 import {toFormatFromISO, toFormatFromJsDate, toLocaleFromISO} from '@/lib/utils'
+import {nextTick} from 'vue'
+import {useContextStore} from '@/stores/context'
 
 export default {
   name: 'EvaluationTable',
-  mixins: [Context, DepartmentEditSession, Util],
   components: {
     AddCourseSection,
     ConfirmDialog,
@@ -569,6 +569,7 @@ export default {
     PersonLookup,
     SortableTableHeader
   },
+  mixins: [Context, DepartmentEditSession, Util],
   props: {
     readonly: {
       type: Boolean,
@@ -619,7 +620,7 @@ export default {
       return !!(size(this.selectedEvaluationIds) && size(this.selectedEvaluationIds) === size(this.evaluations))
     },
     allowEdits() {
-      const currentUser = store.getters['context/currentUser']
+      const currentUser = useContextStore().currentUser
       return currentUser.isAdmin || !this.isSelectedTermLocked
     },
     rowValid() {
@@ -640,6 +641,19 @@ export default {
     someEvaluationsSelected() {
       return !!(size(this.selectedEvaluationIds) && size(this.selectedEvaluationIds) < size(this.evaluations))
     }
+  },
+  created() {
+    if (this.readonly) {
+      this.evaluationHeaders = [{class: 'text-start text-nowrap pl-3', text: 'Department', value: 'department.id'}].concat(this.evaluationHeaders)
+    } else if (this.allowEdits) {
+      this.evaluationHeaders = [{class: 'text-start text-nowrap pl-1', text: 'Select', value: 'isSelected', width: '30px'}].concat(this.evaluationHeaders)
+    }
+
+    this.departmentForms = [{id: null, name: 'Revert'}].concat(this.activeDepartmentForms)
+    this.evaluationTypes = [{id: null, name: 'Revert'}].concat(this.config.evaluationTypes)
+
+    this.rules.instructorUid = () => {
+      return get(this.pendingInstructor, 'uid') ? true : 'Instructor is required.'}
   },
   methods: {
     afterEditEvaluation(evaluation) {
@@ -811,7 +825,7 @@ export default {
     },
     onSort() {
       const selectedEvaluationIds = cloneDeep(this.selectedEvaluationIds)
-      this.$nextTick(() => {
+      nextTick(() => {
         this.setSelectedEvaluations(selectedEvaluationIds)
       })
     },
@@ -861,9 +875,9 @@ export default {
       const filter = this.filterTypes[type]
       filter.enabled = !filter.enabled
       this.filterSelectedEvaluations({
-          searchFilterResults: this.searchFilterResults,
-          enabledStatuses: this.selectedFilterTypes
-        })
+        searchFilterResults: this.searchFilterResults,
+        enabledStatuses: this.selectedFilterTypes
+      })
       if (some(this.evaluations, {'id': this.editRowId, 'status': type})) {
         this.editRowId = null
       }
@@ -916,19 +930,6 @@ export default {
       }
       return this.evaluations.filter(e => e.status === type).length
     }
-  },
-  created() {
-    if (this.readonly) {
-      this.evaluationHeaders = [{class: 'text-start text-nowrap pl-3', text: 'Department', value: 'department.id'}].concat(this.evaluationHeaders)
-    } else if (this.allowEdits) {
-      this.evaluationHeaders = [{class: 'text-start text-nowrap pl-1', text: 'Select', value: 'isSelected', width: '30px'}].concat(this.evaluationHeaders)
-    }
-
-    this.departmentForms = [{id: null, name: 'Revert'}].concat(this.activeDepartmentForms)
-    this.evaluationTypes = [{id: null, name: 'Revert'}].concat(this.config.evaluationTypes)
-
-    this.rules.instructorUid = () => {
-      return get(this.pendingInstructor, 'uid') ? true : 'Instructor is required.'}
   }
 }
 </script>

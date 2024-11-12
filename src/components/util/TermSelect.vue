@@ -12,7 +12,7 @@
         id="select-term"
         v-model="selectedTermId"
         class="native-select-override select-term my-2"
-        :class="this.$vuetify.theme.dark ? 'dark' : 'light'"
+        :class="$vuetify.theme.dark ? 'dark' : 'light'"
         :disabled="loading"
         @change="onChangeTerm"
       >

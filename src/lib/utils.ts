@@ -1,5 +1,5 @@
 import {DateTime} from 'luxon'
-import Vue from 'vue'
+import {nextTick} from 'vue'
 
 export function putFocusNextTick(id, cssSelector?) {
   const callable = () => {
@@ -8,10 +8,25 @@ export function putFocusNextTick(id, cssSelector?) {
       el && el.focus()
       return !!el
   }
-  Vue.prototype.$nextTick(() => {
+  nextTick(() => {
     let counter = 0
     const job = setInterval(() => (callable() || ++counter > 3) && clearInterval(job), 500)
   })
+}
+
+// eslint-disable-next-line no-undef
+export function scrollTo(anchor: string, scrollBlock?: ScrollLogicalPosition) {
+  nextTick(() => {
+    const element = document.getElementById(anchor)
+    if (element) {
+      element.classList.add('scroll-margins')
+      element.scrollIntoView({behavior: 'smooth', block: scrollBlock || 'center'})
+    }
+  })
+}
+
+export function scrollToTop() {
+  scrollTo('content', 'start')
 }
 
 export function toFormatFromJsDate(jsDate: Date, format: string): string {

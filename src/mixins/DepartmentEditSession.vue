@@ -1,7 +1,7 @@
 <script>
 import {DateTime} from 'luxon'
 import {filter, get, includes, intersectionWith, some} from 'lodash'
-import {mapActions, mapGetters} from 'vuex'
+import {mapActions, mapState} from 'pinia'
 
 const $_isInvalid = (e, evaluationIds, fields) => {
   return includes(evaluationIds, e.id) && !(
@@ -17,7 +17,7 @@ export default {
     NUMBER_OF_THE_BEAST: '666'
   }),
   computed: {
-    ...mapGetters('departmentEditSession', [
+    ...mapState('department', [
       'activeDepartmentForms',
       'allDepartmentForms',
       'contacts',
@@ -53,8 +53,8 @@ export default {
       }
       const duplicatingEvaluations = filter(this.evaluations, e => includes(evaluationIds, e.id))
       const conflicts = intersectionWith(duplicatingEvaluations, this.evaluations, (dupe, e) => {
-        return e.courseNumber === dupe.courseNumber
-            && get(e.instructor, 'uid', NaN) === (fields.instructorUid || get(dupe.instructor, 'uid', NaN))
+        return e.courseNumber === dupe.courseNumber &&
+          get(e.instructor, 'uid', NaN) === (fields.instructorUid || get(dupe.instructor, 'uid', NaN))
       })
       if (conflicts.length) {
         this.showErrorDialog('Cannot create identical duplicate evaluations.')
@@ -84,7 +84,7 @@ export default {
       }
       return warningMessage
     },
-    ...mapActions('departmentEditSession', [
+    ...mapActions('department', [
       'addSection',
       'deleteContact',
       'deselectAllEvaluations',

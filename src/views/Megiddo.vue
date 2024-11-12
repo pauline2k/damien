@@ -120,10 +120,11 @@ import {putFocusNextTick} from '@/lib/utils'
 import Context from '@/mixins/Context.vue'
 import DepartmentEditSession from '@/mixins/DepartmentEditSession'
 import EvaluationTable from '@/components/evaluation/EvaluationTable'
-import store from '@/store'
 import TermSelect from '@/components/util/TermSelect'
 import Util from '@/mixins/Util'
 import {toLocaleFromISO} from '@/lib/utils'
+import {nextTick} from 'vue'
+import {useContextStore} from '@/stores/context'
 
 export default {
   name: 'Megiddo',
@@ -161,13 +162,14 @@ export default {
       })
     },
     refresh() {
-      store.dispatch('context/loadingStart')
+      const contextStore = useContextStore()
+      contextStore.loadingStart()
       this.alertScreenReader(`Loading ${this.selectedTermName}`)
       Promise.all([getValidation(this.selectedTermId), getConfirmed(this.selectedTermId), getExports(this.selectedTermId)]).then(responses => {
         this.setEvaluations(sortBy(responses[0], 'sortableCourseName'))
         this.confirmed = responses[1]
         this.termExports = responses[2]
-        store.dispatch('context/loadingComplete', {pageTitle: `Publish ${this.selectedTermName || ''}`})
+        contextStore.loadingComplete(`Publish ${this.selectedTermName || ''}`)
       })
     },
     size,
@@ -182,7 +184,7 @@ export default {
           this.showStatus(response)
         }
       }).finally(() => {
-        this.$nextTick(() => {
+        nextTick(() => {
           this.isUpdatingStatus = false
         })
       })

@@ -1,10 +1,11 @@
 <script>
-import {mapActions, mapGetters} from 'vuex'
+
+import {mapActions, mapState} from 'pinia'
 
 export default {
   name: 'ListManagementSession',
   computed: {
-    ...mapGetters('listManagementSession', [
+    ...mapState('listManagement', [
       'departmentForms',
       'disableControls',
       'evaluationTypes',
@@ -19,7 +20,7 @@ export default {
     ])
   },
   methods: {
-    ...mapActions('listManagementSession', [
+    ...mapActions('listManagement', [
       'addDepartmentForm',
       'addEvaluationType',
       'addInstructor',

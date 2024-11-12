@@ -1,13 +1,14 @@
 import axios from 'axios'
-import store from '@/store'
 import {getApiBaseUrl} from '@/api/api-utils'
+import {useContextStore} from '@/stores/context'
 
 export function devAuthLogIn(uid: string, password: string) {
   return axios
       .post(`${getApiBaseUrl()}/api/auth/dev_auth_login`, {uid, password})
         .then(data => {
-          store.dispatch('context/setCurrentUser', data)
-          return store.getters['context/currentUser']
+          const contextStore = useContextStore()
+          contextStore.setCurrentUser(data)
+          return contextStore.currentUser
         }, error => error)
 }
 

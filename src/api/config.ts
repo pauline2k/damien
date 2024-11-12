@@ -1,6 +1,6 @@
 import axios from 'axios'
-import store from '../store'
 import {getApiBaseUrl} from '@/api/api-utils'
+import {useContextStore} from '@/stores/context'
 
 export function getAutoPublishStatus() {
   return axios.get(`${getApiBaseUrl()}/api/auto_publish`)
@@ -18,7 +18,7 @@ export function updateServiceAnnouncement(text, isLive) {
   return axios
     .post(`${getApiBaseUrl()}/api/service_announcement/update`, {text, isLive})
     .then(response => {
-      store.commit('context/setServiceAnnouncement', response)
+      useContextStore().setServiceAnnouncement(response)
       return response
     })
     .catch(error => error)

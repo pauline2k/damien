@@ -59,7 +59,7 @@ export default {
     onSort: {
       default: () => {},
       type: Function,
-      required:false
+      required: false
     }
   },
   data: () => ({

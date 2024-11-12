@@ -63,8 +63,8 @@
         </template>
         <template #body="{items}">
           <tbody class="h-100vh">
-            <template v-for="(department, index) in items">
-              <tr :id="`department-${index}`" :key="department.name">
+            <template v-for="(department, index) in items" :key="department.name">
+              <tr :id="`department-${index}`">
                 <td>
                   <label class="sr-only" :for="`checkbox-select-dept-${kebabCase(department.deptName)}`">
                     {{ department.deptName }}
@@ -156,13 +156,13 @@
 import Context from '@/mixins/Context'
 import NotificationForm from '@/components/admin/NotificationForm'
 import SortableTableHeader from '@/components/util/SortableTableHeader'
-import store from '@/store'
 import TermSelect from '@/components/util/TermSelect'
 import Util from '@/mixins/Util'
 import {each, filter as _filter, get, includes, indexOf, isEmpty, kebabCase, map, size} from 'lodash'
 import {getDepartmentsEnrolled} from '@/api/departments'
 import {putFocusNextTick} from '@/lib/utils'
 import {toLocaleFromISO} from '@/lib/utils'
+import {useContextStore} from '@/stores/context'
 
 export default {
   name: 'StatusBoard',
@@ -210,13 +210,14 @@ export default {
     }
   },
   created() {
-    store.dispatch('context/loadingStart')
+    const contextStore = useContextStore()
+    contextStore.loadingStart()
     this.alertScreenReader(`Loading ${this.selectedTermName}`)
     this.departments = []
     getDepartmentsEnrolled(true, false, true, this.selectedTermId).then(data => {
       this.departments = data
       this.loadBlockers().then(() => {
-        store.dispatch('context/loadingComplete', {pageTitle: `Evaluation Status Dashboard for ${this.selectedTermName}`})
+        contextStore.loadingComplete(`Evaluation Status Dashboard for ${this.selectedTermName}`)
         putFocusNextTick('page-title')
       })
     })

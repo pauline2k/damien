@@ -177,8 +177,8 @@ import Util from '@/mixins/Util'
 
 export default {
   name: 'EditDepartmentContact',
-  mixins: [Context, DepartmentEditSession, Util],
   components: {PersonLookup},
+  mixins: [Context, DepartmentEditSession, Util],
   props: {
     afterSave: {
       required: true,
@@ -221,11 +221,6 @@ export default {
       return this.firstName && this.lastName ? `${this.firstName} ${this.lastName}`.trim() : ''
     }
   },
-  created() {
-    this.populateForm(this.contact)
-    putFocusNextTick('add-contact-sub-header')
-    this.alertScreenReader(`${this.contact ? 'Edit' : 'Add'} department contact form is ready`)
-  },
   watch: {
     canReceiveCommunications(value) {
       this.srAlert('receive notifications', value)
@@ -249,6 +244,11 @@ export default {
         this.srAlert('be able to view reports and response rates', true)
       }
     }
+  },
+  created() {
+    this.populateForm(this.contact)
+    putFocusNextTick('add-contact-sub-header')
+    this.alertScreenReader(`${this.contact ? 'Edit' : 'Add'} department contact form is ready`)
   },
   methods: {
     isNil,

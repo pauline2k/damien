@@ -1,0 +1,230 @@
+import {getDepartmentForms} from '@/api/departmentForms'
+import {getEvaluationTypes} from '@/api/evaluationTypes'
+import {getInstructors} from '@/api/instructor'
+import {getConfig} from '@/api/api-utils'
+import {defineStore} from 'pinia'
+import {useContextStore} from '@/stores/context'
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const $_refreshAll = (commit) => { // eslint-disable-line no-unused-vars
+  return Promise.all([getDepartmentForms(), getEvaluationTypes(), getInstructors()]).then(response => {
+    const departmentForms = response[0]
+    const evaluationTypes = response[1]
+    const instructors = response[2]
+    commit('setDepartmentForms', departmentForms)
+    commit('setEvaluationTypes', evaluationTypes)
+    commit('setInstructors', instructors)
+    const contextStore = useContextStore()
+    contextStore.updateConfig('departmentForms', departmentForms)
+    contextStore.updateConfig('evaluationTypes', evaluationTypes)
+  })
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const $_refreshDepartmentForms = (commit) => { // eslint-disable-line no-unused-vars
+  return getDepartmentForms().then((departmentForms: any) => {
+    getConfig().departmentForms = departmentForms
+    commit('setDepartmentForms', departmentForms)
+  })
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const $_refreshEvaluationTypes = (commit) => { // eslint-disable-line no-unused-vars
+  return getEvaluationTypes().then((evaluationTypes: any) => {
+    getConfig().evaluationTypes = evaluationTypes
+    commit('setEvaluationTypes', evaluationTypes)
+  })
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const $_refreshInstructors = (commit) => { // eslint-disable-line no-unused-vars
+  return getInstructors().then((instructors: any) => {
+    commit('setInstructors', instructors)
+  })
+}
+
+export const useListManagementStore = defineStore('listManagement', {
+  state: () => ({
+    departmentForms: [],
+    disableControls: false,
+    evaluationTypes: [],
+    instructors: [],
+    isAddingDepartmentForm: false,
+    isAddingEvaluationType: false,
+    isAddingInstructor: false,
+    isConfirming: false,
+    isSaving: false,
+    itemToDelete: undefined,
+    onDelete: () => {}
+  }),
+  actions: {
+    // TODO
+  }
+})
+
+// const state = {
+//   departmentForms: [],
+//   disableControls: false,
+//   evaluationTypes: [],
+//   instructors: [],
+//   isAddingDepartmentForm: false,
+//   isAddingEvaluationType: false,
+//   isAddingInstructor: false,
+//   isConfirming: false,
+//   isSaving: false,
+//   itemToDelete: undefined,
+//   onDelete: () => {}
+// }
+//
+// const getters = {
+//   departmentForms: (state: any): any[] => state.departmentForms,
+//   disableControls: (state: any): number => state.disableControls,
+//   evaluationTypes: (state: any): any[] => state.evaluationTypes,
+//   instructors: (state: any): any[] => state.instructors,
+//   isAddingDepartmentForm: (state: any): boolean => state.isAddingDepartmentForm,
+//   isAddingEvaluationType: (state: any): boolean => state.isAddingEvaluationType,
+//   isAddingInstructor: (state: any): boolean => state.isAddingInstructor,
+//   isConfirming: (state: any): boolean => state.isConfirming,
+//   isSaving: (state: any): boolean => state.isSaving,
+//   itemToDelete: (state: any): any => state.itemToDelete,
+//   onDelete: (state: any): Function => state.onDelete,
+// }
+//
+// const actions = {
+//   addDepartmentForm: ({commit}, name: string) => {
+//     commit('setIsSaving', true)
+//     commit('setDisableControls', true)
+//     return addDepartmentForm(name).then(() => {
+//       $_refreshDepartmentForms(commit)
+//     }).finally(() => commit('reset'))
+//   },
+//   addEvaluationType: ({commit}, name: string) => {
+//     commit('setIsSaving', true)
+//     commit('setDisableControls', true)
+//     return addEvaluationType(name).then(() => {
+//       $_refreshEvaluationTypes(commit)
+//     }).finally(() => commit('reset'))
+//   },
+//   addInstructor: ({commit}, name: string) => {
+//     commit('setIsSaving', true)
+//     commit('setDisableControls', true)
+//     return addInstructor(name).then(() => {
+//       $_refreshInstructors(commit)
+//     }).finally(() => commit('reset'))
+//   },
+//   confirmDeleteDepartmentForm: ({commit}, itemToDelete: any) => {
+//     commit('setIsConfirming', true)
+//     commit('setItemToDelete', {
+//       ...itemToDelete,
+//       description: 'department form',
+//       elementId: `delete-dept-form-${itemToDelete.id}-btn`
+//     })
+//     commit('setOnDelete', () => store.dispatch('listManagementSession/deleteDepartmentForm'))
+//   },
+//   confirmDeleteEvaluationType: ({commit}, itemToDelete: any) => {
+//     commit('setIsConfirming', true)
+//     commit('setItemToDelete', {
+//       ...itemToDelete,
+//       description: 'evaluation type',
+//       elementId: `delete-eval-type-${itemToDelete.id}-btn`
+//     })
+//     commit('setOnDelete', () => store.dispatch('listManagementSession/deleteEvaluationType'))
+//   },
+//   confirmDeleteInstructor: ({commit}, itemToDelete: any) => {
+//     commit('setIsConfirming', true)
+//     commit('setItemToDelete', {
+//       ...itemToDelete,
+//       name: `${itemToDelete.firstName} ${itemToDelete.lastName} (${itemToDelete.uid})`,
+//       description: 'instructor',
+//       elementId: `delete-instructor-${itemToDelete.uid}-btn`
+//     })
+//     commit('setOnDelete', () => store.dispatch('listManagementSession/deleteInstructor'))
+//   },
+//   deleteDepartmentForm: ({commit, state}) => {
+//     commit('setDisableControls', true)
+//     return new Promise<void>(resolve => {
+//       return deleteDepartmentForm(state.itemToDelete.name).then(() => {
+//         $_refreshDepartmentForms(commit)
+//         resolve(state.itemToDelete)
+//       }).finally(() => {
+//         commit('reset')
+//         putFocusNextTick('department-forms-card-title')
+//       })
+//     })
+//   },
+//   deleteEvaluationType: ({commit, state}) => {
+//     commit('setDisableControls', true)
+//     return new Promise<void>(resolve => {
+//       return deleteEvaluationType(state.itemToDelete.name).then(() => {
+//         $_refreshEvaluationTypes(commit)
+//         resolve(state.itemToDelete)
+//       }).finally(() => {
+//         commit('reset')
+//         putFocusNextTick('evaluation-types-card-title')
+//       })
+//     })
+//   },
+//   deleteInstructor: ({commit, state}) => {
+//     commit('setDisableControls', true)
+//     return new Promise<void>(resolve => {
+//       return deleteInstructor(state.itemToDelete.uid).then(() => {
+//         $_refreshInstructors(commit)
+//         resolve(state.itemToDelete)
+//       }).finally(() => {
+//         commit('reset')
+//         putFocusNextTick('manually-added-instructors-title')
+//       })
+//     })
+//   },
+//   init: ({commit}) => {
+//     return $_refreshAll(commit)
+//   },
+//   reset: ({commit}) => commit('reset'),
+//   setAddingDepartmentForm: ({commit}) => {
+//     return new Promise<void>(resolve => {
+//       commit('reset')
+//       commit('setAddingDepartmentForm')
+//       resolve()
+//     })
+//   },
+//   setAddingEvaluationType: ({commit}) => {
+//     return new Promise<void>(resolve => {
+//       commit('reset')
+//       commit('setAddingEvaluationType')
+//       resolve()
+//     })
+//   },
+//   setAddingInstructor: ({commit}) => {
+//     return new Promise<void>(resolve => {
+//       commit('reset')
+//       commit('setAddingInstructor')
+//       resolve()
+//     })
+//   },
+//   setDisableControls: ({commit}, disable: boolean) => commit('setDisableControls', disable),
+// }
+//
+// const mutations = {
+//   reset: (state: any) => {
+//     state.disableControls = false
+//     state.isAddingDepartmentForm = false
+//     state.isAddingEvaluationType = false
+//     state.isAddingInstructor = false
+//     state.isConfirming = false
+//     state.isSaving = false
+//     state.itemToDelete = undefined
+//     state.onDelete = () => {}
+//   },
+//   setAddingDepartmentForm: (state: any) => state.isAddingDepartmentForm = true,
+//   setAddingEvaluationType: (state: any) => state.isAddingEvaluationType = true,
+//   setAddingInstructor: (state: any) => state.isAddingInstructor = true,
+//   setDepartmentForms: (state: any, departmentForms: any[]) => state.departmentForms = departmentForms,
+//   setDisableControls: (state: any, disable: boolean) => state.disableControls = disable,
+//   setEvaluationTypes: (state: any, evaluationTypes: any[]) => state.evaluationTypes = evaluationTypes,
+//   setInstructors: (state: any, instructors: any[]) => state.instructors = instructors,
+//   setIsConfirming: (state: any, isConfirming: boolean) => state.isConfirming = isConfirming,
+//   setIsSaving: (state: any, isSaving: boolean) => state.isSaving = isSaving,
+//   setItemToDelete: (state: any, item: any) => state.itemToDelete = item,
+//   setOnDelete: (state: any, onDelete: Function) => state.onDelete = onDelete,
+// }
+

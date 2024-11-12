@@ -1,10 +1,17 @@
-import {get} from 'lodash'
+import {get, includes} from 'lodash'
 import router from './router'
-import store from '@/store'
+import {useContextStore} from '@/stores/context'
 
-export function axiosErrorHandler(error) {
-  const errorStatus = get(error, 'response.status')
-    const currentUser = store.getters['context/currentUser']
+export function appErrorHandler(error: any, vm: any, info: string) {
+  const message = get(error, 'message') || info
+  const stacktrace = get(error, 'stack', null)
+  // eslint-disable-next-line no-console
+  console.log(`\n${message}\n${stacktrace}\n`)
+}
+
+export function axiosErrorHandler(error, vm: any, info?: string) {
+  const errorStatus = get(error, 'response.status') || info
+  const currentUser = useContextStore().currentUser
   if (currentUser.isAuthenticated) {
     if (errorStatus === 404) {
       router.push({path: '/404'})
@@ -30,4 +37,24 @@ export function axiosErrorHandler(error) {
       }
     })
   }
+}
+
+export function initializeAxios(axios: any) {
+  axios.defaults.withCredentials = true
+  axios.interceptors.response.use(
+    (response: any) => response,
+    (error: any) => {
+      const errorStatus = get(error, 'response.status')
+      if (includes([401, 403], errorStatus)) {
+        // Refresh user in case his/her session expired.
+        const apiBaseUrl = import.meta.env.VITE_APP_API_BASE_URL
+        return axios.get(`${apiBaseUrl}/api/profile/my`).then((response: any) => {
+          useContextStore().setCurrentUser(response.data)
+          axiosErrorHandler(error, axios)
+          return Promise.reject(error)
+        })
+      }
+      axiosErrorHandler(error, axios)
+      return Promise.reject(error)
+    })
 }

@@ -1,12 +1,10 @@
 <template>
   <v-banner class="pa-8">
     <v-icon
-      slot="icon"
+      icon="mdi-alert"
       color="warning"
       x-large
-    >
-      mdi-alert
-    </v-icon>
+    />
     <div>
       <h2 :style="{color: titleHexColor}">Error</h2>
       <div
@@ -23,7 +21,7 @@
 
 <script>
 import Util from '@/mixins/Util'
-import store from '@/store'
+import {useContextStore} from '@/stores/context'
 
 export default {
   name: 'Error',
@@ -33,7 +31,7 @@ export default {
   }),
   mounted() {
     this.message = this.$route.query.m
-    store.dispatch('context/loadingComplete', {pageTitle: 'Error'})
+    useContextStore().loadingComplete('Error')
   }
 }
 </script>
