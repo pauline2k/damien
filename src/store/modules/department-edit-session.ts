@@ -1,4 +1,4 @@
-import _ from 'lodash'
+import store from '@/store'
 import {
   addSection,
   deleteContact,
@@ -8,8 +8,24 @@ import {
   updateDepartmentNote,
   updateEvaluations
 } from '@/api/departments'
-import store from '@/store'
-import Vue from 'vue'
+import {
+  each,
+  filter,
+  find,
+  findIndex,
+  get,
+  includes,
+  indexOf,
+  intersectionWith,
+  isUndefined,
+  noop,
+  reduce,
+  reject,
+  some,
+  sortBy,
+  toString,
+} from 'lodash'
+import {DateTime} from 'luxon'
 import {getConfig} from '@/api/api-utils'
 
 const $_decorateEvaluation = (e, allEvaluations) => {
@@ -35,8 +51,8 @@ const $_decorateEvaluation = (e, allEvaluations) => {
   // When sorting by course number or name, keep cross-listings with home sections.
   if (e.crossListedWith || e.roomSharedWith) {
     let homeSection
-    _.each((e.crossListedWith || e.roomSharedWith), s => {
-      const candidateHomeSection = _.find(allEvaluations, {'courseNumber': s})
+    each((e.crossListedWith || e.roomSharedWith), s => {
+      const candidateHomeSection = find(allEvaluations, {'courseNumber': s})
       if (candidateHomeSection && !candidateHomeSection.foreignDepartmentCourse && (e.foreignDepartmentCourse || e.courseNumber > candidateHomeSection.courseNumber)) {
         homeSection = candidateHomeSection
         return false
@@ -61,21 +77,21 @@ const $_decorateEvaluation = (e, allEvaluations) => {
     e.searchableInstructor = ''
     e.sortableInstructor = ''
   }
-  e.startDate = Vue.prototype.$moment(e.startDate).toDate()
-  e.endDate = Vue.prototype.$moment(e.endDate).toDate()
-  e.lastUpdated = Vue.prototype.$moment(e.lastUpdated).toDate()
-  e.meetingDates.start = Vue.prototype.$moment(e.meetingDates.start).toDate()
-  const courseEndDate = Vue.prototype.$moment(e.meetingDates.end)
-  e.meetingDates.end = courseEndDate.toDate()
+  e.startDate = DateTime.fromISO(e.startDate).toJSDate()
+  e.endDate = DateTime.fromISO(e.endDate).toJSDate()
+  e.lastUpdated = DateTime.fromISO(e.lastUpdated).toJSDate()
+  e.meetingDates.start = DateTime.fromISO(e.meetingDates.start).toJSDate()
+  const courseEndDate = DateTime.fromISO(e.meetingDates.end)
+  e.meetingDates.end = courseEndDate.toJSDate()
 
-  const selectedTerm = _.find(getConfig().availableTerms, {'id': e.termId})
-  const defaultEndDate = Vue.prototype.$moment(_.get(selectedTerm, 'defaultDates.end'))
-  const courseLength = courseEndDate.diff(e.meetingDates.start, 'days')
+  const selectedTerm = find(getConfig().availableTerms, {'id': e.termId})
+  const defaultEndDate = DateTime.fromISO(get(selectedTerm, 'defaultDates.end'))
   let lastEndDate = courseEndDate > defaultEndDate ? courseEndDate : defaultEndDate
   if (lastEndDate === defaultEndDate && !selectedTerm.name.includes('Summer')) {
-    lastEndDate = lastEndDate.add(2, 'day')
+    lastEndDate = lastEndDate.plus({days: 2})
   }
-  e.maxStartDate = courseLength < 90 ? lastEndDate.subtract(13, 'day').toDate() : lastEndDate.subtract(20, 'day').toDate()
+  const endDateDiff = courseEndDate.diff(e.meetingDates.start, ['days'])
+  e.maxStartDate = endDateDiff.days < 90 ? lastEndDate.minus({days: 13}).toJSDate() : lastEndDate.minus({days: 20}).toJSDate()
 }
 
 const $_refresh = (commit, departmentId) => {
@@ -124,7 +140,7 @@ const actions = {
       addSection(state.department.id, sectionId, termId)
       .then(() => {
         getSectionEvaluations(state.department.id, sectionId, termId).then((data: any) => {
-          const updatedEvaluations = _.each(data, e => $_decorateEvaluation(e, state.evaluations))
+          const updatedEvaluations = each(data, e => $_decorateEvaluation(e, state.evaluations))
           commit('setEvaluationUpdate', {sectionIndex: 0, sectionCount: 0, updatedEvaluations})
           resolve()
         })
@@ -151,12 +167,12 @@ const actions = {
       updateEvaluations(state.department.id, 'edit', [evaluationId], termId, fields)
       .then(() => {
         getSectionEvaluations(state.department.id, sectionId, termId).then((data: any) => {
-          let sectionIndex = _.findIndex(state.evaluations, ['courseNumber', sectionId])
+          let sectionIndex = findIndex(state.evaluations, ['courseNumber', sectionId])
           if (sectionIndex === -1) {
             sectionIndex = state.evaluations.length
           }
-          const sectionCount = _.filter(state.evaluations, ['courseNumber', sectionId]).length
-          const updatedEvaluations = _.each(data, e => $_decorateEvaluation(e, state.evaluations))
+          const sectionCount = filter(state.evaluations, ['courseNumber', sectionId]).length
+          const updatedEvaluations = each(data, e => $_decorateEvaluation(e, state.evaluations))
           commit('setEvaluationUpdate', {sectionIndex, sectionCount, updatedEvaluations})
           resolve()
         })
@@ -169,7 +185,7 @@ const actions = {
   },
   init: ({commit}, departmentId: number) => {
     commit('setDepartment', null)
-    commit('setActiveDepartmentForms', _.reject(getConfig().departmentForms, 'deletedAt'))
+    commit('setActiveDepartmentForms', reject(getConfig().departmentForms, 'deletedAt'))
     commit('setAllDepartmentForms', getConfig().departmentForms)
     return new Promise<void>(resolve => {
       $_refresh(commit, departmentId)
@@ -185,11 +201,11 @@ const actions = {
   refreshSection: ({commit, state}, {sectionId, termId}) => {
     return new Promise((resolve: Function) => {
       getSectionEvaluations(state.department.id, sectionId, termId).then((data: any) => {
-        let sectionIndex = _.findIndex(state.evaluations, ['courseNumber', sectionId])
+        let sectionIndex = findIndex(state.evaluations, ['courseNumber', sectionId])
         if (sectionIndex === -1) {
           sectionIndex = state.evaluations.length
         }
-        const updatedEvaluations = _.each(data, e => $_decorateEvaluation(e, state.evaluations))
+        const updatedEvaluations = each(data, e => $_decorateEvaluation(e, state.evaluations))
         const sectionCount = updatedEvaluations.length
         commit('setEvaluationUpdate', {sectionIndex, sectionCount, updatedEvaluations})
         resolve()
@@ -215,7 +231,7 @@ const actions = {
     commit('setIsSelected', evaluation.id)
     const course = `${evaluation.subjectArea} ${evaluation.catalogId} ${evaluation.instructionFormat} ${evaluation.sectionNumber} (${evaluation.courseNumber})`
     const message = `${state.selectedEvaluationIds.includes(evaluation.id) ? '' : 'un'}selected ${course} evaluation`
-    store.dispatch('context/alertScreenReader', message).then(_.noop)
+    store.dispatch('context/alertScreenReader', message).then(noop)
   },
   updateContact: ({commit, state}, contact: any) => {
     commit('setDisableControls', true)
@@ -241,17 +257,17 @@ const actions = {
 const mutations = {
   deselectAllEvaluations: (state: any) => {
     state.selectedEvaluationIds = []
-    _.each(state.evaluations, e => {
+    each(state.evaluations, e => {
       e.isSelected = false
     })
   },
   filterSelectedEvaluations: (state: any, {searchFilterResults, enabledStatuses}) => {
-    const selectedSearchFilterResultIds = _.intersectionWith(state.selectedEvaluationIds, searchFilterResults, (id: number|string, e: any) => {
-      return _.toString(e.id) === _.toString(id)
+    const selectedSearchFilterResultIds = intersectionWith(state.selectedEvaluationIds, searchFilterResults, (id: number|string, e: any) => {
+      return toString(e.id) === toString(id)
     })
     const selectedEvaluationIds: any[] = []
-    _.each(state.evaluations, e => {
-      if (_.includes(enabledStatuses, e.status || 'unmarked') && _.includes(selectedSearchFilterResultIds, e.id)) {
+    each(state.evaluations, e => {
+      if (includes(enabledStatuses, e.status || 'unmarked') && includes(selectedSearchFilterResultIds, e.id)) {
         e.isSelected = true
         selectedEvaluationIds.push(e.id)
       } else {
@@ -264,17 +280,17 @@ const mutations = {
     if (department) {
       state.contacts = department.contacts
       state.department = department
-      _.each(department.evaluations, e => $_decorateEvaluation(e, department.evaluations))
-      state.evaluations = _.sortBy(department.evaluations, 'sortableCourseName')
-      state.note = _.get(department, 'note.note')
+      each(department.evaluations, e => $_decorateEvaluation(e, department.evaluations))
+      state.evaluations = sortBy(department.evaluations, 'sortableCourseName')
+      state.note = get(department, 'note.note')
     }
     state.selectedEvaluationIds = []
     state.disableControls = false
   },
   selectAllEvaluations: (state: any, {searchFilterResults, enabledStatuses}) => {
     const selectedEvaluationIds: any[] = []
-    _.each(state.evaluations, e => {
-      if (_.includes(enabledStatuses, e.status || 'unmarked') && _.some(searchFilterResults, {'id': e.id})) {
+    each(state.evaluations, e => {
+      if (includes(enabledStatuses, e.status || 'unmarked') && some(searchFilterResults, {'id': e.id})) {
         e.isSelected = true
         selectedEvaluationIds.push(e.id)
       }
@@ -288,17 +304,17 @@ const mutations = {
   setErrorDialog: (state: any, errorDialog: boolean) => state.errorDialog = errorDialog,
   setErrorDialogText: (state: any, errorDialogText: string) => state.errorDialogText = errorDialogText,
   setEvaluations: (state: any, evaluations: any[]) => {
-    _.each(evaluations, e => $_decorateEvaluation(e, evaluations))
+    each(evaluations, e => $_decorateEvaluation(e, evaluations))
     state.evaluations = evaluations
   },
   setEvaluationUpdate: (state: any, {sectionIndex, sectionCount, updatedEvaluations}) => {
-    const evaluations = _.sortBy(updatedEvaluations, 'sortableCourseName')
+    const evaluations = sortBy(updatedEvaluations, 'sortableCourseName')
     state.evaluations.splice(sectionIndex, sectionCount, ...evaluations)
   },
   setIsSelected: (state: any, evaluationId: any) => {
-    const evaluation = _.find(state.evaluations, {'id': evaluationId})
+    const evaluation = find(state.evaluations, {'id': evaluationId})
     if (evaluation) {
-      const index = _.indexOf(state.selectedEvaluationIds, evaluationId)
+      const index = indexOf(state.selectedEvaluationIds, evaluationId)
       if (index === -1 && !evaluation.isSelected) {
         evaluation.isSelected = true
         state.selectedEvaluationIds.push(evaluationId)
@@ -310,20 +326,20 @@ const mutations = {
   },
   setSelectedEvaluationIds: (state: any, selectedEvaluationIds: any) => {
     state.selectedEvaluationIds = selectedEvaluationIds
-    _.each(state.evaluations, e => {
-      if (_.includes(selectedEvaluationIds, e.id)) {
+    each(state.evaluations, e => {
+      if (includes(selectedEvaluationIds, e.id)) {
         e.isSelected = true
       }
     })
   },
   setShowTheOmenPoster: (state: any, show: boolean) => {
     // This easter-egg flag can only be enabled once.
-    if (!show || _.isUndefined(state.showTheOmenPoster)) {
+    if (!show || isUndefined(state.showTheOmenPoster)) {
       state.showTheOmenPoster = show
     }
   },
   updateSelectedEvaluationIds: (state: any) => {
-    state.selectedEvaluationIds = _.reduce(state.evaluations, (ids, e) => {
+    state.selectedEvaluationIds = reduce(state.evaluations, (ids, e) => {
       if (e.isSelected) {
         ids.push(e.id)
       }

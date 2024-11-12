@@ -127,7 +127,7 @@
 <script>
 import {cloneDeep, indexOf, size, trim} from 'lodash'
 import {notifyContacts} from '@/api/departments'
-import {putFocusNextTick} from '@/utils'
+import {putFocusNextTick} from '@/lib/utils'
 import Context from '@/mixins/Context.vue'
 
 export default {

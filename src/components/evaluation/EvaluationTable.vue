@@ -233,7 +233,7 @@
                   </div>
                 </td>
                 <td :id="`evaluation-${rowIndex}-lastUpdated`" class="evaluation-last-updated px-1" :class="{'pt-5': isEditing(evaluation), 'align-middle': !isEditing(evaluation)}">
-                  {{ $moment(evaluation.lastUpdated) | moment('MM/DD/YYYY') }}
+                  {{ toFormatFromJsDate(evaluation.lastUpdated, 'LL/dd/yyyy') }}
                 </td>
                 <td :id="`evaluation-${rowIndex}-courseNumber`" class="evaluation-course-number px-1" :class="{'pt-5': isEditing(evaluation), 'align-middle': !isEditing(evaluation)}">
                   {{ evaluation.courseNumber }}
@@ -374,8 +374,11 @@
                   </div>
                 </td>
                 <td :id="`evaluation-${rowIndex}-period`" class="evaluation-period px-1" :class="{'align-middle': !isEditing(evaluation)}">
-                  <span v-if="evaluation.startDate && !isEditing(evaluation)">
-                    <div>{{ evaluation.startDate | moment('MM/DD/YY') }} - {{ evaluation.endDate | moment('MM/DD/YY') }}</div>
+                  <div v-if="evaluation.startDate && !isEditing(evaluation)">
+                    <div class="text-no-wrap">
+                      {{ toFormatFromJsDate(evaluation.startDate, 'LL/dd/yyyy') }} -
+                      {{ toFormatFromJsDate(evaluation.endDate, 'LL/dd/yyyy') }}
+                    </div>
                     <div>{{ evaluation.modular ? 2 : 3 }} weeks</div>
                     <EvaluationError
                       v-for="(conflict, index) in evaluation.conflicts.evaluationPeriod"
@@ -383,10 +386,10 @@
                       :key="index"
                       :hover="hover || focusedEditButtonEvaluationId === evaluation.id"
                       :message="`Conflicts with period starting
-                      ${$moment(conflict.value).format('MM/DD/YY')}
+                      ${toLocaleFromISO(conflict.value, 'LL/dd/yyyy')}
                       from ${conflict.department} department`"
                     />
-                  </span>
+                  </div>
                   <div v-if="allowEdits && isEditing(evaluation)" class="mt-1 py-2">
                     <div class="d-flex align-center">
                       <label id="input-evaluation-start-date-label" for="input-evaluation-start-date">
@@ -452,7 +455,7 @@
                       rotate="5"
                       size="20"
                       width="3"
-                    ></v-progress-circular>
+                    />
                   </v-btn>
                   <v-btn
                     id="cancel-evaluation-edit-btn"
@@ -542,7 +545,7 @@
 <script>
 import {addInstructor} from '@/api/instructor'
 import {clone, cloneDeep, each, find, get, isEmpty, keys, pickBy, size, some} from 'lodash'
-import {putFocusNextTick} from '@/utils'
+import {putFocusNextTick} from '@/lib/utils'
 import AddCourseSection from '@/components/evaluation/AddCourseSection'
 import ConfirmDialog from '@/components/util/ConfirmDialog'
 import Context from '@/mixins/Context'
@@ -553,6 +556,7 @@ import PersonLookup from '@/components/admin/PersonLookup'
 import SortableTableHeader from '@/components/util/SortableTableHeader'
 import Util from '@/mixins/Util'
 import store from '@/store'
+import {toFormatFromISO, toFormatFromJsDate, toLocaleFromISO} from '@/lib/utils'
 
 export default {
   name: 'EvaluationTable',
@@ -668,7 +672,7 @@ export default {
         value = item.searchableInstructor
       }
       if (value === item.lastUpdated) {
-        value = this.$moment(item.lastUpdated).format('MM/DD/YYYY')
+        value = toLocaleFromISO(item.lastUpdated, 'LL/dd/yyyy')
       }
       if (value === item.sortableCourseName) {
         value = item.searchableCourseName
@@ -684,9 +688,9 @@ export default {
       }
       if (value === item.startDate) {
         value = [
-          this.$moment(item.startDate).format('MM/DD/YY'),
+          toLocaleFromISO(item.startDate, 'LL/dd/yyyy'),
           '-',
-          this.$moment(item.endDate).format('MM/DD/YY'),
+          toLocaleFromISO(item.endDate, 'LL/dd/yyyy'),
           (item.modular ? '2' : '3'),
           'weeks'
         ].join(' ')
@@ -720,6 +724,8 @@ export default {
         'sr-only': hover && this.allowEdits && !this.readonly
       }
     },
+    toFormatFromJsDate,
+    toLocaleFromISO,
     get,
     instructorConfirmationText(instructor) {
       return `
@@ -814,7 +820,7 @@ export default {
       this.markAsDoneWarning = undefined
       const departmentFormId = this.selectedDepartmentForm || get(evaluation, 'defaultDepartmentForm.id') || null
       const status = this.selectedEvaluationStatus === 'none' ? null : this.selectedEvaluationStatus
-      const startDate = this.selectedStartDate ? this.$moment(this.selectedStartDate).format('YYYY-MM-DD') : null
+      const startDate = this.selectedStartDate ? toFormatFromISO(this.selectedStartDate, 'y-LL-dd') : null
       const fields = {
         departmentFormId,
         evaluationTypeId: this.selectedEvaluationType,

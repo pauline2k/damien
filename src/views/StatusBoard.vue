@@ -90,7 +90,7 @@
                 </td>
                 <td :id="`last-updated-dept-${department.id}`" class="department-lastUpdated">
                   <span v-if="department.lastUpdated">
-                    {{ department.lastUpdated | moment('MMM D, YYYY') }}
+                    {{ toLocaleFromISO(department.lastUpdated) }}
                   </span>
                 </td>
                 <td class="department-errors">
@@ -153,14 +153,16 @@
 </template>
 
 <script>
-import {each, filter as _filter, get, includes, indexOf, isEmpty, kebabCase, map, size} from 'lodash'
-import {getDepartmentsEnrolled} from '@/api/departments'
-import {putFocusNextTick} from '@/utils'
 import Context from '@/mixins/Context'
 import NotificationForm from '@/components/admin/NotificationForm'
 import SortableTableHeader from '@/components/util/SortableTableHeader'
+import store from '@/store'
 import TermSelect from '@/components/util/TermSelect'
 import Util from '@/mixins/Util'
+import {each, filter as _filter, get, includes, indexOf, isEmpty, kebabCase, map, size} from 'lodash'
+import {getDepartmentsEnrolled} from '@/api/departments'
+import {putFocusNextTick} from '@/lib/utils'
+import {toLocaleFromISO} from '@/lib/utils'
 
 export default {
   name: 'StatusBoard',
@@ -208,13 +210,13 @@ export default {
     }
   },
   created() {
-    this.$loading()
+    store.dispatch('context/loadingStart')
     this.alertScreenReader(`Loading ${this.selectedTermName}`)
     this.departments = []
     getDepartmentsEnrolled(true, false, true, this.selectedTermId).then(data => {
       this.departments = data
       this.loadBlockers().then(() => {
-        this.$ready(`Evaluation Status Dashboard for ${this.selectedTermName}`)
+        store.dispatch('context/loadingComplete', {pageTitle: `Evaluation Status Dashboard for ${this.selectedTermName}`})
         putFocusNextTick('page-title')
       })
     })
@@ -266,7 +268,8 @@ export default {
     toggleSelectAll() {
       this.selectedDepartmentIds = this.allDepartmentsSelected ? [] : map(this.departments, 'id')
       this.alertScreenReader(`All departments ${this.allDepartmentsSelected ? '' : 'un'}selected.`)
-    }
+    },
+    toLocaleFromISO
   }
 }
 </script>

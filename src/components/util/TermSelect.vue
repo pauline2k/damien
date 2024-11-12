@@ -66,7 +66,7 @@
 <script>
 import {find, get, includes} from 'lodash'
 import {getEvaluationTerm, lockEvaluationTerm, unlockEvaluationTerm} from '@/api/evaluationTerms'
-import {putFocusNextTick} from '@/utils'
+import {putFocusNextTick} from '@/lib/utils'
 import Context from '@/mixins/Context.vue'
 
 export default {

@@ -1,6 +1,6 @@
 import {find} from 'lodash'
 import {getServiceAnnouncement} from '@/api/config'
-import {putFocusNextTick} from '@/utils'
+import {putFocusNextTick} from '@/lib/utils'
 
 const state = {
   config: {
@@ -78,7 +78,8 @@ const mutations = {
     state.snackbar.text = text
     state.snackbar.color = 'error'
     state.snackbarShow = true
-  }
+  },
+  updateConfig: (state: any, {key, value}) => state.config[key] = value
 }
 
 const actions = {
@@ -96,7 +97,8 @@ const actions = {
   setIsSelectedTermLocked: ({ commit }, isLocked: boolean) => commit('setIsSelectedTermLocked', isLocked),
   snackbarClose: ({ commit }) => commit('snackbarClose'),
   snackbarOpen: ({ commit }, {text, color}) => commit('snackbarOpen', {text, color}),
-  snackbarReportError: ({ commit }, text: string) => commit('snackbarReportError', text)
+  snackbarReportError: ({ commit }, text: string) => commit('snackbarReportError', text),
+  updateConfig: ({ commit }, {key, value}) => commit('updateConfig', {key, value})
 }
 
 export default {

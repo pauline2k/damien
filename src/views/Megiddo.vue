@@ -96,7 +96,7 @@
                     >
                       mdi-tray-arrow-down
                     </v-icon>
-                    {{ e.createdAt | moment(dateFormat) }}
+                    {{ toLocaleFromISO(e.createdAt, dateFormat) }}
                     <span class="sr-only">term export</span>
                   </a>
                 </li>
@@ -113,14 +113,17 @@
 </template>
 
 <script>
+import {DateTime} from 'luxon'
 import {exportEvaluations, getConfirmed, getExportStatus, getExports, getValidation} from '@/api/evaluations'
-import {isEmpty, size, sortBy} from 'lodash'
-import {putFocusNextTick} from '@/utils'
+import {find, isEmpty, size, sortBy} from 'lodash'
+import {putFocusNextTick} from '@/lib/utils'
 import Context from '@/mixins/Context.vue'
 import DepartmentEditSession from '@/mixins/DepartmentEditSession'
 import EvaluationTable from '@/components/evaluation/EvaluationTable'
+import store from '@/store'
 import TermSelect from '@/components/util/TermSelect'
 import Util from '@/mixins/Util'
+import {toLocaleFromISO} from '@/lib/utils'
 
 export default {
   name: 'Megiddo',
@@ -132,7 +135,7 @@ export default {
   data: () => ({
     blockers: {},
     confirmed: [],
-    dateFormat: 'M/DD/YYYY HH:mm:SS',
+    dateFormat: DateTime.DATETIME_SHORT_WITH_SECONDS,
     exportsPanel: undefined,
     isExporting: false,
     isUpdatingStatus: false,
@@ -142,6 +145,7 @@ export default {
     this.updateStatus()
   },
   methods: {
+    toLocaleFromISO,
     isEmpty,
     onUpdateStatus() {
       this.isUpdatingStatus = true
@@ -157,13 +161,13 @@ export default {
       })
     },
     refresh() {
-      this.$loading()
+      store.dispatch('context/loadingStart')
       this.alertScreenReader(`Loading ${this.selectedTermName}`)
       Promise.all([getValidation(this.selectedTermId), getConfirmed(this.selectedTermId), getExports(this.selectedTermId)]).then(responses => {
         this.setEvaluations(sortBy(responses[0], 'sortableCourseName'))
         this.confirmed = responses[1]
         this.termExports = responses[2]
-        this.$ready(`Publish ${this.selectedTermName || ''}`)
+        store.dispatch('context/loadingComplete', {pageTitle: `Publish ${this.selectedTermName || ''}`})
       })
     },
     size,
@@ -173,9 +177,8 @@ export default {
         if (isEmpty(response)) {
           return false
         }
-        const lastUpdate = this.$moment(response.updatedAt)
-        const now = this.$moment()
-        if (now.diff(lastUpdate, 'hours') < 1) {
+        const lastUpdate = DateTime.fromISO(response.updatedAt)
+        if (DateTime.now().diff(lastUpdate, ['hours']) < 1) {
           this.showStatus(response)
         }
       }).finally(() => {
@@ -185,7 +188,7 @@ export default {
       })
     },
     showStatus(termExport) {
-      const exportLabel = this.$moment(termExport.createdAt).format(this.dateFormat)
+      const exportLabel = toLocaleFromISO(termExport.createdAt, this.dateFormat)
       const term = find(this.config.availableTerms, {'id': termExport.termId})
       if (termExport.status === 'success') {
         this.snackbarOpen(

@@ -169,7 +169,7 @@ import {
   sortBy
 } from 'lodash'
 import {getUserDepartmentForms} from '@/api/user'
-import {putFocusNextTick} from '@/utils'
+import {putFocusNextTick} from '@/lib/utils'
 import Context from '@/mixins/Context.vue'
 import DepartmentEditSession from '@/mixins/DepartmentEditSession'
 import PersonLookup from '@/components/admin/PersonLookup'

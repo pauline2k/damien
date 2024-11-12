@@ -122,6 +122,7 @@ import {getDepartmentsEnrolled} from '@/api/departments'
 import {isEmpty, size} from 'lodash'
 import BooleanIcon from '@/components/util/BooleanIcon'
 import Context from '@/mixins/Context'
+import store from '@/store'
 import Util from '@/mixins/Util'
 
 export default {
@@ -142,10 +143,10 @@ export default {
     hoveredDept: undefined
   }),
   created() {
-    this.$loading()
+    store.dispatch('context/loadingStart')
     getDepartmentsEnrolled(true, true).then(data => {
       this.departments = data
-      this.$ready('Group Management')
+      store.dispatch('context/loadingComplete', {pageTitle: 'Group Management'})
     })
   },
   methods: {

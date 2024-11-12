@@ -45,7 +45,7 @@
 <script>
 import {devAuthLogIn} from '@/api/auth'
 import {get, noop, trim} from 'lodash'
-import {putFocusNextTick} from '@/utils'
+import {putFocusNextTick} from '@/lib/utils'
 import Context from '@/mixins/Context'
 import Damien from '../../assets/damien.svg'
 

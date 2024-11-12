@@ -3,7 +3,6 @@ import {get, includes, trim} from 'lodash'
 import App from '@/App.vue'
 import axios from 'axios'
 import linkify from 'vue-linkify'
-import moment from 'moment-timezone'
 import router from '@/router'
 import store from '@/store'
 import Vue from 'vue'
@@ -12,15 +11,9 @@ import vuetify from '@/plugins/vuetify'
 import VCalendar from 'v-calendar'
 Vue.use(VCalendar, {componentPrefix: 'c'})
 
-import VueMoment from 'vue-moment'
-Vue.use(VueMoment, {moment})
-
 Vue.directive('linkified', linkify)
 
 const apiBaseUrl = process.env.VUE_APP_API_BASE_URL
-
-Vue.prototype.$loading = () => store.dispatch('context/loadingStart')
-Vue.prototype.$ready = (pageTitle, alert) => store.dispatch('context/loadingComplete', {pageTitle, alert})
 
 // Axios
 axios.defaults.withCredentials = true

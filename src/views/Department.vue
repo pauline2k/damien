@@ -150,7 +150,7 @@
 
 <script>
 import {filter as _filter, get, includes, isEmpty, size} from 'lodash'
-import {putFocusNextTick} from '@/utils'
+import {putFocusNextTick} from '@/lib/utils'
 import Context from '@/mixins/Context.vue'
 import DepartmentContact from '@/components/admin/DepartmentContact'
 import DepartmentEditSession from '@/mixins/DepartmentEditSession'
@@ -228,11 +228,11 @@ export default {
       putFocusNextTick('add-dept-contact-btn')
     },
     refresh() {
-      this.$loading()
+      store.dispatch('context/loadingStart')
       this.alertScreenReader(`Loading ${this.selectedTermName}`)
       const departmentId = get(this.$route, 'params.departmentId')
       this.init(departmentId).then(department => {
-        this.$ready(`${department.deptName} ${this.selectedTermName}`)
+        store.dispatch('context/loadingComplete', {pageTitle: `${department.deptName} ${this.selectedTermName}`})
       })
     }
   }
