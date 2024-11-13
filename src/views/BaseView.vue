@@ -131,9 +131,9 @@ import Context from '@/mixins/Context'
 import DamienFooter from '@/components/util/DamienFooter'
 import Snackbar from '@/components/util/Snackbar'
 import Spinner from '@/components/util/Spinner'
-import Util from '@/mixins/Util'
 import {getCasLogoutUrl} from '@/api/auth'
 import {map, noop, size} from 'lodash'
+import {stripAnchorRef} from '@/lib/utils'
 import {useContextStore} from '@/stores/context'
 
 export default {
@@ -143,7 +143,7 @@ export default {
     Snackbar,
     Spinner
   },
-  mixins: [Context, Util],
+  mixins: [Context],
   data: () => ({
     navItems: undefined,
   }),
@@ -185,6 +185,7 @@ export default {
       }
     },
     size,
+    stripAnchorRef,
     toggleColorScheme() {
       this.$vuetify.theme.dark = !this.$vuetify.theme.dark
       window.localStorage.setItem('prefersDarkMode', this.$vuetify.theme.dark)

@@ -1,7 +1,7 @@
 <template>
   <div class="pt-2">
     <div class="pb-2 d-flex">
-      <h1 id="page-title" :style="{color: titleHexColor}">Group Management</h1>
+      <h1 id="page-title" class="text-title">Group Management</h1>
       <v-spacer class="d-flex justify-center"></v-spacer>
       <v-banner
         v-if="config.isVueAppDebugMode && config.easterEggMonastery && $vuetify.theme.dark"
@@ -118,17 +118,17 @@
 </template>
 
 <script>
+import {getCatalogListings} from '@/lib/utils'
 import {getDepartmentsEnrolled} from '@/api/departments'
 import {isEmpty, size} from 'lodash'
 import BooleanIcon from '@/components/util/BooleanIcon'
 import Context from '@/mixins/Context'
-import Util from '@/mixins/Util'
 import {useContextStore} from '@/stores/context'
 
 export default {
   name: 'TheMonastery',
   components: {BooleanIcon},
-  mixins: [Context, Util],
+  mixins: [Context],
   data: () => ({
     departments: [],
     headers: [
@@ -151,6 +151,7 @@ export default {
     })
   },
   methods: {
+    getCatalogListings,
     isEmpty,
     size,
     subRowClass(subIndex, subItems) {

@@ -117,7 +117,6 @@ import ConfirmDialog from '@/components/util/ConfirmDialog'
 import Context from '@/mixins/Context'
 import DepartmentEditSession from '@/mixins/DepartmentEditSession'
 import UpdateEvaluations from '@/components/evaluation/UpdateEvaluations'
-import Util from '@/mixins/Util'
 import {toFormatFromISO} from '@/lib/utils'
 import {useContextStore} from '@/stores/context'
 
@@ -127,7 +126,7 @@ export default {
     ConfirmDialog,
     UpdateEvaluations
   },
-  mixins: [Context, DepartmentEditSession, Util],
+  mixins: [Context, DepartmentEditSession],
   data: () => ({
     applyingAction: null,
     bulkUpdateOptions: {

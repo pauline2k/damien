@@ -1,7 +1,24 @@
 import {DateTime} from 'luxon'
+import {concat, filter, head, initial, join, keys, last, split, trim} from 'lodash'
 import {nextTick} from 'vue'
 
-export function putFocusNextTick(id, cssSelector?) {
+export function getCatalogListings(department) {
+  return filter(keys(department.catalogListings), trim)
+}
+
+export function oxfordJoin(arr: string[]) {
+  switch(arr.length) {
+  case 1: return head(arr)
+  case 2: return `${head(arr)} and ${last(arr)}`
+  default: return join(concat(initial(arr), ` and ${last(arr)}`), ', ')
+  }
+}
+
+export function pluralize(noun: string, count: number, substitutions: any = {}, pluralSuffix: string = 's') {
+  return (`${substitutions[count] || substitutions['other'] || count} ` + (count !== 1 ? `${noun}${pluralSuffix}` : noun))
+}
+
+export function putFocusNextTick(id: string, cssSelector?: string) {
   const callable = () => {
       let el = document.getElementById(id)
       el = el && cssSelector ? el.querySelector(cssSelector) : el
@@ -27,6 +44,10 @@ export function scrollTo(anchor: string, scrollBlock?: ScrollLogicalPosition) {
 
 export function scrollToTop() {
   scrollTo('content', 'start')
+}
+
+export function stripAnchorRef(path: string) {
+  return split(path, '#', 1)[0]
 }
 
 export function toFormatFromJsDate(jsDate: Date, format: string): string {

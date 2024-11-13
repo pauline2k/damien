@@ -259,7 +259,6 @@ import ConfirmDialog from '@/components/util/ConfirmDialog'
 import Context from '@/mixins/Context'
 import DepartmentEditSession from '@/mixins/DepartmentEditSession'
 import PersonLookup from '@/components/admin/PersonLookup'
-import Util from '@/mixins/Util'
 import {useContextStore} from '@/stores/context'
 
 export default {
@@ -268,7 +267,7 @@ export default {
     ConfirmDialog,
     PersonLookup
   },
-  mixins: [Context, DepartmentEditSession, Util],
+  mixins: [Context, DepartmentEditSession],
   props: {
     action: {
       required: true,

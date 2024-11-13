@@ -6,7 +6,7 @@
       x-large
     />
     <div>
-      <h2 :style="{color: titleHexColor}">Error</h2>
+      <h2 class="text-title">Error</h2>
       <div
         id="error-message"
         class="pt-4"
@@ -20,13 +20,11 @@
 </template>
 
 <script>
-import Util from '@/mixins/Util'
 import {useContextStore} from '@/stores/context'
 import {mdiAlert} from '@mdi/js'
 
 export default {
   name: 'Error',
-  mixins: [Util],
   data: () => ({
     mdiAlert,
     message: undefined

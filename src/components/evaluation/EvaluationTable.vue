@@ -554,8 +554,7 @@ import EvaluationActions from '@/components/evaluation/EvaluationActions'
 import EvaluationError from '@/components/evaluation/EvaluationError'
 import PersonLookup from '@/components/admin/PersonLookup'
 import SortableTableHeader from '@/components/util/SortableTableHeader'
-import Util from '@/mixins/Util'
-import {toFormatFromISO, toFormatFromJsDate, toLocaleFromISO} from '@/lib/utils'
+import {oxfordJoin, pluralize, toFormatFromISO, toFormatFromJsDate, toLocaleFromISO} from '@/lib/utils'
 import {nextTick} from 'vue'
 import {useContextStore} from '@/stores/context'
 
@@ -569,7 +568,7 @@ export default {
     PersonLookup,
     SortableTableHeader
   },
-  mixins: [Context, DepartmentEditSession, Util],
+  mixins: [Context, DepartmentEditSession],
   props: {
     readonly: {
       type: Boolean,
@@ -632,7 +631,7 @@ export default {
         return keys(pickBy(this.filterTypes, 'enabled'))
       },
       set: function(types) {
-        this.alertScreenReader(`Showing ${types.length ? `evaluations marked ${this.oxfordJoin(types)}` : 'no evaluations'}`)
+        this.alertScreenReader(`Showing ${types.length ? `evaluations marked ${oxfordJoin(types)}` : 'no evaluations'}`)
         each(keys(this.filterTypes), type => {
           this.filterTypes[type].enabled = types.includes(type)
         })
@@ -829,6 +828,7 @@ export default {
         this.setSelectedEvaluations(selectedEvaluationIds)
       })
     },
+    pluralize,
     size,
     validateAndSave(evaluation) {
       this.markAsDoneWarning = undefined
