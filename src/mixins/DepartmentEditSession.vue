@@ -2,6 +2,7 @@
 import {DateTime} from 'luxon'
 import {filter, get, includes, intersectionWith, some} from 'lodash'
 import {mapActions, mapState} from 'pinia'
+import {useDepartmentStore} from '@/stores/department-edit-session'
 
 const $_isInvalid = (e, evaluationIds, fields) => {
   return includes(evaluationIds, e.id) && !(
@@ -17,7 +18,7 @@ export default {
     NUMBER_OF_THE_BEAST: '666'
   }),
   computed: {
-    ...mapState('department', [
+    ...mapState(useDepartmentStore, [
       'activeDepartmentForms',
       'allDepartmentForms',
       'contacts',
@@ -84,7 +85,7 @@ export default {
       }
       return warningMessage
     },
-    ...mapActions('department', [
+    ...mapActions(useDepartmentStore, [
       'addSection',
       'deleteContact',
       'deselectAllEvaluations',

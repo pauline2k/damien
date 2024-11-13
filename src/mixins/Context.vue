@@ -1,7 +1,7 @@
 <script>
-import {useContextStore} from '@/stores/context'
 import {mapActions, mapState} from 'pinia'
 import {nextTick} from 'vue'
+import {useContextStore} from '@/stores/context'
 
 export default {
   name: 'Context',
