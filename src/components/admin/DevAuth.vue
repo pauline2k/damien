@@ -1,7 +1,7 @@
 <template>
   <v-form class="mb-4 dev-auth" @submit.prevent="logIn">
-    <div class="my-8" color="secondary">
-      <v-divider />
+    <div class="my-8">
+      <v-divider color="secondary" />
     </div>
     <v-text-field
       id="dev-auth-uid"
@@ -29,12 +29,10 @@
     <v-btn
       id="btn-dev-auth-login"
       block
-      :style="!uid || !password ? {background: `${$vuetify.theme.themes.light.secondary} !important`, color: '#FFF !important'} : {}"
+      :style="!uid || !password ? {background: `${themes.light.secondary} !important`, color: '#FFF !important'} : {}"
       class="secondary"
       :disabled="!uid || !password"
-      large
       @click="logIn"
-      @keypress.enter.prevent="logIn"
     >
       Dev Auth
       <img alt="Damien, the son of the Devil" src="@/assets/damien.svg" class="ml-2 damien-icon" />
@@ -42,40 +40,35 @@
   </v-form>
 </template>
 
-<script>
+<script setup>
 import {devAuthLogIn} from '@/api/auth'
 import {get, noop, trim} from 'lodash'
 import {putFocusNextTick} from '@/lib/utils'
-import Context from '@/mixins/Context'
+import {ref} from 'vue'
+import {useTheme} from 'vuetify'
 
-export default {
-  name: 'DevAuth',
-  mixins: [Context],
-  data: () => ({
-    uid: null,
-    password: null
-  }),
-  methods: {
-    logIn() {
-      let uid = trim(this.uid)
-      let password = trim(this.password)
-      if (uid && password) {
-        devAuthLogIn(uid, password).then(user => {
-          if (user.isAuthenticated) {
-            const redirect = get(this.$router, 'currentRoute.query.redirect')
-            this.$router.push({path: redirect || '/'}, noop)
-          } else {
-            this.reportError('Sorry, user is not authorized to use Course Evaluations.')
-          }
-        })
-      } else if (uid) {
-        this.reportError('Password required')
-        putFocusNextTick('dev-auth-password')
+const uid = ref(undefined)
+const password = ref(undefined)
+const themes = useTheme().themes.value
+
+const logIn = () => {
+  let uid = trim(this.uid)
+  let password = trim(this.password)
+  if (uid && password) {
+    devAuthLogIn(uid, password).then(user => {
+      if (user.isAuthenticated) {
+        const redirect = get(this.$router, 'currentRoute.query.redirect')
+        this.$router.push({path: redirect || '/'}, noop)
       } else {
-        this.reportError('Both UID and password are required')
-        putFocusNextTick('dev-auth-uid')
+        this.reportError('Sorry, user is not authorized to use Course Evaluations.')
       }
-    }
+    })
+  } else if (uid) {
+    this.reportError('Password required')
+    putFocusNextTick('dev-auth-password')
+  } else {
+    this.reportError('Both UID and password are required')
+    putFocusNextTick('dev-auth-uid')
   }
 }
 </script>

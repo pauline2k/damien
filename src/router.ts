@@ -12,26 +12,36 @@ import TheMonastery from '@/views/TheMonastery.vue'
 import {createRouter, createWebHistory, RouteRecordRaw} from 'vue-router'
 import {useContextStore} from '@/stores/context'
 
+const beforeEnterDefaultRoute = (to: any, from: any, next: any) => {
+  const currentUser = useContextStore().currentUser
+  if (currentUser.isAuthenticated) {
+    if (currentUser.isAdmin) {
+      next('/status')
+    } else if (size(currentUser.departments)) {
+      next(`/department/${currentUser.departments[0].id}`)
+    } else {
+      next({
+        path: '/error',
+        query: {
+          m: 'Sorry, we could not find any departments that you belong to.'
+        }
+      })
+    }
+  } else {
+    next()
+  }
+}
+
 const routes:RouteRecordRaw[] = [
   {
+    beforeEnter: beforeEnterDefaultRoute,
     path: '/',
-    redirect: '/home'
+    redirect: '/login'
   },
   {
     path: '/login',
     component: Login,
-    beforeEnter: (to: any, from: any, next: any) => {
-      const currentUser = useContextStore().currentUser
-      if (get(currentUser, 'isAuthenticated')) {
-        if (trim(to.query.redirect)) {
-          next(to.query.redirect)
-        } else {
-          next('/home')
-        }
-      } else {
-        next()
-      }
-    },
+    beforeEnter: beforeEnterDefaultRoute,
     meta: {
       title: 'Welcome'
     }
@@ -39,28 +49,7 @@ const routes:RouteRecordRaw[] = [
   {
     path: '/',
     component: BaseView,
-    beforeEnter: (to: any, from: any, next: any) => {
-      const currentUser = useContextStore().currentUser
-      if (currentUser.isAdmin) {
-        next('/status')
-      } else if (size(currentUser.departments)) {
-        next(`/department/${currentUser.departments[0].id}`)
-      } else {
-        next({
-          path: '/error',
-          query: {
-            m: 'Sorry, we could not find any departments that you belong to.'
-          }
-        })
-      }
-    },
     children: [
-      {
-        // TODO: Remove this route. There is no home view.
-        component: Error,
-        path: '/home',
-        name: 'home'
-      },
       {
         path: '/department/:departmentId',
         component: Department,
