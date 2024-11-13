@@ -169,16 +169,15 @@ import {
   sortBy
 } from 'lodash'
 import {getUserDepartmentForms} from '@/api/user'
-import {putFocusNextTick} from '@/lib/utils'
+import {oxfordJoin, putFocusNextTick} from '@/lib/utils'
 import Context from '@/mixins/Context.vue'
 import DepartmentEditSession from '@/mixins/DepartmentEditSession'
 import PersonLookup from '@/components/admin/PersonLookup'
-import Util from '@/mixins/Util'
 
 export default {
   name: 'EditDepartmentContact',
   components: {PersonLookup},
-  mixins: [Context, DepartmentEditSession, Util],
+  mixins: [Context, DepartmentEditSession],
   props: {
     afterSave: {
       required: true,
@@ -265,7 +264,7 @@ export default {
     onChangeContactDepartmentForms(selectedValues) {
       const names = map(selectedValues, 'name')
       if (names.length) {
-        this.alertScreenReader(`Selected department form${names.length === 1 ? 's are' : 'is'} ${this.oxfordJoin(names)}.`)
+        this.alertScreenReader(`Selected department form${names.length === 1 ? 's are' : 'is'} ${oxfordJoin(names)}.`)
       } else {
         this.alertScreenReader('No department forms selected.')
       }

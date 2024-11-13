@@ -4,8 +4,7 @@
       <v-col cols="9" class="d-flex align-center">
         <h1
           id="page-title"
-          class="py-2"
-          :style="{color: titleHexColor}"
+          class="py-2 text-title"
           tabindex="-1"
         >
           Evaluation Status Dashboard - {{ selectedTermName }}
@@ -157,17 +156,15 @@ import Context from '@/mixins/Context'
 import NotificationForm from '@/components/admin/NotificationForm'
 import SortableTableHeader from '@/components/util/SortableTableHeader'
 import TermSelect from '@/components/util/TermSelect'
-import Util from '@/mixins/Util'
 import {each, filter as _filter, get, includes, indexOf, isEmpty, kebabCase, map, size} from 'lodash'
 import {getDepartmentsEnrolled} from '@/api/departments'
-import {putFocusNextTick} from '@/lib/utils'
-import {toLocaleFromISO} from '@/lib/utils'
+import {getCatalogListings, putFocusNextTick, toLocaleFromISO} from '@/lib/utils'
 import {useContextStore} from '@/stores/context'
 
 export default {
   name: 'StatusBoard',
   components: {NotificationForm, SortableTableHeader, TermSelect},
-  mixins: [Context, Util],
+  mixins: [Context],
   data: () => ({
     blockers: {},
     departments: [],
@@ -235,6 +232,7 @@ export default {
       putFocusNextTick('open-notification-form-btn')
     },
     get,
+    getCatalogListings,
     isEmpty,
     isSelected(department) {
       return includes(this.selectedDepartmentIds, department.id)

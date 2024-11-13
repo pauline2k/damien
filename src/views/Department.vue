@@ -5,7 +5,7 @@
         <h1
           v-if="get(department, 'deptName')"
           id="page-title"
-          :style="{color: titleHexColor}"
+          class="text-title"
           tabindex="-1"
         >
           <div class="d-flex flex-wrap">
@@ -150,7 +150,7 @@
 
 <script>
 import {filter as _filter, get, includes, isEmpty, size} from 'lodash'
-import {putFocusNextTick} from '@/lib/utils'
+import {getCatalogListings, putFocusNextTick} from '@/lib/utils'
 import Context from '@/mixins/Context.vue'
 import DepartmentContact from '@/components/admin/DepartmentContact'
 import DepartmentEditSession from '@/mixins/DepartmentEditSession'
@@ -159,7 +159,6 @@ import EditDepartmentContact from '@/components/admin/EditDepartmentContact'
 import EvaluationTable from '@/components/evaluation/EvaluationTable'
 import NotificationForm from '@/components/admin/NotificationForm'
 import TermSelect from '@/components/util/TermSelect'
-import Util from '@/mixins/Util.vue'
 import {useContextStore} from '@/stores/context'
 
 export default {
@@ -172,7 +171,7 @@ export default {
     NotificationForm,
     TermSelect
   },
-  mixins: [Context, DepartmentEditSession, Util],
+  mixins: [Context, DepartmentEditSession],
   data: () => ({
     contactDetailsPanel: [],
     contactsPanel: undefined,
@@ -196,6 +195,7 @@ export default {
     putFocusNextTick('page-title')
   },
   methods: {
+    getCatalogListings,
     size,
     includes,
     isEmpty,

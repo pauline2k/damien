@@ -3,7 +3,7 @@
     <div class="d-flex">
       <h1
         id="page-title"
-        :style="{color: titleHexColor}"
+        class="text-title"
         tabindex="-1"
       >
         List Management
@@ -426,13 +426,12 @@ import Context from '@/mixins/Context.vue'
 import EditServiceAnnouncement from '@/components/admin/EditServiceAnnouncement'
 import ListManagementSession from '@/mixins/ListManagementSession'
 import SortableTableHeader from '@/components/util/SortableTableHeader'
-import Util from '@/mixins/Util'
 import {useContextStore} from '@/stores/context'
 
 export default {
   name: 'NannysRoom',
   components: {ConfirmDialog, EditServiceAnnouncement, SortableTableHeader},
-  mixins: [Context, ListManagementSession, Util],
+  mixins: [Context, ListManagementSession],
   data: () => ({
     autoPublishEnabled: undefined,
     instructorValid: true,
