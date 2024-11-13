@@ -58,6 +58,12 @@ export const useContextStore = defineStore('context', {
     setCurrentUser(currentUser: any) {
       this.currentUser = currentUser
     },
+    setDepartmentForms(departmentForms: any) {
+      this.config.departmentForms = departmentForms
+    },
+    setEvaluationTypes(evaluationTypes: any) {
+      this.config.evaluationTypes = evaluationTypes
+    },
     setIsSelectedTermLocked(isLocked: boolean) {
       this.isSelectedTermLocked = isLocked
     },

@@ -9,6 +9,6 @@ export function deleteEvaluationType(name) {
   return axios.delete(`${getApiBaseUrl()}/api/evaluation_type/${name}`)
 }
 
-export function getEvaluationTypes() {
+export function getEvaluationTypes(): any {
   return axios.get(`${getApiBaseUrl()}/api/evaluation_types`)
 }

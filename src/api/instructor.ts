@@ -9,7 +9,7 @@ export function deleteInstructor(uid) {
   return axios.delete(`${getApiBaseUrl()}/api/instructor/${uid}`)
 }
 
-export function getInstructors() {
+export function getInstructors(): any {
   return axios.get(`${getApiBaseUrl()}/api/instructors`)
 }
 
