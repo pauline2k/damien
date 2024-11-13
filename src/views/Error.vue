@@ -1,7 +1,7 @@
 <template>
   <v-banner class="pa-8">
     <v-icon
-      icon="mdi-alert"
+      :icon="mdiAlert"
       color="warning"
       x-large
     />
@@ -22,11 +22,13 @@
 <script>
 import Util from '@/mixins/Util'
 import {useContextStore} from '@/stores/context'
+import {mdiAlert} from '@mdi/js'
 
 export default {
   name: 'Error',
   mixins: [Util],
   data: () => ({
+    mdiAlert,
     message: undefined
   }),
   mounted() {

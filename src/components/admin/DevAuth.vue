@@ -37,7 +37,7 @@
       @keypress.enter.prevent="logIn"
     >
       Dev Auth
-      <Damien class="ml-2 damien-icon" />
+      <img alt="Damien, the son of the Devil" src="@/assets/damien.svg" class="ml-2 damien-icon" />
     </v-btn>
   </v-form>
 </template>
@@ -47,13 +47,9 @@ import {devAuthLogIn} from '@/api/auth'
 import {get, noop, trim} from 'lodash'
 import {putFocusNextTick} from '@/lib/utils'
 import Context from '@/mixins/Context'
-import Damien from '../../assets/damien.svg'
 
 export default {
   name: 'DevAuth',
-  components: {
-    Damien
-  },
   mixins: [Context],
   data: () => ({
     uid: null,

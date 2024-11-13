@@ -3,6 +3,7 @@ import {getApiBaseUrl} from '@/api/api-utils'
 
 export function addDepartmentForm(name: any) {
   return axios.post(`${getApiBaseUrl()}/api/department_form/${name}`)
+    .then(response => response.data)
 }
 
 export function deleteDepartmentForm(name: any) {
@@ -11,4 +12,5 @@ export function deleteDepartmentForm(name: any) {
 
 export function getDepartmentForms(): any {
   return axios.get(`${getApiBaseUrl()}/api/department_forms`)
+    .then(response => response.data)
 }

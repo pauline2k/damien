@@ -26,7 +26,7 @@
               {{ screenReaderAlert }}
             </span>
             <span v-if="!config.isVueAppDebugMode || !screenReaderAlert">
-              <v-icon small>mdi-copyright</v-icon> {{ new Date().getFullYear() }}
+              <v-icon :icon="mdiCopyright" size="small" /> {{ new Date().getFullYear() }}
               The Regents of the University of California
             </span>
           </div>
@@ -38,17 +38,14 @@
 
 <script>
 import Context from '@/mixins/Context'
-import {useContextStore} from '@/stores/context'
+import {mdiCopyright} from '@mdi/js'
 
 export default {
   name: 'DamienFooter',
   mixins: [Context],
   data: () => ({
-    config: undefined
-  }),
-  created() {
-    this.config = useContextStore().config
-  }
+    mdiCopyright
+  })
 }
 </script>
 
