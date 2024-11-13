@@ -35,19 +35,14 @@
           @click="toRoute(item.path)"
           @keypress.enter.prevent="toRoute(item.path)"
         >
-          <v-list-item-icon>
-            <template v-if="typeof item.icon === 'string'">
-              <v-icon color="primary-contrast">{{ item.icon }}</v-icon>
-            </template>
-            <template v-else>
-              <component :is="item.icon" />
-            </template>
-          </v-list-item-icon>
-          <v-list-item-content class="py-2">
+          <v-list-item-title class="py-2">
+            <div>
+              <img alt="Lightbulb icon" :src="`@/${item.icon}`" />
+            </div>
             <v-list-item-title class="d-flex text-wrap sidebar-link-content">
               <span class="align-self-center">{{ item.title }}</span>
             </v-list-item-title>
-          </v-list-item-content>
+          </v-list-item-title>
         </v-list-item>
         <v-list-item
           :id="`sidebar-link-${size(navItems)}`"
@@ -55,12 +50,12 @@
           @click="toggleColorScheme"
           @keypress.enter.prevent="toggleColorScheme"
         >
-          <v-list-item-icon>
-            <DarkModeIcon />
-          </v-list-item-icon>
-          <v-list-item-content>
+          <v-icon>
+            <img alt="Lightbulb icon" src="@/assets/lightbulb-outline.svg" />
+          </v-icon>
+          <div>
             <v-list-item-title>{{ $vuetify.theme.dark ? 'Light' : 'Dark' }} mode</v-list-item-title>
-          </v-list-item-content>
+          </div>
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
@@ -89,20 +84,19 @@
       </div>
       <div class="ml-auto">
         <v-menu offset-y rounded="lg">
-          <template #activator="{ on, attrs }">
+          <template #activator="{props: menuProps}">
             <v-btn
               id="btn-main-menu"
-              v-bind="attrs"
               color="secondary"
               dark
-              v-on="on"
+              v-bind="menuProps"
             >
               <span class="sr-only">User profile for </span>{{ currentUser.firstName }}
             </v-btn>
           </template>
           <v-list>
             <v-list-item id="menu-item-log-out" link @click="logOut">
-              <v-list-item-content>Log Out</v-list-item-content>
+              <v-list-item-title>Log Out</v-list-item-title>
             </v-list-item>
           </v-list>
         </v-menu>
@@ -128,36 +122,26 @@
       </div>
       <router-view :key="stripAnchorRef($route.fullPath)" class="px-4"></router-view>
     </v-main>
-    <Footer />
+    <DamienFooter />
   </v-app>
 </template>
 
 <script>
-import {getCasLogoutUrl} from '@/api/auth'
-import {map, noop, size} from 'lodash'
 import Context from '@/mixins/Context'
 import DamienFooter from '@/components/util/DamienFooter'
-import DarkModeIcon from '@/assets/lightbulb-outline.svg'
-import ErrorIcon from '@/assets/exclamation-circle-solid.svg'
-import GroupIcon from '@/assets/account-group.svg'
-import ListIcon from '@/assets/playlist-edit.svg'
 import Snackbar from '@/components/util/Snackbar'
 import Spinner from '@/components/util/Spinner'
-import StatusIcon from '@/assets/list-status.svg'
 import Util from '@/mixins/Util'
+import {getCasLogoutUrl} from '@/api/auth'
+import {map, noop, size} from 'lodash'
 import {useContextStore} from '@/stores/context'
 
 export default {
   name: 'BaseView',
   components: {
     DamienFooter,
-    DarkModeIcon,
-    ErrorIcon,
-    GroupIcon,
-    ListIcon,
     Snackbar,
-    Spinner,
-    StatusIcon
+    Spinner
   },
   mixins: [Context, Util],
   data: () => ({
@@ -165,17 +149,17 @@ export default {
   }),
   computed: {
     currentUser() {
-      return useContextStore().currentUser()
+      return useContextStore().currentUser
     }
   },
   created() {
     this.prefersColorScheme()
     if (this.currentUser.isAdmin) {
       this.navItems = [
-        {title: 'Status Board', icon: StatusIcon, path: '/status'},
-        {title: 'Publish', icon: ErrorIcon, path: '/publish'},
-        {title: 'Group Management', icon: GroupIcon, path: '/departments'},
-        {title: 'List Management', icon: ListIcon, path: '/lists'}
+        {title: 'Status Board', icon: 'assets/list-status.svg', path: '/status'},
+        {title: 'Publish', icon: 'assets/exclamation-circle-solid.svg', path: '/publish'},
+        {title: 'Group Management', icon: 'assets/account-group.svg', path: '/departments'},
+        {title: 'List Management', icon: 'assets/playlist-edit.svg', path: '/lists'}
       ]
     } else if (size(this.currentUser.departments)) {
       this.navItems = map(this.currentUser.departments, department => {

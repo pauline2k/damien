@@ -52,6 +52,16 @@ export const useContextStore = defineStore('context', {
     loadingStart() {
       this.loading = true
     },
+    selectTerm(termId) {
+      return new Promise<void>(resolve => {
+        const term = find(this.config.availableTerms, {'id': termId || this.config.currentTermId})
+        if (term) {
+          this.selectedTermId = term.id
+          this.selectedTermName = term.name
+          resolve()
+        }
+      })
+    },
     setConfig(data: any) {
       this.config = data
     },
@@ -69,16 +79,6 @@ export const useContextStore = defineStore('context', {
     },
     setScreenReaderAlert(alert: string) {
       this.screenReaderAlert = alert
-    },
-    setSelectedTerm(termId: string) {
-      return new Promise<void>(resolve => {
-        const term = find(this.config.availableTerms, {'id': termId || this.config.currentTermId})
-        if (term) {
-          this.selectedTermId = term.id
-          this.selectedTermName = term.name
-          resolve()
-        }
-      })
     },
     setServiceAnnouncement(data: any) {
       this.serviceAnnouncement = data

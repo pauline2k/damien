@@ -54,10 +54,9 @@
         <v-icon
           v-if="!isTogglingLock"
           :color="isSelectedTermLocked ? 'error' : 'success'"
-          large
-        >
-          {{ isSelectedTermLocked ? 'mdi-lock' : 'mdi-lock-open' }}
-        </v-icon>
+          :icon="isSelectedTermLocked ? mdiLock : mdiLockOpen"
+          size="large"
+        />
       </v-btn>
     </div>
   </div>
@@ -68,6 +67,7 @@ import {find, get, includes} from 'lodash'
 import {getEvaluationTerm, lockEvaluationTerm, unlockEvaluationTerm} from '@/api/evaluationTerms'
 import {putFocusNextTick} from '@/lib/utils'
 import Context from '@/mixins/Context.vue'
+import {mdiLock, mdiLockOpen} from '@mdi/js'
 
 export default {
   name: 'TermSelect',
@@ -85,7 +85,9 @@ export default {
     }
   },
   data: () => ({
-    isTogglingLock: false
+    isTogglingLock: false,
+    mdiLockOpen,
+    mdiLock
   }),
   created() {
     const termId = get(this.$route.query, 'term')

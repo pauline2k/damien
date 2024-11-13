@@ -28,11 +28,11 @@ app.config.errorHandler = appErrorHandler
 
 initializeAxios(axios)
 
-axios.get(`${apiBaseUrl}/api/user/my_profile`).then(data => {
-  useContextStore().setCurrentUser(data)
+axios.get(`${apiBaseUrl}/api/user/my_profile`).then(response => {
+  useContextStore().setCurrentUser(response.data)
 
-  axios.get(`${apiBaseUrl}/api/config`).then(data => {
-    const config = {...data, ...{apiBaseUrl, isVueAppDebugMode}}
+  axios.get(`${apiBaseUrl}/api/config`).then(response => {
+    const config = {...response.data, ...{apiBaseUrl, isVueAppDebugMode}}
     useContextStore().setConfig(config)
     app.use(router).mount('#app')
   })

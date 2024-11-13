@@ -6,7 +6,7 @@ import {nextTick} from 'vue'
 export default {
   name: 'Context',
   computed: {
-    ...mapState('context', [
+    ...mapState(useContextStore, [
       'config',
       'isSelectedTermLocked',
       'loading',
@@ -25,7 +25,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions('context', [
+    ...mapActions(useContextStore, [
       'setIsSelectedTermLocked',
       'snackbarClose',
       'selectTerm'

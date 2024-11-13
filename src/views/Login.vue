@@ -25,7 +25,7 @@
               @keypress.enter.prevent.stop="logIn"
             >
               Sign In
-              <v-icon class="pl-2">mdi-arrow-right-circle-outline</v-icon>
+              <v-icon class="pl-2" :icon="mdiArrowRightCircleOutline" />
             </v-btn>
             <DevAuth v-if="config.devAuthEnabled" />
           </v-card-actions>
@@ -36,12 +36,13 @@
 </template>
 
 <script>
-import {get} from 'lodash'
-import {getCasLoginURL} from '@/api/auth'
-import {putFocusNextTick} from '@/lib/utils'
 import Context from '@/mixins/Context'
 import DevAuth from '@/components/admin/DevAuth'
 import Snackbar from '@/components/util/Snackbar'
+import {get} from 'lodash'
+import {getCasLoginURL} from '@/api/auth'
+import {mdiArrowRightCircleOutline} from '@mdi/js'
+import {putFocusNextTick} from '@/lib/utils'
 
 export default {
   name: 'Login',
@@ -50,6 +51,9 @@ export default {
     Snackbar
   },
   mixins: [Context],
+  data: () => ({
+    mdiArrowRightCircleOutline
+  }),
   created() {
     putFocusNextTick('page-title')
     const error = get(this.$route, 'query.error')
@@ -58,7 +62,6 @@ export default {
     } else {
       this.alertScreenReader(`Welcome to Course Evaluations - ${this.config.currentTermName}. Please log in.`)
     }
-
   },
   methods: {
     logIn() {

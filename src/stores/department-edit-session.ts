@@ -105,24 +105,96 @@ export const useDepartmentStore = defineStore('department', {
     showTheOmenPoster: undefined
   }),
   actions: {
-    // TODO
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    addSection(sectionId, termId) { // eslint-disable-line no-unused-vars
+      // TODO
+    },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    deleteContact(userId: number) { // eslint-disable-line no-unused-vars
+      // TODO
+    },
+    deselectAllEvaluations() {
+      // TODO
+    },
+    dismissErrorDialog() {
+      // TODO
+    },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    editEvaluation(evaluationId, sectionId, termId, fields) { // eslint-disable-line no-unused-vars
+      // TODO
+    },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    filterSelectedEvaluations(searchFilterResults, enabledStatuses) { // eslint-disable-line no-unused-vars
+      // TODO
+    },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    init(departmentId: number) { // eslint-disable-line no-unused-vars
+      // TODO
+      return new Promise<void>(resolve => {
+        resolve()
+      })
+    },
+    refreshAll() {
+      // TODO
+      return new Promise<void>(resolve => {
+        resolve()
+      })
+    },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    refreshSection(sectionId, termId) { // eslint-disable-line no-unused-vars
+      // TODO
+      return new Promise<void>(resolve => {
+        resolve()
+      })
+    },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    selectAllEvaluations(enabledStatuses: string[]) { // eslint-disable-line no-unused-vars
+      // TODO
+    },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    setEvaluations(evaluations: any[]) { // eslint-disable-line no-unused-vars
+      // TODO
+    },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    setDisableControls(disable: boolean) { // eslint-disable-line no-unused-vars
+      // TODO
+    },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    setSelectedEvaluations(selectedEvaluationIds: boolean) { // eslint-disable-line no-unused-vars
+      // TODO
+    },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    setShowTheOmenPoster(show: boolean) { // eslint-disable-line no-unused-vars
+      // TODO
+    },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    showErrorDialog(text: string) { // eslint-disable-line no-unused-vars
+      // TODO
+    },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    toggleSelectEvaluation(evaluation: any) { // eslint-disable-line no-unused-vars
+      // TODO
+    },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    updateContact(contact: any) { // eslint-disable-line no-unused-vars
+      // TODO
+      return new Promise<void>(resolve => {
+        resolve()
+      })
+    },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    updateNote(note, termId) { // eslint-disable-line no-unused-vars
+      // TODO
+      return new Promise<void>(resolve => {
+        resolve()
+      })
+    },
+    updateSelectedEvaluationIds() {
+      // TODO
+    }
   }
 })
 
-// const state = {
-//   activeDepartmentForms: [],
-//   allDepartmentForms: [],
-//   contacts: [],
-//   department: undefined,
-//   disableControls: false,
-//   errorDialog: false,
-//   errorDialogText: null,
-//   evaluations: [],
-//   note: undefined,
-//   selectedEvaluationIds: [] as any[],
-//   showTheOmenPoster: undefined
-// }
-//
 // const getters = {
 //   activeDepartmentForms: (state: any): any[] => state.activeDepartmentForms,
 //   allDepartmentForms: (state: any): any[] => state.allDepartmentForms,
