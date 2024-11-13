@@ -70,8 +70,6 @@ export default createVuetify({
     VRadio,
     VRadioGroup,
     VRow,
-    // VSimpleCheckbox,
-    // VSimpleTable,
     VSlideXReverseTransition,
     VSnackbar,
     VSpacer,

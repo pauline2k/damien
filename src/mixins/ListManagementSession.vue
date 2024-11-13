@@ -1,11 +1,11 @@
 <script>
-
 import {mapActions, mapState} from 'pinia'
+import {useListManagementStore} from '@/stores/list-management-session'
 
 export default {
   name: 'ListManagementSession',
   computed: {
-    ...mapState('listManagement', [
+    ...mapState(useListManagementStore, [
       'departmentForms',
       'disableControls',
       'evaluationTypes',
@@ -20,7 +20,7 @@ export default {
     ])
   },
   methods: {
-    ...mapActions('listManagement', [
+    ...mapActions(useListManagementStore, [
       'addDepartmentForm',
       'addEvaluationType',
       'addInstructor',
