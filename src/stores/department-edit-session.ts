@@ -1,7 +1,32 @@
-import {addSection, deleteContact, getDepartment, getSectionEvaluations, updateContact, updateDepartmentNote, updateEvaluations} from '@/api/departments'
+import {
+  addSection,
+  deleteContact,
+  getDepartment,
+  getSectionEvaluations,
+  updateContact,
+  updateDepartmentNote,
+  updateEvaluations
+} from '@/api/departments'
+import {alertScreenReader} from '@/lib/utils'
 import {DateTime} from 'luxon'
 import {defineStore} from 'pinia'
-import {each, filter, find, findIndex, get, includes, indexOf, intersectionWith, isUndefined, noop, reduce, reject, some, sortBy, toString} from 'lodash'
+import {
+  each,
+  filter,
+  find,
+  findIndex,
+  get,
+  includes,
+  indexOf,
+  intersectionWith,
+  isUndefined,
+  noop,
+  reduce,
+  reject,
+  some,
+  sortBy,
+  toString
+} from 'lodash'
 import {useContextStore} from '@/stores/context'
 
 export type Department = {
@@ -267,7 +292,7 @@ export const useDepartmentStore = defineStore('department', {
       useDepartmentStore().setIsSelected(evaluation.id)
       const course = `${evaluation.subjectArea} ${evaluation.catalogId} ${evaluation.instructionFormat} ${evaluation.sectionNumber} (${evaluation.courseNumber})`
       const message = `${this.selectedEvaluationIds.includes(evaluation.id) ? '' : 'un'}selected ${course} evaluation`
-      useContextStore().setScreenReaderAlert(message)
+      alertScreenReader(message)
     },
     updateContact(contact: any) {
       this.disableControls = true

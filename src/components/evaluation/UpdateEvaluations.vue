@@ -252,13 +252,12 @@
 </template>
 
 <script>
+import ConfirmDialog from '@/components/util/ConfirmDialog'
+import DepartmentEditSession from '@/mixins/DepartmentEditSession'
+import PersonLookup from '@/components/admin/PersonLookup'
 import {addInstructor} from '@/api/instructor'
 import {endsWith, find, get, isEmpty, isObject, map, max, min, reduce, size, toInteger} from 'lodash'
 import {toLocaleFromISO, toFormatFromISO} from '@/lib/utils'
-import ConfirmDialog from '@/components/util/ConfirmDialog'
-import Context from '@/mixins/Context'
-import DepartmentEditSession from '@/mixins/DepartmentEditSession'
-import PersonLookup from '@/components/admin/PersonLookup'
 import {useContextStore} from '@/stores/context'
 import {useTheme} from 'vuetify'
 
@@ -268,7 +267,7 @@ export default {
     ConfirmDialog,
     PersonLookup
   },
-  mixins: [Context, DepartmentEditSession],
+  mixins: [DepartmentEditSession],
   props: {
     action: {
       required: true,
@@ -346,7 +345,7 @@ export default {
   computed: {
     allowEdits() {
       const currentUser = useContextStore().currentUser
-      return currentUser.isAdmin || !this.isSelectedTermLocked
+      return currentUser.isAdmin || !useContextStore().isSelectedTermLocked
     },
     disableApply() {
       return this.disableControls ||
@@ -354,7 +353,7 @@ export default {
         (this.isInstructorRequired && !get(this.selectedInstructor, 'uid'))
     },
     selectedDepartmentFormName() {
-      return get(find(this.config.departmentForms, df => df.id === this.selectedDepartmentForm), 'name')
+      return get(find(useContextStore().config.departmentForms, df => df.id === this.selectedDepartmentForm), 'name')
     },
     selectedEvaluationsDescription() {
       if (isEmpty(this.selectedEvaluationIds)) {
@@ -363,7 +362,7 @@ export default {
       return `${this.selectedEvaluationIds.length} ${this.selectedEvaluationIds.length === 1 ? 'row' : 'rows'}`
     },
     selectedEvaluationTypeName() {
-      return get(find(this.config.evaluationTypes, et => et.id === this.selectedEvaluationType), 'name')
+      return get(find(useContextStore().config.evaluationTypes, et => et.id === this.selectedEvaluationType), 'name')
     },
     selectedStartDay() {
       return this.selectedStartDate ? toFormatFromISO(this.selectedStartDate, 'o') : null
@@ -390,7 +389,7 @@ export default {
     }
   },
   created() {
-    this.evaluationTypes = [{id: null, name: 'Default'}].concat(this.config.evaluationTypes)
+    this.evaluationTypes = [{id: null, name: 'Default'}].concat(useContextStore().config.evaluationTypes)
     this.model = this.isUpdating
   },
   methods: {

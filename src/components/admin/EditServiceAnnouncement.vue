@@ -31,11 +31,9 @@
 <script>
 import {getServiceAnnouncement, updateServiceAnnouncement} from '@/api/config'
 import {trim} from 'lodash'
-import Context from '@/mixins/Context'
 
 export default {
   name: 'EditServiceAnnouncement',
-  mixins: [Context],
   data: () => ({
     isPublished: undefined,
     isSaving: false,

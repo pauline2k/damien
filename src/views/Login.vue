@@ -11,7 +11,7 @@
           <div class="text-center">
             <h1 id="page-title">
               <strong>Welcome to Course Evaluations</strong>
-              {{ config.currentTermName }}
+              {{ contextStore.config.currentTermName }}
             </h1>
           </div>
           <v-card-actions class="px-16 pt-12 d-flex flex-column">
@@ -27,7 +27,7 @@
               Sign In
               <v-icon class="pl-2" :icon="mdiArrowRightCircleOutline" />
             </v-btn>
-            <DevAuth v-if="config.devAuthEnabled" />
+            <DevAuth v-if="contextStore.config.devAuthEnabled" />
           </v-card-actions>
         </v-card>
       </v-main>
@@ -35,14 +35,18 @@
   </v-app>
 </template>
 
+<script setup>
+import {useContextStore} from '@/stores/context'
+const contextStore = useContextStore()
+</script>
+
 <script>
-import Context from '@/mixins/Context'
 import DevAuth from '@/components/admin/DevAuth'
 import Snackbar from '@/components/util/Snackbar'
+import {alertScreenReader, putFocusNextTick} from '@/lib/utils'
 import {get} from 'lodash'
 import {getCasLoginURL} from '@/api/auth'
 import {mdiArrowRightCircleOutline} from '@mdi/js'
-import {putFocusNextTick} from '@/lib/utils'
 
 export default {
   name: 'Login',
@@ -50,7 +54,6 @@ export default {
     DevAuth,
     Snackbar
   },
-  mixins: [Context],
   data: () => ({
     mdiArrowRightCircleOutline
   }),
@@ -58,9 +61,9 @@ export default {
     putFocusNextTick('page-title')
     const error = get(this.$route, 'query.error')
     if (error) {
-      this.reportError(error)
+      useContextStore().snackbarReportError(error)
     } else {
-      this.alertScreenReader(`Welcome to Course Evaluations - ${this.config.currentTermName}. Please log in.`)
+      alertScreenReader(`Welcome to Course Evaluations - ${useContextStore().config.currentTermName}. Please log in.`)
     }
   },
   methods: {

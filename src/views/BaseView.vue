@@ -69,19 +69,6 @@
       <div class="display-1 mr-4 text-no-wrap">
         Course Evaluations
       </div>
-      <div>
-        <v-spacer>
-          <v-chip
-            v-if="contextStore.config.isVueAppDebugMode && contextStore.screenReaderAlert"
-            id="screen-reader-alert-debug"
-            class="sr-debug font-italic"
-            color="primary-contrast"
-            outlined
-          >
-            {{ contextStore.screenReaderAlert }}
-          </v-chip>
-        </v-spacer>
-      </div>
       <div class="ml-auto">
         <v-menu offset-y rounded="lg">
           <template #activator="{props: menuProps}">
@@ -130,16 +117,17 @@
 import DamienFooter from '@/components/util/DamienFooter'
 import Snackbar from '@/components/util/Snackbar'
 import Spinner from '@/components/util/Spinner'
+import {alertScreenReader, stripAnchorRef} from '@/lib/utils'
 import {getCasLogoutUrl} from '@/api/auth'
 import {map, noop, size} from 'lodash'
-import {stripAnchorRef} from '@/lib/utils'
-import {useContextStore} from '@/stores/context'
 import {onMounted, ref} from 'vue'
+import {storeToRefs} from 'pinia'
+import {useContextStore} from '@/stores/context'
 import {useTheme} from 'vuetify'
 import {useRoute, useRouter} from 'vue-router'
 
 const contextStore = useContextStore()
-const currentUser = contextStore.currentUser
+const {currentUser} = storeToRefs(contextStore)
 const navItems = ref(undefined)
 const route = useRoute()
 const router = useRouter()
@@ -167,7 +155,7 @@ onMounted(() => {
 })
 
 const logOut = () => {
-  contextStore.setScreenReaderAlert('Logging out')
+  alertScreenReader('Logging out')
   getCasLogoutUrl().then(data => window.location.href = data.casLogoutUrl)
 }
 

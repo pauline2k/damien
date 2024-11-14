@@ -1,13 +1,13 @@
 <template>
   <v-snackbar
-    v-model="contextStore.snackbarShow"
+    v-model="snackbarShow"
     aria-live="assertive"
-    :color="contextStore.snackbar.color"
+    :color="snackbar.color"
     content-class="align-center"
     light
     max-width="unset"
     multi-line
-    :timeout="contextStore.snackbar.timeout"
+    :timeout="snackbar.timeout"
     :top="true"
   >
     <div class="d-flex align-center justify-space-between">
@@ -16,15 +16,15 @@
         aria-live="polite"
         class="font-size-18 mx-4 text-condensed"
         role="alert"
-        v-html="contextStore.snackbar.text"
+        v-html="snackbar.text"
       />
       <div>
         <v-btn
           id="btn-close-alert"
           aria-label="Close this dialog box."
-          :color="contextStore.snackbar.color"
+          :color="snackbar.color"
           text="Close"
-          @click="contextStore.snackbarClose"
+          @click="snackbarClose"
         />
       </div>
     </div>
@@ -32,7 +32,8 @@
 </template>
 
 <script setup>
+import {storeToRefs} from 'pinia'
 import {useContextStore} from '@/stores/context'
 
-const contextStore = useContextStore()
+const {snackbar, snackbarClose, snackbarShow} = storeToRefs(useContextStore())
 </script>

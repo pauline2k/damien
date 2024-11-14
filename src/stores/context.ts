@@ -1,7 +1,7 @@
+import {alertScreenReader} from '@/lib/utils'
 import {defineStore} from 'pinia'
 import {putFocusNextTick} from '@/lib/utils'
-import {find, noop} from 'lodash'
-import {nextTick} from 'vue'
+import {find,} from 'lodash'
 
 export type CurrentUser = {
   departments: any[],
@@ -29,7 +29,10 @@ export const useContextStore = defineStore('context', {
     } as CurrentUser,
     isSelectedTermLocked: false,
     loading: false,
-    screenReaderAlert: undefined as string | undefined,
+    screenReaderAlert: {
+      message: '',
+      politeness: 'polite'
+    },
     selectedTermId: undefined as string | undefined,
     selectedTermName: undefined,
     serviceAnnouncement: undefined,
@@ -41,26 +44,20 @@ export const useContextStore = defineStore('context', {
     snackbarShow: false
   }),
   actions: {
-    alertScreenReader(message: string) {
-      this.screenReaderAlert = ''
-      nextTick(() => {
-        this.screenReaderAlert = message
-      }).then(noop)
-    },
-    loadingComplete(pageTitle: string, alert?: string) {
+    loadingComplete(pageTitle: string, alert: string) {
       document.title = `${pageTitle || 'UC Berkeley'} | Course Evaluations`
       this.loading = false
       if (alert) {
-        this.screenReaderAlert = alert
+        alertScreenReader(alert)
       } else if (pageTitle) {
-        this.screenReaderAlert = `${pageTitle} page is ready`
+        alertScreenReader(`${pageTitle} page is ready`)
       }
       putFocusNextTick('page-title')
     },
     loadingStart() {
       this.loading = true
     },
-    selectTerm(termId: string) {
+    selectTerm(termId: string|number) {
       return new Promise<void>(resolve => {
         const term = find(this.config.availableTerms, {'id': termId || this.config.currentTermId})
         if (term) {
@@ -85,8 +82,11 @@ export const useContextStore = defineStore('context', {
     setIsSelectedTermLocked(isLocked: boolean) {
       this.isSelectedTermLocked = isLocked
     },
-    setScreenReaderAlert(alert: string) {
-      this.screenReaderAlert = alert
+    setScreenReaderAlert(screenReaderAlert: any) {
+      this.screenReaderAlert = {
+        message: screenReaderAlert.message,
+        politeness: screenReaderAlert.politeness || 'polite'
+      }
     },
     setSelectedTerm(termId: string) {
       return new Promise<void>(resolve => {
@@ -104,7 +104,7 @@ export const useContextStore = defineStore('context', {
     snackbarClose() {
       this.snackbarShow = false
       this.snackbar.text = undefined
-      this.screenReaderAlert = 'Message closed'
+      alertScreenReader('Message closed')
     },
     snackbarOpen(text: string, color: string) {
       this.snackbar.text = text

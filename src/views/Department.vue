@@ -16,10 +16,10 @@
                   ({{ getCatalogListings(department).join(', ') }})&MediumSpace;
                 </span>
               </span>
-              <span v-if="selectedTermName" class="mr-2">&mdash;&nbsp;</span>
+              <span v-if="contextStore.selectedTermName" class="mr-2">&mdash;&nbsp;</span>
             </div>
-            <div v-if="selectedTermName">
-              {{ selectedTermName }}
+            <div v-if="contextStore.selectedTermName">
+              {{ contextStore.selectedTermName }}
             </div>
           </div>
         </h1>
@@ -28,7 +28,7 @@
         <TermSelect :after-select="refresh" :term-ids="get(department, 'enrolledTerms')" />
       </div>
     </div>
-    <v-container v-if="!loading" class="mx-0 px-0 pb-2" fluid>
+    <v-container v-if="!contextStore.loading" class="mx-0 px-0 pb-2" fluid>
       <v-row justify="start">
         <v-col cols="12" md="5">
           <div class="contacts-container">
@@ -78,7 +78,7 @@
                       />
                     </v-expansion-panels>
                   </v-expansion-panel-text>
-                  <div v-if="currentUser.isAdmin" class="pl-4">
+                  <div v-if="contextStore.currentUser.isAdmin" class="pl-4">
                     <v-btn
                       v-if="!isCreatingNotification"
                       id="open-notification-form-btn"
@@ -98,7 +98,7 @@
                 </template>
               </v-expansion-panel>
             </v-expansion-panels>
-            <div v-if="currentUser.isAdmin" class="pl-4">
+            <div v-if="contextStore.currentUser.isAdmin" class="pl-4">
               <v-btn
                 v-if="!isAddingContact"
                 id="add-dept-contact-btn"
@@ -123,7 +123,7 @@
         </v-col>
       </v-row>
     </v-container>
-    <v-container v-if="!loading" class="mx-0 px-0 pb-6" fluid>
+    <v-container v-if="!contextStore.loading" class="mx-0 px-0 pb-6" fluid>
       <v-card outlined class="elevation-1">
         <EvaluationTable />
       </v-card>
@@ -149,10 +149,14 @@
   </div>
 </template>
 
+<script setup>
+import {useContextStore} from '@/stores/context'
+const contextStore = useContextStore()
+</script>
+
 <script>
+import {alertScreenReader, getCatalogListings, putFocusNextTick, scrollToTop} from '@/lib/utils'
 import {filter as _filter, get, includes, isEmpty, size} from 'lodash'
-import {getCatalogListings, putFocusNextTick} from '@/lib/utils'
-import Context from '@/mixins/Context.vue'
 import DepartmentContact from '@/components/admin/DepartmentContact'
 import DepartmentEditSession from '@/mixins/DepartmentEditSession'
 import DepartmentNote from '@/components/admin/DepartmentNote'
@@ -160,7 +164,6 @@ import EditDepartmentContact from '@/components/admin/EditDepartmentContact'
 import EvaluationTable from '@/components/evaluation/EvaluationTable'
 import NotificationForm from '@/components/admin/NotificationForm'
 import TermSelect from '@/components/util/TermSelect'
-import {useContextStore} from '@/stores/context'
 import {mdiClose, mdiMinusBoxMultipleOutline, mdiPlusBoxMultipleOutline, mdiPlusThick} from '@mdi/js'
 
 export default {
@@ -173,7 +176,7 @@ export default {
     NotificationForm,
     TermSelect
   },
-  mixins: [Context, DepartmentEditSession],
+  mixins: [DepartmentEditSession],
   data: () => ({
     contactDetailsPanel: [],
     contactsPanel: undefined,
@@ -185,9 +188,6 @@ export default {
     mdiPlusBoxMultipleOutline
   }),
   computed: {
-    currentUser() {
-      return useContextStore().currentUser
-    },
     notificationRecipients() {
       return {
         deptName: this.department.deptName,
@@ -208,18 +208,18 @@ export default {
     afterSaveContact() {
       this.isAddingContact = false
       this.contactsPanel = 0
-      this.alertScreenReader('Contact saved.')
+      alertScreenReader('Contact saved.')
       putFocusNextTick('add-dept-contact-btn')
     },
     afterSendNotification() {
       this.isCreatingNotification = false
-      this.snackbarOpen('Notification sent.')
+      useContextStore().snackbarOpen('Notification sent.')
       putFocusNextTick('open-notification-form-btn')
     },
     cancelSendNotification() {
       this.isCreatingNotification = false
-      this.alertScreenReader('Notification canceled.')
-      this.scrollToTop(1000)
+      alertScreenReader('Notification canceled.')
+      scrollToTop(1000)
       putFocusNextTick('open-notification-form-btn')
     },
     collapseAllContacts() {
@@ -230,16 +230,15 @@ export default {
     get,
     onCancelAddContact() {
       this.isAddingContact = false
-      this.alertScreenReader('Canceled. Nothing saved.')
+      alertScreenReader('Canceled. Nothing saved.')
       putFocusNextTick('add-dept-contact-btn')
     },
     refresh() {
-      const contextStore = useContextStore()
-      contextStore.loadingStart()
-      this.alertScreenReader(`Loading ${this.selectedTermName}`)
+      useContextStore().loadingStart()
+      alertScreenReader(`Loading ${useContextStore().selectedTermName}`)
       const departmentId = get(this.$route, 'params.departmentId')
       this.init(departmentId).then(department => {
-        contextStore.loadingComplete(`${department.deptName} ${this.selectedTermName}`)
+        useContextStore().loadingComplete(`${department.deptName} ${useContextStore().selectedTermName}`)
       })
     }
   }

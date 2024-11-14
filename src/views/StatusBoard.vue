@@ -7,7 +7,7 @@
           class="py-2 text-title"
           tabindex="-1"
         >
-          Evaluation Status Dashboard - {{ selectedTermName }}
+          Evaluation Status Dashboard - {{ contextStore.selectedTermName }}
         </h1>
       </v-col>
       <v-col cols="3">
@@ -18,12 +18,12 @@
       <v-data-table
         id="department-table"
         disable-pagination
-        :disable-sort="loading"
+        :disable-sort="contextStore.loading"
         :headers="departmentHeaders"
         hide-default-footer
         hide-default-header
         :items="departments"
-        :loading="loading || !selectedTermId"
+        :loading="contextStore.loading || !contextStore.selectedTermId"
         :sort-by.sync="sortBy"
         :sort-desc.sync="sortDesc"
       >
@@ -36,7 +36,7 @@
                   id="checkbox-select-dept-all"
                   class="align-center mt-0 pt-0"
                   color="tertiary"
-                  :disabled="loading"
+                  :disabled="contextStore.loading"
                   hide-details
                   :indeterminate="someDepartmentsSelected"
                   :ripple="false"
@@ -49,7 +49,7 @@
                   id="open-notification-form-btn"
                   class="ma-2 secondary text-capitalize"
                   color="secondary"
-                  :disabled="isEmpty(selectedDepartmentIds) || loading"
+                  :disabled="isEmpty(selectedDepartmentIds) || contextStore.loading"
                   small
                   text="Apply"
                   @click="() => isCreatingNotification = true"
@@ -70,7 +70,7 @@
                     :id="`checkbox-select-dept-${kebabCase(department.deptName)}`"
                     class="align-center mt-0 pt-0"
                     color="tertiary"
-                    :disabled="loading"
+                    :disabled="contextStore.loading"
                     hide-details
                     :ripple="false"
                     :value="isSelected(department)"
@@ -147,21 +147,23 @@
   </div>
 </template>
 
+<script setup>
+import {useContextStore} from '@/stores/context'
+const contextStore = useContextStore()
+</script>
+
 <script>
-import Context from '@/mixins/Context'
 import NotificationForm from '@/components/admin/NotificationForm'
 import SortableTableHeader from '@/components/util/SortableTableHeader'
 import TermSelect from '@/components/util/TermSelect'
+import {alertScreenReader, getCatalogListings, putFocusNextTick, toLocaleFromISO} from '@/lib/utils'
 import {each, filter as _filter, get, includes, indexOf, isEmpty, kebabCase, map, size} from 'lodash'
 import {getDepartmentsEnrolled} from '@/api/departments'
-import {getCatalogListings, putFocusNextTick, toLocaleFromISO} from '@/lib/utils'
 import {mdiCheckCircle} from '@mdi/js'
-import {useContextStore} from '@/stores/context'
 
 export default {
   name: 'StatusBoard',
   components: {NotificationForm, SortableTableHeader, TermSelect},
-  mixins: [Context],
   data: () => ({
     blockers: {},
     departments: [],
@@ -205,14 +207,13 @@ export default {
     }
   },
   created() {
-    const contextStore = useContextStore()
-    contextStore.loadingStart()
-    this.alertScreenReader(`Loading ${contextStore.selectedTermName}`)
+    useContextStore().loadingStart()
+    alertScreenReader(`Loading ${useContextStore().selectedTermName}`)
     this.departments = []
-    getDepartmentsEnrolled(true, false, true, this.selectedTermId).then(data => {
+    getDepartmentsEnrolled(true, false, true, useContextStore().selectedTermId).then(data => {
       this.departments = data
       this.loadBlockers().then(() => {
-        contextStore.loadingComplete(`Evaluation Status Dashboard for ${contextStore.selectedTermName}`)
+        useContextStore().loadingComplete(`Evaluation Status Dashboard for ${useContextStore().selectedTermName}`)
         putFocusNextTick('page-title')
       })
     })
@@ -221,12 +222,12 @@ export default {
     afterSendNotification() {
       this.selectedDepartmentIds = []
       this.isCreatingNotification = false
-      this.alertScreenReader('Notification sent.')
+      alertScreenReader('Notification sent.')
       putFocusNextTick('open-notification-form-btn')
     },
     cancelSendNotification() {
       this.isCreatingNotification = false
-      this.alertScreenReader('Notification canceled.')
+      alertScreenReader('Notification canceled.')
       putFocusNextTick('open-notification-form-btn')
     },
     get,
@@ -260,11 +261,11 @@ export default {
       } else {
         this.selectedDepartmentIds.splice(index, 1)
       }
-      this.alertScreenReader(`${department.name} ${isSelecting ? '' : 'un'}selected`)
+      alertScreenReader(`${department.name} ${isSelecting ? '' : 'un'}selected`)
     },
     toggleSelectAll() {
       this.selectedDepartmentIds = this.allDepartmentsSelected ? [] : map(this.departments, 'id')
-      this.alertScreenReader(`All departments ${this.allDepartmentsSelected ? '' : 'un'}selected.`)
+      alertScreenReader(`All departments ${this.allDepartmentsSelected ? '' : 'un'}selected.`)
     },
     toLocaleFromISO
   }

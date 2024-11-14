@@ -77,7 +77,7 @@
           :disabled="disableControls"
           :on-click-cancel="onCancelDelete"
           :on-click-confirm="onDelete"
-          :text="`Are you sure you want to delete the ${selectedTermName || ''} note?`"
+          :text="`Are you sure you want to delete the ${contextStore.selectedTermName || ''} note?`"
           :title="'Delete note?'"
         />
       </v-toolbar>
@@ -108,16 +108,20 @@
   </div>
 </template>
 
+<script setup>
+import {useContextStore} from '@/stores/context'
+const contextStore = useContextStore()
+</script>
+
 <script>
-import {putFocusNextTick} from '@/lib/utils'
+import {alertScreenReader, putFocusNextTick} from '@/lib/utils'
 import ConfirmDialog from '@/components/util/ConfirmDialog'
-import Context from '@/mixins/Context.vue'
 import DepartmentEditSession from '@/mixins/DepartmentEditSession'
 
 export default {
   name: 'DepartmentNote',
   components: {ConfirmDialog},
-  mixins: [Context, DepartmentEditSession],
+  mixins: [DepartmentEditSession],
   data: () => ({
     isConfirming: false,
     isEditable: false,
@@ -129,18 +133,18 @@ export default {
   },
   methods: {
     onCancelDelete() {
-      this.alertScreenReader('Canceled. Nothing deleted.')
+      alertScreenReader('Canceled. Nothing deleted.')
       putFocusNextTick('delete-dept-note-btn')
       this.reset()
     },
     onCancelSave() {
-      this.alertScreenReader('Canceled. Nothing saved.')
+      alertScreenReader('Canceled. Nothing saved.')
       putFocusNextTick('edit-dept-note-btn')
       this.reset()
     },
     onDelete() {
-      this.updateNote({note: null, termId: this.selectedTermId}).then(() => {
-        this.alertScreenReader('Note deleted.')
+      this.updateNote({note: null, termId: useContextStore().selectedTermId}).then(() => {
+        alertScreenReader('Note deleted.')
         putFocusNextTick('notes-title')
         this.reset()
       })
@@ -150,15 +154,15 @@ export default {
       putFocusNextTick('dept-note-textarea')
     },
     onSave() {
-      this.updateNote({note: this.item, termId: this.selectedTermId}).then(() => {
-        this.alertScreenReader('Note saved.')
+      this.updateNote({note: this.item, termId: useContextStore().selectedTermId}).then(() => {
+        alertScreenReader('Note saved.')
         putFocusNextTick('edit-dept-note-btn')
         this.reset()
       })
     },
     reset() {
       this.isConfirming = false
-      this.isEditable = this.selectedTermId === this.config.currentTermId
+      this.isEditable = useContextStore().selectedTermId === useContextStore().config.currentTermId
       this.isEditing = false
       this.item = this.note
     }

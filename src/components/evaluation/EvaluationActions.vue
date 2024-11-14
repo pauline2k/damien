@@ -109,15 +109,14 @@
 </template>
 
 <script>
-import {chain, each, every, filter as _filter, get, has, includes, map, uniq} from 'lodash'
-import {putFocusNextTick} from '@/lib/utils'
-import {updateEvaluations} from '@/api/departments'
 import ConfirmDialog from '@/components/util/ConfirmDialog'
-import Context from '@/mixins/Context'
 import DepartmentEditSession from '@/mixins/DepartmentEditSession'
 import UpdateEvaluations from '@/components/evaluation/UpdateEvaluations'
+import {alertScreenReader, putFocusNextTick} from '@/lib/utils'
+import {chain, each, every, filter as _filter, get, has, includes, map, uniq} from 'lodash'
 import {mdiAlertCircle} from '@mdi/js'
 import {toFormatFromISO} from '@/lib/utils'
+import {updateEvaluations} from '@/api/departments'
 import {useContextStore} from '@/stores/context'
 import {useTheme} from 'vuetify'
 
@@ -127,7 +126,7 @@ export default {
     ConfirmDialog,
     UpdateEvaluations
   },
-  mixins: [Context, DepartmentEditSession],
+  mixins: [DepartmentEditSession],
   data: () => ({
     applyingAction: null,
     bulkUpdateOptions: {
@@ -151,7 +150,7 @@ export default {
   computed: {
     allowEdits() {
       const currentUser = useContextStore().currentUser
-      return currentUser.isAdmin || !this.isSelectedTermLocked
+      return currentUser.isAdmin || !useContextStore().isSelectedTermLocked
     },
     selectedEvaluations() {
       return _filter(this.evaluations, e => this.selectedEvaluationIds.includes(e.id))
@@ -211,12 +210,12 @@ export default {
   methods: {
     onCancelDuplicate() {
       this.reset()
-      this.alertScreenReader('Canceled duplication.')
+      alertScreenReader('Canceled duplication.')
       putFocusNextTick('apply-course-action-btn-duplicate')
     },
     onCancelEdit() {
       this.reset()
-      this.alertScreenReader('Canceled edit.')
+      alertScreenReader('Canceled edit.')
       putFocusNextTick('apply-course-action-btn-edit')
     },
     onClickDuplicate() {
@@ -362,21 +361,21 @@ export default {
         .map(e => e.courseNumber))
       const refresh = () => {
         return selectedCourseNumbers.length === 1
-          ? this.refreshSection({sectionId: selectedCourseNumbers[0], termId: this.selectedTermId})
+          ? this.refreshSection({sectionId: selectedCourseNumbers[0], termId: useContextStore().selectedTermId})
           : this.refreshAll()
       }
       updateEvaluations(
         this.department.id,
         key,
         this.selectedEvaluationIds,
-        this.selectedTermId,
+        useContextStore().selectedTermId,
         fields
       ).then(
         response => {
           refresh().then(() => {
             const selectedRowCount = this.applyingAction.key === 'duplicate' ? ((response.length || 0) / 2) : (response.length || 0)
             const target = `${selectedRowCount} ${selectedRowCount === 1 ? 'row' : 'rows'}`
-            this.alertScreenReader(`${this.applyingAction.completedText} ${target}`)
+            alertScreenReader(`${this.applyingAction.completedText} ${target}`)
             putFocusNextTick('select-all-evals-checkbox')
             this.reset()
           }).finally(() => {
@@ -397,7 +396,7 @@ export default {
       const target = `${this.selectedEvaluationIds.length || 0} ${this.selectedEvaluationIds.length === 1 ? 'row' : 'rows'}`
       this.applyingAction = this.courseActions[key]
       this.isApplying = true
-      this.alertScreenReader(`${this.applyingAction.inProgressText} ${target}`)
+      alertScreenReader(`${this.applyingAction.inProgressText} ${target}`)
 
       const fields = this.getEvaluationFieldsForUpdate(key)
       if (key === 'duplicate') {

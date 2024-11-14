@@ -30,6 +30,7 @@
     <div class="flex-md-shrink-0">
       <label for="toggle-term-locked" class="sr-only">
         Evaluation term is {{ contextStore.isSelectedTermLocked ? 'locked' : 'unlocked' }}.
+        Evaluation term is {{ contextStore.isSelectedTermLocked ? 'locked' : 'unlocked' }}.
       </label>
       <v-btn
         id="toggle-term-locked"
@@ -40,6 +41,7 @@
         @keydown.enter="toggleTermLocked"
       >
         <span class="sr-only">
+          {{ isTogglingLock ? 'Toggling...' : (contextStore.isSelectedTermLocked ? 'Unlock' : 'Lock') }}
           {{ isTogglingLock ? 'Toggling...' : (contextStore.isSelectedTermLocked ? 'Unlock' : 'Lock') }}
         </span>
         <v-progress-circular
@@ -63,16 +65,14 @@
 </template>
 
 <script setup>
-import {useTheme} from 'vuetify'
-
-const router = useRouter()
+import {alertScreenReader, putFocusNextTick} from '@/lib/utils'
 import {find, includes} from 'lodash'
 import {getEvaluationTerm, lockEvaluationTerm, unlockEvaluationTerm} from '@/api/evaluationTerms'
 import {mdiLock, mdiLockOpen} from '@mdi/js'
 import {computed, onMounted, ref} from 'vue'
-import {putFocusNextTick} from '@/lib/utils'
 import {useContextStore} from '@/stores/context'
 import {useRoute, useRouter} from 'vue-router'
+import {useTheme} from 'vuetify'
 
 const props = defineProps({
   afterSelect: {
@@ -88,9 +88,10 @@ const props = defineProps({
 })
 
 const contextStore = useContextStore()
+const currentThemeName = useTheme().global.name
 const isTogglingLock = ref(false)
 const query = useRoute().query
-const currentThemeName = useTheme().global.name
+const router = useRouter()
 
 const model = computed({
   get() {
@@ -139,13 +140,13 @@ const toggleTermLocked = () => {
   if (!contextStore.isSelectedTermLocked) {
     lockEvaluationTerm(contextStore.selectedTermId).then(data => {
       contextStore.setIsSelectedTermLocked(data.isLocked === true)
-      this.alertScreenReader(`Locked ${contextStore.selectedTermName}`)
+      alertScreenReader(`Locked ${contextStore.selectedTermName}`)
       isTogglingLock.value = false
     })
   } else {
     unlockEvaluationTerm(contextStore.selectedTermId).then(data => {
       contextStore.setIsSelectedTermLocked(data.isLocked === true)
-      contextStore.alertScreenReader(`Unlocked ${contextStore.selectedTermName}`)
+      alertScreenReader(`Unlocked ${contextStore.selectedTermName}`)
       isTogglingLock.value = false
     })
   }

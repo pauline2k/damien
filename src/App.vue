@@ -1,24 +1,26 @@
 <template>
   <div>
     <span
-      v-if="screenReaderAlert"
       id="screen-reader-alert"
       class="sr-only"
-      aria-live="polite"
+      :aria-live="screenReaderAlert.politeness"
       role="alert"
     >
-      {{ screenReaderAlert }}
+      {{ screenReaderAlert.message }}
     </span>
     <router-view />
   </div>
 </template>
 
-<script>
-import Context from '@/mixins/Context'
+<script setup>
+import {useContextStore} from '@/stores/context'
 
+const screenReaderAlert = useContextStore().screenReaderAlert
+</script>
+
+<script>
 export default {
-  name: 'App',
-  mixins: [Context]
+  name: 'App'
 }
 </script>
 

@@ -158,6 +158,9 @@
 </template>
 
 <script>
+import DepartmentEditSession from '@/mixins/DepartmentEditSession'
+import PersonLookup from '@/components/admin/PersonLookup'
+import {alertScreenReader, oxfordJoin, putFocusNextTick} from '@/lib/utils'
 import {
   cloneDeep,
   differenceBy,
@@ -169,16 +172,12 @@ import {
   sortBy
 } from 'lodash'
 import {getUserDepartmentForms} from '@/api/user'
-import {oxfordJoin, putFocusNextTick} from '@/lib/utils'
-import Context from '@/mixins/Context.vue'
-import DepartmentEditSession from '@/mixins/DepartmentEditSession'
-import PersonLookup from '@/components/admin/PersonLookup'
 import {useTheme} from 'vuetify'
 
 export default {
   name: 'EditDepartmentContact',
   components: {PersonLookup},
-  mixins: [Context, DepartmentEditSession],
+  mixins: [DepartmentEditSession],
   props: {
     afterSave: {
       required: true,
@@ -249,13 +248,13 @@ export default {
   created() {
     this.populateForm(this.contact)
     putFocusNextTick('add-contact-sub-header')
-    this.alertScreenReader(`${this.contact ? 'Edit' : 'Add'} department contact form is ready`)
+    alertScreenReader(`${this.contact ? 'Edit' : 'Add'} department contact form is ready`)
   },
   methods: {
     isNil,
     afterSelectDepartmentForm(departmentForms) {
       const selected = last(departmentForms)
-      this.alertScreenReader(`Added ${selected.name}.`)
+      alertScreenReader(`Added ${selected.name}.`)
       putFocusNextTick(`input-deptForms-${this.contactId}`)
     },
     fetchUserDepartmentForms(uid) {
@@ -266,13 +265,13 @@ export default {
     onChangeContactDepartmentForms(selectedValues) {
       const names = map(selectedValues, 'name')
       if (names.length) {
-        this.alertScreenReader(`Selected department form${names.length === 1 ? 's are' : 'is'} ${oxfordJoin(names)}.`)
+        alertScreenReader(`Selected department form${names.length === 1 ? 's are' : 'is'} ${oxfordJoin(names)}.`)
       } else {
-        this.alertScreenReader('No department forms selected.')
+        alertScreenReader('No department forms selected.')
       }
     },
     onSave() {
-      this.alertScreenReader('Saving')
+      alertScreenReader('Saving')
       this.updateContact({
         'canReceiveCommunications': this.canReceiveCommunications,
         'canViewReports': this.permissions === 'reports_only',
@@ -322,12 +321,12 @@ export default {
       const formName = departmentForm.name
       const indexOf = findIndex(this.contactDepartmentForms, {'name': formName})
       this.contactDepartmentForms.splice(indexOf, 1)
-      this.alertScreenReader(`Removed ${formName} from ${this.fullName} department forms.`)
+      alertScreenReader(`Removed ${formName} from ${this.fullName} department forms.`)
       putFocusNextTick(`input-deptForms-${this.contactId}`)
     },
     srAlert(label, isSelected) {
       if (this.firstName || this.lastName) {
-        this.alertScreenReader(`${this.firstName} ${this.lastName} will ${isSelected ? '' : 'not '} ${label}.`)
+        alertScreenReader(`${this.firstName} ${this.lastName} will ${isSelected ? '' : 'not '} ${label}.`)
       }
     }
   }
