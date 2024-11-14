@@ -48,64 +48,54 @@
   </v-dialog>
 </template>
 
-<script>
+<script setup>
 import {putFocusNextTick} from '@/lib/utils'
+import {onMounted, ref} from 'vue'
 
-export default {
-  name: 'ConfirmDialog',
-  props: {
-    buttonContext: {
-      default: '',
-      required: false,
-      type: String
-    },
-    confirmButtonLabel: {
-      default: 'Confirm',
-      required: false,
-      type: String
-    },
-    disabled: {
-      required: false,
-      type: Boolean
-    },
-    icon: {
-      default: undefined,
-      required: false,
-      type: String
-    },
-    onClickCancel: {
-      required: true,
-      type: Function
-    },
-    onClickConfirm: {
-      required: true,
-      type: Function
-    },
-    text: {
-      required: true,
-      type: String
-    },
-    title: {
-      required: true,
-      type: String
-    }
+const props = defineProps({
+  buttonContext: {
+    default: '',
+    required: false,
+    type: String
   },
-  data: () => ({
-    model: false
-  }),
-  created() {
-    this.model = true
-    putFocusNextTick('confirm-dialog-title')
+  confirmButtonLabel: {
+    default: 'Confirm',
+    required: false,
+    type: String
   },
-  methods: {
-    cancel() {
-      this.model = false
-      this.onClickCancel()
-    },
-    confirm() {
-      this.model = false
-      this.onClickConfirm()
-    }
+  disabled: {
+    required: false,
+    type: Boolean
+  },
+  icon: {
+    default: undefined,
+    required: false,
+    type: String
+  },
+  onClickCancel: {
+    required: true,
+    type: Function
+  },
+  onClickConfirm: {
+    required: true,
+    type: Function
+  },
+  text: {
+    required: true,
+    type: String
+  },
+  title: {
+    required: true,
+    type: String
   }
+})
+
+const model = ref(true)
+
+onMounted(() => putFocusNextTick('confirm-dialog-title'))
+
+const cancel = () => {
+  model.value = false
+  props.onClickCancel()
 }
 </script>

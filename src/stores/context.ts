@@ -5,6 +5,7 @@ import {nextTick} from 'vue'
 
 export type CurrentUser = {
   departments: any[],
+  emailSupport: string,
   isAdmin: boolean,
   isAuthenticated: boolean,
   uid: string
@@ -46,7 +47,7 @@ export const useContextStore = defineStore('context', {
         this.screenReaderAlert = message
       }).then(noop)
     },
-    loadingComplete(pageTitle: string, alert: string) {
+    loadingComplete(pageTitle: string, alert?: string) {
       document.title = `${pageTitle || 'UC Berkeley'} | Course Evaluations`
       this.loading = false
       if (alert) {

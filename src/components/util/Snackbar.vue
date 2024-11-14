@@ -1,45 +1,38 @@
 <template>
   <v-snackbar
-    v-model="snackbarShow"
+    v-model="contextStore.snackbarShow"
     aria-live="assertive"
-    :color="snackbar.color"
+    :color="contextStore.snackbar.color"
     content-class="align-center"
     light
     max-width="unset"
     multi-line
-    :timeout="snackbar.timeout"
-    text
+    :timeout="contextStore.snackbar.timeout"
     :top="true"
   >
     <div class="d-flex align-center justify-space-between">
       <div
         id="alert-text"
         aria-live="polite"
-        class="ml-4 mr-4 font-size-18 text-condensed"
+        class="font-size-18 mx-4 text-condensed"
         role="alert"
-        v-html="snackbar.text"
-      >
-      </div>
+        v-html="contextStore.snackbar.text"
+      />
       <div>
         <v-btn
           id="btn-close-alert"
           aria-label="Close this dialog box."
-          :color="snackbar.color"
-          text
-          @click="snackbarClose"
-          @keypress.enter.prevent="snackbarClose"
-        >
-          Close
-        </v-btn>
+          :color="contextStore.snackbar.color"
+          text="Close"
+          @click="contextStore.snackbarClose"
+        />
       </div>
     </div>
   </v-snackbar>
 </template>
 
-<script>
-import Context from '@/mixins/Context'
-export default {
-  name: 'Snackbar',
-  mixins: [Context]
-}
+<script setup>
+import {useContextStore} from '@/stores/context'
+
+const contextStore = useContextStore()
 </script>
