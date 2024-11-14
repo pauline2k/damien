@@ -13,19 +13,19 @@
           <a
             id="damien-support-mailto"
             class="white--text"
-            :href="`mailto:${config.emailSupport}`"
+            :href="`mailto:${emailSupport}`"
             target="_blank"
           >
-            Email us at {{ config.emailSupport }}
+            Email us at {{ emailSupport }}
             <span class="sr-only"> (opens a new window)</span>
           </a>
         </v-col>
         <v-col>
           <div class="float-right">
-            <span v-if="config.isVueAppDebugMode && screenReaderAlert">
-              {{ screenReaderAlert }}
+            <span v-if="contextStore.config.isVueAppDebugMode && contextStore.screenReaderAlert">
+              {{ contextStore.screenReaderAlert }}
             </span>
-            <span v-if="!config.isVueAppDebugMode || !screenReaderAlert">
+            <span v-if="!contextStore.config.isVueAppDebugMode || !contextStore.screenReaderAlert">
               <v-icon :icon="mdiCopyright" size="small" /> {{ new Date().getFullYear() }}
               The Regents of the University of California
             </span>
@@ -36,17 +36,12 @@
   </v-footer>
 </template>
 
-<script>
-import Context from '@/mixins/Context'
+<script setup>
 import {mdiCopyright} from '@mdi/js'
+import {useContextStore} from '@/stores/context'
 
-export default {
-  name: 'DamienFooter',
-  mixins: [Context],
-  data: () => ({
-    mdiCopyright
-  })
-}
+const contextStore = useContextStore()
+const emailSupport = contextStore.config.emailSupport
 </script>
 
 <style scoped>

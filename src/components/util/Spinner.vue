@@ -1,11 +1,11 @@
 <template>
   <v-progress-circular
     class="spinner"
+    color="tertiary"
     :indeterminate="true"
     rotate="5"
     size="64"
     width="8"
-    color="tertiary"
   />
 </template>
 

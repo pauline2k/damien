@@ -209,12 +209,12 @@ export default {
   created() {
     const contextStore = useContextStore()
     contextStore.loadingStart()
-    this.alertScreenReader(`Loading ${this.selectedTermName}`)
+    this.alertScreenReader(`Loading ${contextStore.selectedTermName}`)
     this.departments = []
     getDepartmentsEnrolled(true, false, true, this.selectedTermId).then(data => {
       this.departments = data
       this.loadBlockers().then(() => {
-        contextStore.loadingComplete(`Evaluation Status Dashboard for ${this.selectedTermName}`)
+        contextStore.loadingComplete(`Evaluation Status Dashboard for ${contextStore.selectedTermName}`)
         putFocusNextTick('page-title')
       })
     })
