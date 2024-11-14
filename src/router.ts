@@ -34,16 +34,34 @@ const beforeEnterDefaultRoute = (to: any, from: any, next: any) => {
 
 const routes:RouteRecordRaw[] = [
   {
-    beforeEnter: beforeEnterDefaultRoute,
     path: '/',
-    redirect: '/login'
-  },
-  {
-    path: '/login',
     component: Login,
+    name: 'Login',
     beforeEnter: beforeEnterDefaultRoute,
     meta: {
       title: 'Welcome'
+    }
+  },
+  {
+    path: '/start',
+    redirect: () => {
+      const currentUser = useContextStore().currentUser
+      if (currentUser.isAuthenticated) {
+        if (currentUser.isAdmin) {
+          return {path: '/status'}
+        } else if (size(currentUser.departments)) {
+          return {path: `/department/${currentUser.departments[0].id}`}
+        } else {
+            return {
+              path: '/error',
+              query: {
+                m: 'Sorry, we could not find any departments that you belong to.'
+              }
+            }
+        }
+      } else {
+        return 'Login'
+      }
     }
   },
   {

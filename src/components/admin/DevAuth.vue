@@ -42,32 +42,40 @@
 
 <script setup>
 import {devAuthLogIn} from '@/api/auth'
-import {get, noop, trim} from 'lodash'
 import {putFocusNextTick} from '@/lib/utils'
 import {ref} from 'vue'
+import {trim} from 'lodash'
 import {useTheme} from 'vuetify'
+import {useContextStore} from '@/stores/context'
+import {useRoute, useRouter} from 'vue-router'
 
+const contextStore = useContextStore()
 const uid = ref(undefined)
 const password = ref(undefined)
+const route = useRoute()
+const router = useRouter()
 const themes = useTheme().themes.value
 
 const logIn = () => {
-  let uid = trim(this.uid)
-  let password = trim(this.password)
-  if (uid && password) {
-    devAuthLogIn(uid, password).then(user => {
+  const credentials = {
+    uid: trim(uid.value),
+    password: trim(password.value)
+  }
+  if (credentials.uid && credentials.password) {
+    devAuthLogIn(credentials.uid, credentials.password).then(user => {
       if (user.isAuthenticated) {
-        const redirect = get(this.$router, 'currentRoute.query.redirect')
-        this.$router.push({path: redirect || '/'}, noop)
+        const redirect = route.query.redirect
+        router.push({path: redirect || '/start'})
       } else {
-        this.reportError('Sorry, user is not authorized to use Course Evaluations.')
+        contextStore.snackbarReportError('Sorry, user is not authorized to use Course Evaluations.')
+        putFocusNextTick('dev-auth-uid')
       }
     })
-  } else if (uid) {
-    this.reportError('Password required')
+  } else if (credentials.uid) {
+    contextStore.snackbarReportError('Password required')
     putFocusNextTick('dev-auth-password')
   } else {
-    this.reportError('Both UID and password are required')
+    contextStore.snackbarReportError('Both UID and password are required')
     putFocusNextTick('dev-auth-uid')
   }
 }
@@ -77,12 +85,6 @@ const logIn = () => {
 .damien-icon {
   height: 20px;
   width: 20px;
-}
-.damien-icon .cls-1 {
-  fill: transparent;
-}
-.damien-icon .cls-2 {
-  fill: currentColor;
 }
 .dev-auth {
   width: 100%;

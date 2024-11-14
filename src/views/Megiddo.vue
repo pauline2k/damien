@@ -74,10 +74,10 @@
           flat
         >
           <v-expansion-panel class="panel-override">
-            <v-expansion-panel-header id="term-exports-btn" class="term-exports-btn">
+            <v-expansion-panel-title id="term-exports-btn" class="term-exports-btn">
               <h2>Term Exports</h2>
-            </v-expansion-panel-header>
-            <v-expansion-panel-content>
+            </v-expansion-panel-title>
+            <v-expansion-panel-text>
               <div v-if="isEmpty(termExports)" id="term-exports-no-data">There are no {{ selectedTermName }} exports.</div>
               <ul v-if="!isEmpty(termExports)" id="term-exports-list" class="pl-2">
                 <li v-for="(e, index) in termExports" :key="index">
@@ -101,7 +101,7 @@
                   </a>
                 </li>
               </ul>
-            </v-expansion-panel-content>
+            </v-expansion-panel-text>
           </v-expansion-panel>
         </v-expansion-panels>
       </v-col>

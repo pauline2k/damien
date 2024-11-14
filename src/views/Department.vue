@@ -38,7 +38,7 @@
                   <div class="align-center d-flex flex-wrap justify-space-between">
                     <h2 class="pb-1 px-2">Department Contacts</h2>
                     <div class="align-center d-flex height-unset justify-space-between">
-                      <v-expansion-panel-header
+                      <v-expansion-panel-title
                         class="w-fit-content ml-auto mr-3"
                         hide-actions
                         text
@@ -54,10 +54,10 @@
                             <v-icon class="rotate-180 ml-1">mdi-minus-box-multiple-outline</v-icon>
                           </span>
                         </template>
-                      </v-expansion-panel-header>
+                      </v-expansion-panel-title>
                     </div>
                   </div>
-                  <v-expansion-panel-content class="panel-content-override">
+                  <v-expansion-panel-text class="panel-content-override">
                     <v-expansion-panels
                       v-model="contactDetailsPanel"
                       flat
@@ -74,7 +74,7 @@
                         :is-expanded="includes(contactDetailsPanel, index)"
                       />
                     </v-expansion-panels>
-                  </v-expansion-panel-content>
+                  </v-expansion-panel-text>
                   <div v-if="currentUser.isAdmin" class="pl-4">
                     <v-btn
                       v-if="!isCreatingNotification"
@@ -253,9 +253,6 @@ export default {
 </style>
 
 <style>
-.panel-content-override>.v-expansion-panel-content__wrap {
-  padding: 0 !important;
-}
 .panel-override {
   background-color: unset !important;
 }
