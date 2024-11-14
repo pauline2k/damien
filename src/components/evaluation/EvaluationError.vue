@@ -13,6 +13,8 @@
 </template>
 
 <script>
+import {useTheme} from 'vuetify'
+
 export default {
   name: 'EvaluationError',
   props: {
@@ -32,7 +34,7 @@ export default {
   },
   computed: {
     shade() {
-      return this.$vuetify.theme.dark && !this.hover ? 'lighten-3' : 'darken-1'
+      return useTheme().global.current.value.dark && !this.hover ? 'lighten-3' : 'darken-1'
     }
   }
 }

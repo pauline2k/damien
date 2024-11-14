@@ -10,7 +10,7 @@
       </h1>
       <v-spacer class="d-flex justify-center"></v-spacer>
       <v-banner
-        v-if="config.isVueAppDebugMode && config.easterEggMonastery && $vuetify.theme.dark"
+        v-if="config.isVueAppDebugMode && config.easterEggMonastery && theme.global.current.value.dark"
         shaped
         single-line
         class="pr-4 my-auto"
@@ -427,6 +427,7 @@ import EditServiceAnnouncement from '@/components/admin/EditServiceAnnouncement'
 import ListManagementSession from '@/mixins/ListManagementSession'
 import SortableTableHeader from '@/components/util/SortableTableHeader'
 import {useContextStore} from '@/stores/context'
+import {useTheme} from 'vuetify'
 
 export default {
   name: 'NannysRoom',
@@ -461,7 +462,8 @@ export default {
       departmentForms: null,
       evaluationTypes: null,
       instructors: null
-    }
+    },
+    theme: useTheme()
   }),
   created() {
     const contextStore = useContextStore()

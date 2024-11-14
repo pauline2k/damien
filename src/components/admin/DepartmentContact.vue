@@ -2,7 +2,10 @@
   <v-expansion-panel
     :id="`department-contact-${index}`"
     class="text-condensed my-1"
-    :class="{'theme--light v-sheet--outlined': isEditing && !themes.dark, 'theme--dark v-sheet--outlined': isEditing && $vuetify.theme.dark}"
+    :class="{
+      'theme--light v-sheet--outlined': isEditing && !theme.global.current.value.dark,
+      'theme--dark v-sheet--outlined': isEditing && theme.global.current.value.dark
+    }"
   >
     <v-expansion-panel-title class="py-1 rounded-b-0 height-unset">
       <strong :id="`dept-contact-${contact.id}-name`">{{ fullName }}</strong>
@@ -148,7 +151,7 @@ const departmentForms = computed(() => sortBy(props.contact.departmentForms, 'na
 const fullName = computed(() => `${props.contact.firstName} ${props.contact.lastName}`)
 const isConfirming = ref(false)
 const isEditing = ref(false)
-const themes = useTheme().themes.value
+const theme = useTheme()
 
 watch(() => props.isExpanded, () => {
   if (!props.isExpanded) {
