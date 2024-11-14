@@ -7,7 +7,7 @@
             :id="`apply-course-action-btn-${key}`"
             :key="key"
             class="text-capitalize text-nowrap mx-0 px-2"
-            :color="$vuetify.theme.dark ? 'tertiary' : 'secondary'"
+            :color="theme.global.current.value.dark ? 'tertiary' : 'secondary'"
             :disabled="disableControls || !allowEdits || !selectedEvaluationIds.length || isLoading || isInvalidAction(action)"
             text
             @click.stop="action.apply(key)"
@@ -119,6 +119,7 @@ import DepartmentEditSession from '@/mixins/DepartmentEditSession'
 import UpdateEvaluations from '@/components/evaluation/UpdateEvaluations'
 import {toFormatFromISO} from '@/lib/utils'
 import {useContextStore} from '@/stores/context'
+import {useTheme} from 'vuetify'
 
 export default {
   name: 'EvaluationActions',
@@ -143,7 +144,8 @@ export default {
     isEditing: false,
     isLoading: false,
     markAsDoneWarning: undefined,
-    midtermFormAvailable: false
+    midtermFormAvailable: false,
+    theme: useTheme()
   }),
   computed: {
     allowEdits() {

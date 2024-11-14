@@ -71,13 +71,13 @@
               <label
                 for="update-evaluations-start-date"
                 class="v-label text-nowrap"
-                :class="$vuetify.theme.dark ? 'theme--dark' : 'theme--light'"
+                :class="theme.global.current.value.dark ? 'theme--dark' : 'theme--light'"
               >
                 Evaluation Start Date:
               </label>
             </v-col>
             <v-col cols="8">
-              <c-date-picker
+              <v-date-picker
                 v-model="selectedStartDate"
                 class="bulk-action-form-input"
                 :min-date="get(validStartDates, 'min')"
@@ -96,7 +96,7 @@
                     v-on="inputEvents"
                   />
                 </template>
-              </c-date-picker>
+              </v-date-picker>
             </v-col>
           </v-row>
         </v-container>
@@ -260,6 +260,7 @@ import Context from '@/mixins/Context'
 import DepartmentEditSession from '@/mixins/DepartmentEditSession'
 import PersonLookup from '@/components/admin/PersonLookup'
 import {useContextStore} from '@/stores/context'
+import {useTheme} from 'vuetify'
 
 export default {
   name: 'UpdateEvaluations',
@@ -339,7 +340,8 @@ export default {
     selectedEvaluationStatus: undefined,
     selectedEvaluationType: undefined,
     selectedInstructor: undefined,
-    selectedStartDate: undefined
+    selectedStartDate: undefined,
+    theme: useTheme()
   }),
   computed: {
     allowEdits() {

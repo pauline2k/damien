@@ -28,12 +28,12 @@
         outlined
         required
         :rules="emailRules"
-      ></v-text-field>
+      />
       <legend :for="`checkbox-communications-${contactId}`" class="form-label">
         Communications
       </legend>
       <div class="d-flex my-2">
-        <v-simple-checkbox
+        <v-checkbox
           :id="`checkbox-communications-${contactId}`"
           :aria-checked="canReceiveCommunications"
           aria-label="Receive notifications"
@@ -48,7 +48,7 @@
         />
         <label
           class="v-label d-flex align-center"
-          :class="$vuetify.theme.dark ? 'theme--dark' : 'theme--light'"
+          :class="theme.global.current.value.dark ? 'theme--dark' : 'theme--light'"
           :for="`checkbox-communications-${contactId}`"
         >
           Receive notifications
@@ -173,6 +173,7 @@ import {oxfordJoin, putFocusNextTick} from '@/lib/utils'
 import Context from '@/mixins/Context.vue'
 import DepartmentEditSession from '@/mixins/DepartmentEditSession'
 import PersonLookup from '@/components/admin/PersonLookup'
+import {useTheme} from 'vuetify'
 
 export default {
   name: 'EditDepartmentContact',
@@ -205,6 +206,7 @@ export default {
     firstName: undefined,
     lastName: undefined,
     permissions: undefined,
+    theme: useTheme(),
     uid: undefined,
     userId: undefined,
     valid: true

@@ -10,14 +10,14 @@
       </label>
       <select
         id="select-term"
-        v-model="selectedTermId"
+        v-model="model"
         class="native-select-override select-term my-2"
-        :class="$vuetify.theme.dark ? 'dark' : 'light'"
-        :disabled="loading"
+        :class="currentThemeName"
+        :disabled="contextStore.loading"
         @change="onChangeTerm"
       >
         <option
-          v-for="term in config.availableTerms"
+          v-for="term in contextStore.config.availableTerms"
           :id="`term-option-${term.id}`"
           :key="term.id"
           :value="term.id"
@@ -29,18 +29,18 @@
     </div>
     <div class="flex-md-shrink-0">
       <label for="toggle-term-locked" class="sr-only">
-        Evaluation term is {{ isSelectedTermLocked ? 'locked' : 'unlocked' }}.
+        Evaluation term is {{ contextStore.isSelectedTermLocked ? 'locked' : 'unlocked' }}.
       </label>
       <v-btn
         id="toggle-term-locked"
         class="px-0"
-        :disabled="isTogglingLock || loading"
+        :disabled="isTogglingLock || contextStore.loading"
         icon
         @click="toggleTermLocked"
         @keydown.enter="toggleTermLocked"
       >
         <span class="sr-only">
-          {{ isTogglingLock ? 'Toggling...' : (isSelectedTermLocked ? 'Unlock' : 'Lock') }}
+          {{ isTogglingLock ? 'Toggling...' : (contextStore.isSelectedTermLocked ? 'Unlock' : 'Lock') }}
         </span>
         <v-progress-circular
           v-if="isTogglingLock"
@@ -53,8 +53,8 @@
         />
         <v-icon
           v-if="!isTogglingLock"
-          :color="isSelectedTermLocked ? 'error' : 'success'"
-          :icon="isSelectedTermLocked ? mdiLock : mdiLockOpen"
+          :color="contextStore.isSelectedTermLocked ? 'error' : 'success'"
+          :icon="contextStore.isSelectedTermLocked ? mdiLock : mdiLockOpen"
           size="large"
         />
       </v-btn>
@@ -62,81 +62,92 @@
   </div>
 </template>
 
-<script>
-import {find, get, includes} from 'lodash'
-import {getEvaluationTerm, lockEvaluationTerm, unlockEvaluationTerm} from '@/api/evaluationTerms'
-import {putFocusNextTick} from '@/lib/utils'
-import Context from '@/mixins/Context.vue'
-import {mdiLock, mdiLockOpen} from '@mdi/js'
+<script setup>
+import {useTheme} from 'vuetify'
 
-export default {
-  name: 'TermSelect',
-  mixins: [Context],
-  props: {
-    afterSelect: {
-      default: () => {},
-      required: false,
-      type: Function
-    },
-    termIds: {
-      default: null,
-      required: false,
-      type: Array
-    }
+const router = useRouter()
+import {find, includes} from 'lodash'
+import {getEvaluationTerm, lockEvaluationTerm, unlockEvaluationTerm} from '@/api/evaluationTerms'
+import {mdiLock, mdiLockOpen} from '@mdi/js'
+import {computed, onMounted, ref} from 'vue'
+import {putFocusNextTick} from '@/lib/utils'
+import {useContextStore} from '@/stores/context'
+import {useRoute, useRouter} from 'vue-router'
+
+const props = defineProps({
+  afterSelect: {
+    default: () => {},
+    required: false,
+    type: Function
   },
-  data: () => ({
-    isTogglingLock: false,
-    mdiLockOpen,
-    mdiLock
-  }),
-  created() {
-    const termId = get(this.$route.query, 'term')
-    if (termId && find(this.config.availableTerms, {id: termId})) {
-      this.setTerm(termId)
-    } else {
-      this.$router.push({
-        query: {...this.$route.query, term: this.selectedTermId || this.config.currentTermId}
+  termIds: {
+    default: null,
+    required: false,
+    type: Array
+  }
+})
+
+const contextStore = useContextStore()
+const isTogglingLock = ref(false)
+const query = useRoute().query
+const currentThemeName = useTheme().global.name
+
+const model = computed({
+  get() {
+    return contextStore.selectedTermId
+  },
+  set(termId) {
+    contextStore.setSelectedTerm(termId)
+  }
+})
+
+onMounted(() => {
+  const termId = query.term
+  if (termId && find(contextStore.config.availableTerms, {id: termId})) {
+    setTerm(termId)
+  } else {
+    router.push({
+      query: {...query, term: contextStore.selectedTermId || contextStore.config.currentTermId}
+    })
+  }
+})
+
+const onChangeTerm = event => {
+  const termId = event.target.value
+  if (termId && termId !== query.term) {
+    router.push({
+      query: {...query, term: termId}
+    })
+    contextStore.selectTerm(termId)
+    putFocusNextTick('select-term')
+  }
+}
+
+const setTerm = termId => {
+  contextStore.selectTerm(termId).then(() => {
+    if (contextStore.selectedTermId) {
+      getEvaluationTerm(contextStore.selectedTermId).then(data => {
+        contextStore.setIsSelectedTermLocked(data.isLocked === true)
       })
     }
-  },
-  methods: {
-    includes,
-    onChangeTerm(event) {
-      const termId = event.target.value
-      if (termId && termId !== get(this.$route.query, 'term')) {
-        this.$router.push({
-          query: {...this.$route.query, term: termId}
-        })
-        this.selectTerm(termId)
-        putFocusNextTick('select-term')
-      }
-    },
-    setTerm(termId) {
-      this.selectTerm(termId).then(() => {
-        if (this.selectedTermId) {
-          getEvaluationTerm(this.selectedTermId).then(data => {
-            this.setIsSelectedTermLocked(data.isLocked === true)
-          })
-        }
-        this.afterSelect()
-      })
-    },
-    toggleTermLocked() {
-      this.isTogglingLock = true
-      if (!this.isSelectedTermLocked) {
-        lockEvaluationTerm(this.selectedTermId).then(data => {
-          this.setIsSelectedTermLocked(data.isLocked === true)
-          this.alertScreenReader(`Locked ${this.selectedTermName}`)
-          this.isTogglingLock = false
-        })
-      } else {
-        unlockEvaluationTerm(this.selectedTermId).then(data => {
-          this.setIsSelectedTermLocked(data.isLocked === true)
-          this.alertScreenReader(`Unlocked ${this.selectedTermName}`)
-          this.isTogglingLock = false
-        })
-      }
-    }
+    props.afterSelect()
+  })
+}
+
+const toggleTermLocked = () => {
+  isTogglingLock.value = true
+  if (!contextStore.isSelectedTermLocked) {
+    lockEvaluationTerm(contextStore.selectedTermId).then(data => {
+      contextStore.setIsSelectedTermLocked(data.isLocked === true)
+      this.alertScreenReader(`Locked ${contextStore.selectedTermName}`)
+      isTogglingLock.value = false
+    })
+  } else {
+    unlockEvaluationTerm(contextStore.selectedTermId).then(data => {
+      contextStore.setIsSelectedTermLocked(data.isLocked === true)
+      contextStore.alertScreenReader(`Unlocked ${contextStore.selectedTermName}`)
+      isTogglingLock.value = false
+    })
   }
 }
 </script>

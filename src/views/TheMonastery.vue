@@ -4,7 +4,7 @@
       <h1 id="page-title" class="text-title">Group Management</h1>
       <v-spacer class="d-flex justify-center"></v-spacer>
       <v-banner
-        v-if="config.isVueAppDebugMode && config.easterEggMonastery && $vuetify.theme.dark"
+        v-if="config.isVueAppDebugMode && config.easterEggMonastery && theme.global.current.value.dark"
         shaped
         single-line
         class="pr-4 my-auto"
@@ -124,6 +124,7 @@ import {isEmpty, size} from 'lodash'
 import BooleanIcon from '@/components/util/BooleanIcon'
 import Context from '@/mixins/Context'
 import {useContextStore} from '@/stores/context'
+import {useTheme} from 'vuetify'
 
 export default {
   name: 'TheMonastery',
@@ -140,7 +141,8 @@ export default {
       {sortable: false, text: 'Receives Notifications'},
       {class: 'text-nowrap', sortable: false, text: 'Blue Access'},
     ],
-    hoveredDept: undefined
+    hoveredDept: undefined,
+    theme: useTheme()
   }),
   created() {
     const contextStore = useContextStore()

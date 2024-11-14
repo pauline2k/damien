@@ -2,7 +2,7 @@
   <div v-if="evaluations.length > 0">
     <div
       class="elevation-2 sticky"
-      :class="$vuetify.theme.dark ? 'sticky-dark' : 'sticky-light'"
+      :class="theme.global.current.value.dark ? 'sticky-dark' : 'sticky-light'"
       role="search"
     >
       <div class="align-baseline d-flex flex-wrap px-5 pb-3 pt-1 w-75">
@@ -396,7 +396,7 @@
                         Start date:
                       </label>
                     </div>
-                    <c-date-picker
+                    <v-date-picker
                       v-model="selectedStartDate"
                       :min-date="minStartDate(evaluation)"
                       :max-date="evaluation.maxStartDate"
@@ -419,7 +419,7 @@
                           message="Required"
                         />
                       </template>
-                    </c-date-picker>
+                    </v-date-picker>
                   </div>
                 </td>
               </tr>
@@ -557,6 +557,7 @@ import SortableTableHeader from '@/components/util/SortableTableHeader'
 import {oxfordJoin, pluralize, toFormatFromISO, toFormatFromJsDate, toLocaleFromISO} from '@/lib/utils'
 import {nextTick} from 'vue'
 import {useContextStore} from '@/stores/context'
+import {useTheme} from 'vuetify'
 
 export default {
   name: 'EvaluationTable',
@@ -612,7 +613,8 @@ export default {
     selectedEvaluationType: null,
     selectedStartDate: null,
     sortBy: null,
-    sortDesc: false
+    sortDesc: false,
+    theme: useTheme()
   }),
   computed: {
     allEvaluationsSelected() {

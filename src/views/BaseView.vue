@@ -1,5 +1,5 @@
 <template>
-  <v-app :style="{background: $vuetify.theme.dark ? $vuetify.theme.themes.dark.background : $vuetify.theme.themes.light.background}">
+  <v-app :style="{background: theme.global.current.value.dark ? theme.themes.value.dark.colors.background : theme.themes.value.light.colors.background}">
     <a
       id="skip-to-content-link"
       href="#content"
@@ -54,7 +54,7 @@
             <img alt="Lightbulb icon" src="@/assets/lightbulb-outline.svg" />
           </v-icon>
           <div>
-            <v-list-item-title>{{ $vuetify.theme.dark ? 'Light' : 'Dark' }} mode</v-list-item-title>
+            <v-list-item-title>{{ theme.global.current.value.dark ? 'Light' : 'Dark' }} mode</v-list-item-title>
           </div>
         </v-list-item>
       </v-list>
@@ -72,13 +72,13 @@
       <div>
         <v-spacer>
           <v-chip
-            v-if="config.isVueAppDebugMode && screenReaderAlert"
+            v-if="contextStore.config.isVueAppDebugMode && contextStore.screenReaderAlert"
             id="screen-reader-alert-debug"
             class="sr-debug font-italic"
             color="primary-contrast"
             outlined
           >
-            {{ screenReaderAlert }}
+            {{ contextStore.screenReaderAlert }}
           </v-chip>
         </v-spacer>
       </div>
@@ -104,9 +104,9 @@
     </v-app-bar>
     <v-main id="content" class="ma-0">
       <Snackbar />
-      <Spinner v-if="loading" />
+      <Spinner v-if="contextStore.loading" />
       <div
-        v-if="serviceAnnouncement && serviceAnnouncement.isLive"
+        v-if="contextStore.serviceAnnouncement && contextStore.serviceAnnouncement.isLive"
         class="service-announcement"
       >
         <pre>
@@ -126,8 +126,7 @@
   </v-app>
 </template>
 
-<script>
-import Context from '@/mixins/Context'
+<script setup>
 import DamienFooter from '@/components/util/DamienFooter'
 import Snackbar from '@/components/util/Snackbar'
 import Spinner from '@/components/util/Spinner'
@@ -135,66 +134,59 @@ import {getCasLogoutUrl} from '@/api/auth'
 import {map, noop, size} from 'lodash'
 import {stripAnchorRef} from '@/lib/utils'
 import {useContextStore} from '@/stores/context'
+import {onMounted, ref} from 'vue'
+import {useTheme} from 'vuetify'
+import {useRouter} from 'vue-router'
 
-export default {
-  name: 'BaseView',
-  components: {
-    DamienFooter,
-    Snackbar,
-    Spinner
-  },
-  mixins: [Context],
-  data: () => ({
-    navItems: undefined,
-  }),
-  computed: {
-    currentUser() {
-      return useContextStore().currentUser
-    }
-  },
-  created() {
-    this.prefersColorScheme()
-    if (this.currentUser.isAdmin) {
-      this.navItems = [
-        {title: 'Status Board', icon: 'assets/list-status.svg', path: '/status'},
-        {title: 'Publish', icon: 'assets/exclamation-circle-solid.svg', path: '/publish'},
-        {title: 'Group Management', icon: 'assets/account-group.svg', path: '/departments'},
-        {title: 'List Management', icon: 'assets/playlist-edit.svg', path: '/lists'}
-      ]
-    } else if (size(this.currentUser.departments)) {
-      this.navItems = map(this.currentUser.departments, department => {
-        const firstInitial = department.name.charAt(0).toLowerCase()
-        return {
-          title: department.name,
-          icon: `mdi-alpha-${firstInitial}-circle`,
-          path: `/department/${department.id}`
-        }
-      })
-    }
-  },
-  methods: {
-    logOut() {
-      this.alertScreenReader('Logging out')
-      getCasLogoutUrl().then(data => window.location.href = data.casLogoutUrl)
-    },
-    prefersColorScheme() {
-      if (window.localStorage.getItem('prefersDarkMode')) {
-        this.$vuetify.theme.dark = window.localStorage.getItem('prefersDarkMode') === 'true'
-      } else {
-        this.$vuetify.theme.dark = window.matchMedia('(prefers-color-scheme: dark)').matches
+const contextStore = useContextStore()
+const currentUser = contextStore.currentUser
+const navItems = ref(undefined)
+const router = useRouter()
+const theme = useTheme()
+
+onMounted(() => {
+  prefersColorScheme()
+  if (currentUser.isAdmin) {
+    navItems.value = [
+      {title: 'Status Board', icon: 'assets/list-status.svg', path: '/status'},
+      {title: 'Publish', icon: 'assets/exclamation-circle-solid.svg', path: '/publish'},
+      {title: 'Group Management', icon: 'assets/account-group.svg', path: '/departments'},
+      {title: 'List Management', icon: 'assets/playlist-edit.svg', path: '/lists'}
+    ]
+  } else if (size(currentUser.departments)) {
+    navItems.value = map(currentUser.departments, department => {
+      const firstInitial = department.name.charAt(0).toLowerCase()
+      return {
+        title: department.name,
+        icon: `mdi-alpha-${firstInitial}-circle`,
+        path: `/department/${department.id}`
       }
-    },
-    size,
-    stripAnchorRef,
-    toggleColorScheme() {
-      this.$vuetify.theme.dark = !this.$vuetify.theme.dark
-      window.localStorage.setItem('prefersDarkMode', this.$vuetify.theme.dark)
-    },
-    toRoute(path) {
-      this.$router.push({path}, noop)
-    }
+    })
   }
+})
+
+const logOut = () => {
+  contextStore.setScreenReaderAlert('Logging out')
+  getCasLogoutUrl().then(data => window.location.href = data.casLogoutUrl)
 }
+
+const prefersColorScheme = () => {
+  let prefersDarkMode
+  if (window.localStorage.getItem('prefersDarkMode')) {
+    prefersDarkMode = window.localStorage.getItem('prefersDarkMode') === 'true'
+  } else {
+    prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+  }
+  useTheme().global.name.value = prefersDarkMode ? 'dark' : 'light'
+}
+
+const toggleColorScheme = () => {
+  const getDark = !theme.global.current.value.dark
+  theme.global.name.value = getDark ? 'dark' : 'light'
+  window.localStorage.setItem('prefersDarkMode', `${getDark}`)
+}
+
+const toRoute = path => router.push({path}, noop)
 </script>
 
 <style scoped>
