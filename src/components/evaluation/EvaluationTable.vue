@@ -9,7 +9,7 @@
         <v-text-field
           id="evaluation-search-input"
           v-model="searchFilter"
-          append-icon="mdi-magnify"
+          :append-icon="mdiMagnify"
           aria-label="Filter evaluations table by search terms."
           class="evaluation-search-input mr-3"
           color="tertiary"
@@ -79,8 +79,7 @@
                 'secondary': filterTypes[status].enabled,
                 'inactive': !filterTypes[status].enabled
               }"
-              small
-              text
+              size="small"
               :value="status"
             >
               <div class="align-center d-flex justify-space-between">
@@ -88,11 +87,10 @@
                   <v-icon
                     v-if="filterTypes[status].enabled"
                     :color="filterTypes[status].enabled ? 'green' : 'inactive-contrast'"
+                    :icon="filterTypes[status].enabled ? mdiCheckCircle : mdiPlusCircle"
                     left
-                    small
-                  >
-                    {{ filterTypes[status].enabled ? 'mdi-check-circle' : 'mdi-plus-circle' }}
-                  </v-icon>
+                    size="small"
+                  />
                 </div>
                 <div :class="filterTypes[status].enabled ? 'white--text' : 'grey--text darken-2'">
                   <span class="sr-only">{{ filterTypes[status].enabled ? 'Hide' : 'Show' }} evaluations of marked with</span>
@@ -102,7 +100,7 @@
                   <v-chip
                     class="ml-2 px-1"
                     :class="{'font-weight-bold': filterTypes[status].enabled}"
-                    x-small
+                    size="x-small"
                   >
                     {{ filterTypeCounts(status) }}<span class="sr-only"> evaluations</span>
                   </v-chip>
@@ -196,13 +194,11 @@
                       block
                       :disabled="!allowEdits"
                       :ripple="false"
-                      text
+                      text="Edit"
                       @click.stop="onEditEvaluation(evaluation)"
                       @blur.native="() => focusedEditButtonEvaluationId = null"
                       @focus.native="() => focusedEditButtonEvaluationId = evaluation.id"
-                    >
-                      Edit
-                    </v-btn>
+                    />
                   </div>
                   <div v-if="allowEdits && isEditing(evaluation)" class="mt-1 pl-2 py-2 select-evaluation-status">
                     <label for="select-evaluation-status">
@@ -435,7 +431,7 @@
                     :on-click-cancel="() => markAsDoneWarning = undefined"
                     :on-click-confirm="onProceedMarkAsDone"
                     :text="markAsDoneWarning.message"
-                    icon="mdi-alert-circle"
+                    :icon="mdiAlertCircle"
                     title="Warning"
                   />
                   <v-btn
@@ -555,6 +551,7 @@ import EvaluationError from '@/components/evaluation/EvaluationError'
 import PersonLookup from '@/components/admin/PersonLookup'
 import SortableTableHeader from '@/components/util/SortableTableHeader'
 import {oxfordJoin, pluralize, toFormatFromISO, toFormatFromJsDate, toLocaleFromISO} from '@/lib/utils'
+import {mdiAlertCircle, mdiCheckCircle, mdiMagnify, mdiPlusCircle} from '@mdi/js'
 import {nextTick} from 'vue'
 import {useContextStore} from '@/stores/context'
 import {useTheme} from 'vuetify'
@@ -600,6 +597,10 @@ export default {
     isConfirmingCancelEdit: false,
     isConfirmingNonSisInstructor: false,
     markAsDoneWarning: undefined,
+    mdiAlertCircle,
+    mdiCheckCircle,
+    mdiMagnify,
+    mdiPlusCircle,
     pendingEditRowId: null,
     pendingInstructor: null,
     rules: {

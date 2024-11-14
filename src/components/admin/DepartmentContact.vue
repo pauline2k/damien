@@ -20,10 +20,9 @@
             <v-icon
               class="pb-1"
               :class="contact.canReceiveCommunications ? 'success--text' : 'muted--text'"
-              small
-            >
-              {{ contact.canReceiveCommunications ? 'mdi-check-circle' : 'mdi-minus-circle' }}
-            </v-icon>
+              :icon="contact.canReceiveCommunications ? mdiCheckCircle : mdiMinusCircle"
+              size="small"
+            />
           </v-col>
           <v-col class="font-italic pl-0" cols="11">
             {{ `${contact.canReceiveCommunications ? 'Does' : 'Does not'} receive notifications` }}
@@ -31,9 +30,11 @@
         </v-row>
         <v-row :id="`dept-contact-${contact.id}-permissions`" class="mt-1">
           <v-col cols="1">
-            <v-icon :class="contact.canViewReports ? 'success--text' : 'muted--text'" small>
-              {{ contact.canViewReports ? 'mdi-check-circle' : 'mdi-minus-circle' }}
-            </v-icon>
+            <v-icon
+              :class="contact.canViewReports ? 'success--text' : 'muted--text'"
+              :icon="contact.canViewReports ? mdiCheckCircle : mdiMinusCircle"
+              size="small"
+            />
           </v-col>
           <v-col class="font-italic pl-0" cols="11">
             <span v-if="!contact.canViewReports">Does not have access to Blue</span>
@@ -51,9 +52,8 @@
               class="px-4 mr-1"
               disabled
               :ripple="false"
-            >
-              {{ form.name }}
-            </v-chip>
+              :text="form.name"
+            />
           </v-col>
         </v-row>
         <v-row class="my-0" no-gutters>
@@ -71,34 +71,30 @@
                 :id="`edit-dept-contact-${contact.id}-btn`"
                 class="text-capitalize pa-0"
                 color="tertiary"
-                :disabled="disableControls"
+                :disabled="departmentStore.disableControls"
                 height="unset"
                 min-width="unset"
-                text
+                text="Edit"
                 @click="() => isEditing = true"
-              >
-                Edit
-              </v-btn>
+              />
               <v-divider
                 class="separator mx-2"
                 role="presentation"
                 vertical
-              ></v-divider>
+              />
               <v-btn
                 :id="`delete-dept-contact-${contact.id}-btn`"
                 class="text-capitalize pa-0"
                 color="tertiary"
-                :disabled="disableControls"
+                :disabled="departmentStore.disableControls"
                 height="unset"
                 min-width="unset"
-                text
+                text="Delete"
                 @click.stop="() => isConfirming = true"
-              >
-                Delete
-              </v-btn>
+              />
               <ConfirmDialog
                 v-if="isConfirming"
-                :disabled="disableControls"
+                :disabled="departmentStore.disableControls"
                 :on-click-cancel="onCancelDelete"
                 :on-click-confirm="onDelete"
                 :text="`Are you sure you want to remove ${fullName}?`"
@@ -128,6 +124,7 @@ import {sortBy} from 'lodash'
 import {useContextStore} from '@/stores/context'
 import {useDepartmentStore} from '@/stores/department-edit-session'
 import {useTheme} from 'vuetify'
+import {mdiCheckCircle, mdiMinusCircle} from '@mdi/js'
 
 const props = defineProps({
   contact: {
@@ -145,6 +142,7 @@ const props = defineProps({
 })
 
 const contextStore = useContextStore()
+const departmentStore = useDepartmentStore()
 
 const currentUser = contextStore.currentUser
 const departmentForms = computed(() => sortBy(props.contact.departmentForms, 'name'))
@@ -179,7 +177,7 @@ const onCancelEdit = () => {
 
 const onDelete = () => {
   const nameOfDeleted = fullName.value
-  useDepartmentStore().deleteContact(props.contact.userId).then(() => {
+  departmentStore.deleteContact(props.contact.userId).then(() => {
     isConfirming.value = false
     contextStore.alertScreenReader(`Deleted contact ${nameOfDeleted}.`)
     putFocusNextTick('add-dept-contact-btn')

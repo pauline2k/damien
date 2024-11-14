@@ -6,11 +6,9 @@
       class="text-capitalize pl-2 mr-3 mt-1"
       color="tertiary"
       :disabled="!allowEdits"
-      text
       @click="() => isAddingSection = true"
-      @keypress.enter.prevent="() => isAddingSection = true"
     >
-      <v-icon>mdi-plus-thick</v-icon>
+      <v-icon :icon="mdiPlusThick" />
       Add Course Section
     </v-btn>
     <div v-if="isAddingSection" class="full-width px-4">
@@ -31,12 +29,17 @@
             dense
             outlined
             required
-            @keypress.enter.prevent="lookupSection"
+            @keydown.enter.prevent="lookupSection"
             @keydown.esc="onCancel"
           >
             <template #message="{message}">
               <div :id="sectionError ? 'section-not-found-error' : 'lookup-course-number-error'" class="text-condensed">
-                <v-icon v-if="sectionError" color="error" small>mdi-alert</v-icon>
+                <v-icon
+                  v-if="sectionError"
+                  color="error"
+                  :icon="mdiAlert"
+                  size="small"
+                />
                 {{ message }}
               </div>
             </template>
@@ -46,24 +49,19 @@
               id="lookup-course-number-submit"
               class="text-capitalize mr-2 mb-1"
               color="secondary"
-              elevation="2"
               :disabled="!courseNumberReady"
+              elevation="2"
+              text="Look Up"
               @click="lookupSection"
-              @keypress.enter.prevent="lookupSection"
-            >
-              Look Up
-            </v-btn>
+            />
             <v-btn
               id="lookup-course-number-cancel"
               class="text-capitalize ml-1 mb-1"
               elevation="2"
               outlined
-              text
+              text="Cancel"
               @click="onCancel"
-              @keypress.enter.prevent="onCancel"
-            >
-              Cancel
-            </v-btn>
+            />
           </div>
         </v-form>
       </div>
@@ -83,22 +81,17 @@
             color="secondary"
             :disabled="disableControls"
             elevation="2"
+            text="Confirm"
             @click="onSubmit(section.courseNumber)"
-            @keypress.enter.prevent="onSubmit(section.courseNumber)"
-          >
-            Confirm
-          </v-btn>
+          />
           <v-btn
             id="add-course-section-cancel"
             class="text-capitalize ml-1 mb-1"
             elevation="2"
             outlined
-            text
+            text="Cancel"
             @click="onCancel"
-            @keypress.enter.prevent="onCancel"
-          >
-            Cancel
-          </v-btn>
+          />
         </div>
       </div>
     </div>
@@ -107,6 +100,7 @@
 
 <script>
 import {getSection} from '@/api/sections'
+import {mdiAlert, mdiPlusThick} from '@mdi/js'
 import {putFocusNextTick} from '@/lib/utils'
 import Context from '@/mixins/Context.vue'
 import DepartmentEditSession from '@/mixins/DepartmentEditSession'
@@ -124,6 +118,8 @@ export default {
     courseNumber: null,
     errorMessage: '',
     isAddingSection: false,
+    mdiAlert,
+    mdiPlusThick,
     rules: {},
     section: null,
     sectionError: false

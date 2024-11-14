@@ -9,7 +9,6 @@
             class="text-capitalize text-nowrap mx-0 px-2"
             :color="theme.global.current.value.dark ? 'tertiary' : 'secondary'"
             :disabled="disableControls || !allowEdits || !selectedEvaluationIds.length || isLoading || isInvalidAction(action)"
-            text
             @click.stop="action.apply(key)"
           >
             <span v-if="!(isLoading && key !== 'duplicate' && applyingAction.key === key)">{{ action.text }}</span>
@@ -100,10 +99,10 @@
       v-if="markAsDoneWarning"
       confirm-button-label="Proceed"
       :disabled="disableControls"
+      :icon="mdiAlertCircle"
       :on-click-cancel="() => markAsDoneWarning = undefined"
       :on-click-confirm="onProceedMarkAsDone"
       :text="markAsDoneWarning"
-      icon="mdi-alert-circle"
       title="Warning"
     />
   </div>
@@ -117,6 +116,7 @@ import ConfirmDialog from '@/components/util/ConfirmDialog'
 import Context from '@/mixins/Context'
 import DepartmentEditSession from '@/mixins/DepartmentEditSession'
 import UpdateEvaluations from '@/components/evaluation/UpdateEvaluations'
+import {mdiAlertCircle} from '@mdi/js'
 import {toFormatFromISO} from '@/lib/utils'
 import {useContextStore} from '@/stores/context'
 import {useTheme} from 'vuetify'
@@ -144,6 +144,7 @@ export default {
     isEditing: false,
     isLoading: false,
     markAsDoneWarning: undefined,
+    mdiAlertCircle,
     midtermFormAvailable: false,
     theme: useTheme()
   }),

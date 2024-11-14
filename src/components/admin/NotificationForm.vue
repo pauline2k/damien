@@ -45,13 +45,10 @@
               <v-btn
                 :aria-label="`Remove ${recipientLabel(recipient)} from recipients`"
                 :disabled="isSending"
-                icon
-                small
+                :icon="mdiCloseCircle"
+                size="small"
                 @click.stop="removeRecipient(department, recipient, index)"
-                @keypress.enter.prevent.stop="removeRecipient(department, recipient, index)"
-              >
-                <v-icon>mdi-close-circle</v-icon>
-              </v-btn>
+              />
             </v-chip>
           </v-expansion-panel-text>
         </v-expansion-panel>
@@ -91,7 +88,7 @@
           flat
           hide-details="auto"
           outlined
-        ></v-textarea>
+        />
       </v-form>
     </v-card-text>
     <v-card-actions>
@@ -102,95 +99,88 @@
           color="secondary"
           :disabled="disabled"
           elevation="2"
+          text="Send"
           @click="sendNotification"
-          @keypress.enter.prevent="sendNotification"
-        >
-          Send
-        </v-btn>
+        />
         <v-btn
           id="cancel-send-notification-btn"
           class="text-capitalize ml-1"
           :disabled="isSending"
           elevation="2"
           outlined
-          text
+          text="Cancel"
           @click="onCancel"
-          @keypress.enter.prevent="onCancel"
-        >
-          Cancel
-        </v-btn>
+        />
       </div>
     </v-card-actions>
   </v-card>
 </template>
 
-<script>
+<script setup>
 import {cloneDeep, indexOf, size, trim} from 'lodash'
+import {computed, onMounted, ref} from 'vue'
+import {mdiCloseCircle} from '@mdi/js'
 import {notifyContacts} from '@/api/departments'
 import {putFocusNextTick} from '@/lib/utils'
-import Context from '@/mixins/Context.vue'
+import {useContextStore} from '@/stores/context'
 
-export default {
-  name: 'NotificationForm',
-  mixins: [Context],
-  props: {
-    afterSend: {
-      required: true,
-      type: Function
-    },
-    onCancel: {
-      required: true,
-      type: Function
-    },
-    recipients: {
-      required: true,
-      type: Array
-    }
+const props = defineProps({
+  afterSend: {
+    required: true,
+    type: Function
   },
-  data: () => ({
-    message: undefined,
-    isSending: false,
-    selectedRecipients: [],
-    subject: undefined
-  }),
-  computed: {
-    disabled() {
-      return this.isSending || !trim(this.subject) || !trim(this.message) || !size(this.selectedRecipients)
-    }
+  onCancel: {
+    required: true,
+    type: Function
   },
-  created() {
-    this.selectedRecipients = cloneDeep(this.recipients)
-    this.alertScreenReader('Send notification form is ready.')
-    putFocusNextTick('send-notification-section-header')
-  },
-  methods: {
-    recipientLabel(recipient) {
-      return `${recipient.firstName} ${recipient.lastName} (${recipient.email})`
-    },
-    removeRecipient(department, recipient, index) {
-      const label = this.recipientLabel(recipient)
-      const indexOfDepartment = indexOf(this.selectedRecipients, department)
-      if (size(department.recipients) === 1) {
-        this.selectedRecipients.splice(indexOfDepartment, 1)
-      } else {
-        this.selectedRecipients[indexOfDepartment].recipients.splice(index, 1)
-      }
-      this.alertScreenReader(`Removed ${label} from list of recipients.`)
-      return false
-    },
-    sendNotification() {
-      this.isSending = true
-      this.alertScreenReader('Sending')
-      notifyContacts(this.message, this.selectedRecipients, this.subject).then(response => {
-        if (response) {
-          this.afterSend()
-        } else {
-          this.isSending = false
-          this.reportError('Notification failed. Nothing sent.')
-        }
-      })
-    }
+  recipients: {
+    required: true,
+    type: Array
   }
+})
+
+const contextStore = useContextStore()
+
+const message = ref(undefined)
+const isSending = ref(false)
+const selectedRecipients = ref([])
+const subject = ref(undefined)
+
+const disabled = computed(() => {
+  return isSending.value || !trim(subject.value) || !trim(message.value) || !size(selectedRecipients.value)
+})
+
+onMounted(() => {
+  selectedRecipients.value = cloneDeep(props.recipients)
+  contextStore.setScreenReaderAlert('Send notification form is ready.')
+  putFocusNextTick('send-notification-section-header')
+})
+
+const recipientLabel = recipient => `${recipient.firstName} ${recipient.lastName} (${recipient.email})`
+
+const removeRecipient = (department, recipient, index) => {
+  const label = recipientLabel(recipient)
+  const indexOfDepartment = indexOf(selectedRecipients.value, department)
+  if (size(department.recipients) === 1) {
+    selectedRecipients.value.splice(indexOfDepartment, 1)
+  } else {
+    selectedRecipients.value[indexOfDepartment].recipients.splice(index, 1)
+  }
+  contextStore.setScreenReaderAlert(`Removed ${label} from list of recipients.`)
+  return false
+}
+
+const sendNotification = () => {
+  isSending.value = true
+  contextStore.setScreenReaderAlert('Sending')
+  notifyContacts(message.value, selectedRecipients.value, subject.value).then(response => {
+    if (response) {
+      props.afterSend()
+    } else {
+      isSending.value = false
+      contextStore.snackbarReportError('Notification failed. Nothing sent.')
+    }
+  })
 }
 </script>
 

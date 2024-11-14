@@ -21,9 +21,7 @@
           </ul>
         </div>
         <div v-if="size(blockers)">
-          <v-icon color="error">
-            mdi-alert-circle
-          </v-icon>
+          <v-icon color="error" :icon="mdiAlertCircle" />
           Publication is blocked by errors in departments:
           <ul id="blocker-list" class="pl-4">
             <li v-for="(count, deptName) in blockers" :key="deptName">
@@ -37,7 +35,6 @@
           color="secondary"
           :disabled="isExporting || loading || !!size(blockers)"
           @click="publish"
-          @keypress.enter.prevent="publish"
         >
           <span v-if="!isExporting">Publish</span>
           <v-progress-circular
@@ -47,7 +44,7 @@
             rotate="5"
             size="20"
             width="3"
-          ></v-progress-circular>
+          />
         </v-btn>
         <v-slide-x-reverse-transition>
           <span v-if="isExporting" class="mx-2">Publishing in progress.</span>
@@ -60,9 +57,8 @@
           fab
           x-small
           @click="onUpdateStatus"
-          @keypress.enter.prevent="onUpdateStatus"
         >
-          <v-icon>mdi-refresh</v-icon>
+          <v-icon :icon="mdiRefresh" />
           <span class="sr-only">Refresh</span>
         </v-btn>
       </v-col>
@@ -91,11 +87,10 @@
                       aria-label="download"
                       class="pr-2"
                       color="anchor"
+                      :icon="mdiTrayArrowDown"
                       role="img"
-                      small
-                    >
-                      mdi-tray-arrow-down
-                    </v-icon>
+                      size="small"
+                    />
                     {{ toLocaleFromISO(e.createdAt, dateFormat) }}
                     <span class="sr-only">term export</span>
                   </a>
@@ -124,6 +119,7 @@ import TermSelect from '@/components/util/TermSelect'
 import {toLocaleFromISO} from '@/lib/utils'
 import {nextTick} from 'vue'
 import {useContextStore} from '@/stores/context'
+import {mdiAlertCircle, mdiRefresh, mdiTrayArrowDown} from '@mdi/js'
 
 export default {
   name: 'Megiddo',
@@ -139,6 +135,9 @@ export default {
     exportsPanel: undefined,
     isExporting: false,
     isUpdatingStatus: false,
+    mdiAlertCircle,
+    mdiRefresh,
+    mdiTrayArrowDown,
     termExports: []
   }),
   created() {
