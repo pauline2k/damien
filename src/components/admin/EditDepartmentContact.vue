@@ -359,8 +359,4 @@ export default {
   margin: 0px;
   width: 20px;
 }
-.mdi-checkbox-blank-outline, .mdi-checkbox-marked {
-  font-size: 20px;
-  line-height: 16px;
-}
 </style>

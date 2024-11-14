@@ -5,39 +5,37 @@
       class="align-self-start mr-1"
       :class="`text--${shade}`"
       :color="color"
-    >
-      mdi-alert-circle
-    </v-icon>
+      :icon="mdiAlertCircle"
+    />
     <span>{{ message }}</span>
   </div>
 </template>
 
-<script>
+<script setup>
 import {useTheme} from 'vuetify'
+import {mdiAlertCircle} from '@mdi/js'
+import {computed} from 'vue'
 
-export default {
-  name: 'EvaluationError',
-  props: {
-    color: {
-      default: 'error',
-      required: false,
-      type: String
-    },
-    message: {
-      required: true,
-      type: String
-    },
-    hover: {
-      required: false,
-      type: Boolean
-    }
+defineProps({
+  color: {
+    default: 'error',
+    required: false,
+    type: String
   },
-  computed: {
-    shade() {
-      return useTheme().global.current.value.dark && !this.hover ? 'lighten-3' : 'darken-1'
-    }
+  message: {
+    required: true,
+    type: String
+  },
+  hover: {
+    required: false,
+    type: Boolean
   }
-}
+})
+
+const theme = useTheme()
+const shade = computed(() => {
+  return theme.global.current.value.dark && !this.hover ? 'lighten-3' : 'darken-1'
+})
 </script>
 
 <style scoped>

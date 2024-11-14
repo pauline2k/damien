@@ -47,11 +47,14 @@
                         <template #default="{open}">
                           <span v-if="!open">
                             Expand
-                            <v-icon class="rotate-180 ml-1">mdi-plus-box-multiple-outline</v-icon>
+                            <v-icon
+                              class="rotate-180 ml-1"
+                              :icon="mdiPlusBoxMultipleOutline"
+                            />
                           </span>
                           <span v-if="open">
                             Collapse All
-                            <v-icon class="rotate-180 ml-1">mdi-minus-box-multiple-outline</v-icon>
+                            <v-icon class="rotate-180 ml-1" :icon="mdiMinusBoxMultipleOutline" />
                           </span>
                         </template>
                       </v-expansion-panel-title>
@@ -101,10 +104,9 @@
                 id="add-dept-contact-btn"
                 class="text-capitalize pl-2 my-1 mx-2"
                 color="tertiary"
-                text
                 @click="() => isAddingContact = true"
               >
-                <v-icon>mdi-plus-thick</v-icon>
+                <v-icon :icon="mdiPlusThick" />
                 Add Contact
               </v-btn>
               <EditDepartmentContact
@@ -131,10 +133,9 @@
         <v-toolbar dark color="secondary" dense>
           <v-icon
             class="font-weight-bold pb-1 pl-0"
+            :icon="mdiClose()"
             @click="() => setShowTheOmenPoster(false)"
-          >
-            mdi-close
-          </v-icon>
+          />
         </v-toolbar>
         <v-card-text class="text-center py-2">
           <img
@@ -160,6 +161,7 @@ import EvaluationTable from '@/components/evaluation/EvaluationTable'
 import NotificationForm from '@/components/admin/NotificationForm'
 import TermSelect from '@/components/util/TermSelect'
 import {useContextStore} from '@/stores/context'
+import {mdiClose, mdiMinusBoxMultipleOutline, mdiPlusBoxMultipleOutline, mdiPlusThick} from '@mdi/js'
 
 export default {
   name: 'Department',
@@ -176,7 +178,11 @@ export default {
     contactDetailsPanel: [],
     contactsPanel: undefined,
     isAddingContact: false,
-    isCreatingNotification: false
+    isCreatingNotification: false,
+    mdiClose,
+    mdiMinusBoxMultipleOutline,
+    mdiPlusThick,
+    mdiPlusBoxMultipleOutline
   }),
   computed: {
     currentUser() {

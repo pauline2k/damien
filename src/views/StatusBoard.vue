@@ -51,11 +51,9 @@
                   color="secondary"
                   :disabled="isEmpty(selectedDepartmentIds) || loading"
                   small
+                  text="Apply"
                   @click="() => isCreatingNotification = true"
-                  @keypress.enter.prevent="() => isCreatingNotification = true"
-                >
-                  Apply
-                </v-btn>
+                />
               </div>
             </template>
           </SortableTableHeader>
@@ -107,10 +105,9 @@
                     aria-hidden="false"
                     aria-label="no errors"
                     class="success--text"
+                    :icon="mdiCheckCircle"
                     role="img"
-                  >
-                    mdi-check-circle
-                  </v-icon>
+                  />
                 </td>
                 <td class="department-confirmed">
                   <v-icon
@@ -118,10 +115,9 @@
                     aria-hidden="false"
                     aria-label="all confirmed"
                     class="success--text"
+                    :icon="mdiCheckCircle"
                     role="img"
-                  >
-                    mdi-check-circle
-                  </v-icon>
+                  />
                   <span v-if="department.totalConfirmed === 0 || department.totalConfirmed < department.totalEvaluations">
                     <span aria-hidden="true">{{ department.totalConfirmed }} / {{ department.totalEvaluations }}</span>
                     <span class="sr-only">{{ department.totalConfirmed }} of {{ department.totalEvaluations }} confirmed</span>
@@ -159,6 +155,7 @@ import TermSelect from '@/components/util/TermSelect'
 import {each, filter as _filter, get, includes, indexOf, isEmpty, kebabCase, map, size} from 'lodash'
 import {getDepartmentsEnrolled} from '@/api/departments'
 import {getCatalogListings, putFocusNextTick, toLocaleFromISO} from '@/lib/utils'
+import {mdiCheckCircle} from '@mdi/js'
 import {useContextStore} from '@/stores/context'
 
 export default {
@@ -178,6 +175,7 @@ export default {
     ],
     isCreatingNotification: false,
     isExporting: false,
+    mdiCheckCircle,
     selectedDepartmentIds: [],
     sortBy: null,
     sortDesc: false

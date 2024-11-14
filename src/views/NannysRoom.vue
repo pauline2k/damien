@@ -40,10 +40,9 @@
               class="text-capitalize pl-3 mb-1"
               color="tertiary"
               :disabled="disableControls"
-              text
               @click="onClickAddDepartmentForm"
             >
-              <v-icon>mdi-plus-thick</v-icon>
+              <v-icon :icon="mdiPlusThick" />
               Add new department form
             </v-btn>
             <v-form v-if="isAddingDepartmentForm" class="px-4 pb-4" @submit.prevent="onSubmitAddDepartmentForm">
@@ -143,7 +142,7 @@
               text
               @click="onClickAddEvaluationType"
             >
-              <v-icon>mdi-plus-thick</v-icon>
+              <v-icon :icon="mdiPlusThick" />
               Add new evaluation type
             </v-btn>
             <v-form v-if="isAddingEvaluationType" class="px-4 pb-4" @submit.prevent="onSubmitAddEvaluationType">
@@ -242,7 +241,7 @@
               text
               @click="onClickAddInstructor"
             >
-              <v-icon>mdi-plus-thick</v-icon>
+              <v-icon :icon="mdiPlusThick" />
               Add new instructor
             </v-btn>
             <v-form
@@ -420,14 +419,15 @@
 <script>
 import {get} from 'lodash'
 import {getAutoPublishStatus, setAutoPublishStatus} from '@/api/config'
+import {mdiPlusThick} from '@mdi/js'
+import {useContextStore} from '@/stores/context'
+import {useTheme} from 'vuetify'
 import {putFocusNextTick} from '@/lib/utils'
 import ConfirmDialog from '@/components/util/ConfirmDialog'
 import Context from '@/mixins/Context.vue'
 import EditServiceAnnouncement from '@/components/admin/EditServiceAnnouncement'
 import ListManagementSession from '@/mixins/ListManagementSession'
 import SortableTableHeader from '@/components/util/SortableTableHeader'
-import {useContextStore} from '@/stores/context'
-import {useTheme} from 'vuetify'
 
 export default {
   name: 'NannysRoom',
@@ -451,6 +451,7 @@ export default {
       {class: 'pl-3', text: 'Email', value: 'email'},
       {class: 'pl-3', text: '', value: 'delete', sortable: false}
     ],
+    mdiPlusThick,
     newInstructor: null,
     newItemName: null,
     sortBy: {

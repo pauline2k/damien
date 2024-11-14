@@ -116,11 +116,11 @@
             class="body-2"
             aria-live="polite"
             role="alert"
-            v-html="serviceAnnouncement.text"
+            v-html="contextStore.serviceAnnouncement.text"
           />
         </pre>
       </div>
-      <router-view :key="stripAnchorRef($route.fullPath)" class="px-4"></router-view>
+      <router-view :key="stripAnchorRef(route.fullPath)" class="px-4"></router-view>
     </v-main>
     <DamienFooter />
   </v-app>
@@ -136,11 +136,12 @@ import {stripAnchorRef} from '@/lib/utils'
 import {useContextStore} from '@/stores/context'
 import {onMounted, ref} from 'vue'
 import {useTheme} from 'vuetify'
-import {useRouter} from 'vue-router'
+import {useRoute, useRouter} from 'vue-router'
 
 const contextStore = useContextStore()
 const currentUser = contextStore.currentUser
 const navItems = ref(undefined)
+const route = useRoute()
 const router = useRouter()
 const theme = useTheme()
 
@@ -177,7 +178,7 @@ const prefersColorScheme = () => {
   } else {
     prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
   }
-  useTheme().global.name.value = prefersDarkMode ? 'dark' : 'light'
+  theme.global.name.value = prefersDarkMode ? 'dark' : 'light'
 }
 
 const toggleColorScheme = () => {
