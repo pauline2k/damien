@@ -251,9 +251,15 @@
   </v-dialog>
 </template>
 
+<script setup>
+import {EVALUATION_STATUSES, useDepartmentStore} from '@/stores/department/department-edit-session'
+import {storeToRefs} from 'pinia'
+
+const {disableControls} = storeToRefs(useDepartmentStore())
+</script>
+
 <script>
 import ConfirmDialog from '@/components/util/ConfirmDialog'
-import DepartmentEditSession from '@/mixins/DepartmentEditSession'
 import PersonLookup from '@/components/admin/PersonLookup'
 import {addInstructor} from '@/api/instructor'
 import {endsWith, find, get, isEmpty, isObject, map, max, min, reduce, size, toInteger} from 'lodash'
@@ -267,7 +273,6 @@ export default {
     ConfirmDialog,
     PersonLookup
   },
-  mixins: [DepartmentEditSession],
   props: {
     action: {
       required: true,
@@ -356,10 +361,10 @@ export default {
       return get(find(useContextStore().config.departmentForms, df => df.id === this.selectedDepartmentForm), 'name')
     },
     selectedEvaluationsDescription() {
-      if (isEmpty(this.selectedEvaluationIds)) {
+      if (isEmpty(useDepartmentStore().selectedEvaluationIds)) {
         return ''
       }
-      return `${this.selectedEvaluationIds.length} ${this.selectedEvaluationIds.length === 1 ? 'row' : 'rows'}`
+      return `${useDepartmentStore().selectedEvaluationIds.length} ${useDepartmentStore().selectedEvaluationIds.length === 1 ? 'row' : 'rows'}`
     },
     selectedEvaluationTypeName() {
       return get(find(useContextStore().config.evaluationTypes, et => et.id === this.selectedEvaluationType), 'name')
@@ -396,7 +401,7 @@ export default {
     endsWith,
     get,
     getStatusText(status) {
-      return status === 'none' ? null : get(find(this.evaluationStatuses, es => es.value === status), 'text')
+      return status === 'none' ? null : get(find(EVALUATION_STATUSES, es => es.value === status), 'text')
     },
     instructorConfirmationText(instructor) {
       return `
@@ -450,7 +455,7 @@ export default {
       return this.selectedEvaluationStatus && this.selectedEvaluationStatus !== evaluation.status
     },
     reset() {
-      this.selectedEvaluations = reduce(this.evaluations, (evaluations, e) => {
+      this.selectedEvaluations = reduce(useDepartmentStore().evaluations, (evaluations, e) => {
         if (e.isSelected) {
           evaluations.push(e)
         }

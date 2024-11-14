@@ -157,8 +157,14 @@
   </v-form>
 </template>
 
+<script setup>
+import {storeToRefs} from 'pinia'
+import {useDepartmentStore} from '@/stores/department/department-edit-session'
+
+const {contacts, disableControls} = storeToRefs(useDepartmentStore())
+</script>
+
 <script>
-import DepartmentEditSession from '@/mixins/DepartmentEditSession'
 import PersonLookup from '@/components/admin/PersonLookup'
 import {alertScreenReader, oxfordJoin, putFocusNextTick} from '@/lib/utils'
 import {
@@ -177,7 +183,6 @@ import {useTheme} from 'vuetify'
 export default {
   name: 'EditDepartmentContact',
   components: {PersonLookup},
-  mixins: [DepartmentEditSession],
   props: {
     afterSave: {
       required: true,
@@ -212,7 +217,7 @@ export default {
   }),
   computed: {
     availableDepartmentForms() {
-      return differenceBy(this.allDepartmentForms, this.contactDepartmentForms, item => item.name)
+      return differenceBy(useDepartmentStore().allDepartmentForms, this.contactDepartmentForms, item => item.name)
     },
     contactId() {
       return get(this.contact, 'uid', 'add-contact')
@@ -272,7 +277,7 @@ export default {
     },
     onSave() {
       alertScreenReader('Saving')
-      this.updateContact({
+      useDepartmentStore().updateContact({
         'canReceiveCommunications': this.canReceiveCommunications,
         'canViewReports': this.permissions === 'reports_only',
         'canViewResponseRates': this.permissions === 'response_rates',

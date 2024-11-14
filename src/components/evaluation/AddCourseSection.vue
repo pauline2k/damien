@@ -98,8 +98,14 @@
   </div>
 </template>
 
+<script setup>
+import {storeToRefs} from 'pinia'
+import {useDepartmentStore} from '@/stores/department/department-edit-session'
+
+const {disableControls} = storeToRefs(useDepartmentStore())
+</script>
+
 <script>
-import DepartmentEditSession from '@/mixins/DepartmentEditSession'
 import {alertScreenReader, putFocusNextTick} from '@/lib/utils'
 import {getSection} from '@/api/sections'
 import {mdiAlert, mdiPlusThick} from '@mdi/js'
@@ -107,7 +113,6 @@ import {useContextStore} from '@/stores/context'
 
 export default {
   name: 'AddCourseSection',
-  mixins: [DepartmentEditSession],
   props: {
     allowEdits: {
       required: false,
@@ -144,7 +149,7 @@ export default {
   created() {
     this.rules = {
       courseNumber: value => !value || /^\d+$/.test(value) || 'Invalid course number.',
-      notPresent: value => !find(this.evaluations, {courseNumber: value}) || `Course number ${value} already present on page.`
+      notPresent: value => !find(useDepartmentStore().evaluations, {courseNumber: value}) || `Course number ${value} already present on page.`
     }
   },
   methods: {
@@ -179,7 +184,7 @@ export default {
     },
     onSubmit(courseNumber) {
       alertScreenReader(`Adding section ${courseNumber}.`)
-      this.addSection({
+      useDepartmentStore().addSection({
         sectionId: courseNumber,
         termId: useContextStore().selectedTermId
       }).then(() => {
@@ -188,8 +193,8 @@ export default {
         this.errorMessage = null
         this.section = null
         alertScreenReader(`Section ${courseNumber} added.`)
-      }, error => this.showErrorDialog(error.response.data.message))
-        .finally(() => this.setDisableControls(false))
+      }, error => useDepartmentStore().showErrorDialog(error.response.data.message))
+        .finally(() => useDepartmentStore().setDisableControls(false))
     }
   }
 }

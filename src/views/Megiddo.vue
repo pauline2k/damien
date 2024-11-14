@@ -114,14 +114,14 @@ const contextStore = useContextStore()
 
 <script>
 import {DateTime} from 'luxon'
+import EvaluationTable from '@/components/evaluation/EvaluationTable'
+import TermSelect from '@/components/util/TermSelect'
 import {alertScreenReader, putFocusNextTick, toLocaleFromISO} from '@/lib/utils'
 import {exportEvaluations, getConfirmed, getExportStatus, getExports, getValidation} from '@/api/evaluations'
 import {find, isEmpty, size, sortBy} from 'lodash'
-import DepartmentEditSession from '@/mixins/DepartmentEditSession'
-import EvaluationTable from '@/components/evaluation/EvaluationTable'
-import TermSelect from '@/components/util/TermSelect'
-import {nextTick} from 'vue'
 import {mdiAlertCircle, mdiRefresh, mdiTrayArrowDown} from '@mdi/js'
+import {nextTick} from 'vue'
+import {useDepartmentStore} from '@/stores/department/department-edit-session'
 
 export default {
   name: 'Megiddo',
@@ -129,7 +129,6 @@ export default {
     EvaluationTable,
     TermSelect
   },
-  mixins: [DepartmentEditSession],
   data: () => ({
     blockers: {},
     confirmed: [],
@@ -165,7 +164,7 @@ export default {
       useContextStore().loadingStart()
       alertScreenReader(`Loading ${useContextStore().selectedTermName}`)
       Promise.all([getValidation(useContextStore().selectedTermId), getConfirmed(useContextStore().selectedTermId), getExports(useContextStore().selectedTermId)]).then(responses => {
-        this.setEvaluations(sortBy(responses[0], 'sortableCourseName'))
+        useDepartmentStore().setEvaluations(sortBy(responses[0], 'sortableCourseName'))
         this.confirmed = responses[1]
         this.termExports = responses[2]
         useContextStore().loadingComplete(`Publish ${useContextStore().selectedTermName || ''}`)

@@ -71,7 +71,7 @@
                 :id="`edit-dept-contact-${contact.id}-btn`"
                 class="text-capitalize pa-0"
                 color="tertiary"
-                :disabled="departmentStore.disableControls"
+                :disabled="disableControls"
                 height="unset"
                 min-width="unset"
                 text="Edit"
@@ -86,7 +86,7 @@
                 :id="`delete-dept-contact-${contact.id}-btn`"
                 class="text-capitalize pa-0"
                 color="tertiary"
-                :disabled="departmentStore.disableControls"
+                :disabled="disableControls"
                 height="unset"
                 min-width="unset"
                 text="Delete"
@@ -94,7 +94,7 @@
               />
               <ConfirmDialog
                 v-if="isConfirming"
-                :disabled="departmentStore.disableControls"
+                :disabled="disableControls"
                 :on-click-cancel="onCancelDelete"
                 :on-click-confirm="onDelete"
                 :text="`Are you sure you want to remove ${fullName}?`"
@@ -122,9 +122,10 @@ import {computed, ref, watch} from 'vue'
 import {alertScreenReader, putFocusNextTick} from '@/lib/utils'
 import {sortBy} from 'lodash'
 import {useContextStore} from '@/stores/context'
-import {useDepartmentStore} from '@/stores/department-edit-session'
+import {useDepartmentStore} from '@/stores/department/department-edit-session'
 import {useTheme} from 'vuetify'
 import {mdiCheckCircle, mdiMinusCircle} from '@mdi/js'
+import {storeToRefs} from 'pinia'
 
 const props = defineProps({
   contact: {
@@ -143,6 +144,7 @@ const props = defineProps({
 
 const contextStore = useContextStore()
 const departmentStore = useDepartmentStore()
+const {disableControls} = storeToRefs(departmentStore)
 
 const currentUser = contextStore.currentUser
 const departmentForms = computed(() => sortBy(props.contact.departmentForms, 'name'))

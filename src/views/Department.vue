@@ -134,7 +134,7 @@
           <v-icon
             class="font-weight-bold pb-1 pl-0"
             :icon="mdiClose()"
-            @click="() => setShowTheOmenPoster(false)"
+            @click="() => departmentStore.setShowTheOmenPoster(false)"
           />
         </v-toolbar>
         <v-card-text class="text-center py-2">
@@ -150,15 +150,19 @@
 </template>
 
 <script setup>
+import {NUMBER_OF_THE_BEAST, useDepartmentStore} from '@/stores/department/department-edit-session'
+import {storeToRefs} from 'pinia'
 import {useContextStore} from '@/stores/context'
+
 const contextStore = useContextStore()
+const departmentStore = useDepartmentStore()
+const {contacts, department, disableControls, showTheOmenPoster} = storeToRefs(departmentStore)
 </script>
 
 <script>
 import {alertScreenReader, getCatalogListings, putFocusNextTick, scrollToTop} from '@/lib/utils'
 import {filter as _filter, get, includes, isEmpty, size} from 'lodash'
 import DepartmentContact from '@/components/admin/DepartmentContact'
-import DepartmentEditSession from '@/mixins/DepartmentEditSession'
 import DepartmentNote from '@/components/admin/DepartmentNote'
 import EditDepartmentContact from '@/components/admin/EditDepartmentContact'
 import EvaluationTable from '@/components/evaluation/EvaluationTable'
@@ -176,7 +180,6 @@ export default {
     NotificationForm,
     TermSelect
   },
-  mixins: [DepartmentEditSession],
   data: () => ({
     contactDetailsPanel: [],
     contactsPanel: undefined,
@@ -190,14 +193,14 @@ export default {
   computed: {
     notificationRecipients() {
       return {
-        deptName: this.department.deptName,
-        deptId: this.department.id,
+        deptName: useDepartmentStore().department.deptName,
+        deptId: useDepartmentStore().department.id,
         recipients: _filter(this.contacts, 'canReceiveCommunications')
       }
     }
   },
   created() {
-    this.setShowTheOmenPoster(this.$route.query.n === this.NUMBER_OF_THE_BEAST)
+    useDepartmentStore().setShowTheOmenPoster(this.$route.query.n === NUMBER_OF_THE_BEAST)
     putFocusNextTick('page-title')
   },
   methods: {
@@ -237,8 +240,8 @@ export default {
       useContextStore().loadingStart()
       alertScreenReader(`Loading ${useContextStore().selectedTermName}`)
       const departmentId = get(this.$route, 'params.departmentId')
-      this.init(departmentId).then(department => {
-        useContextStore().loadingComplete(`${department.deptName} ${useContextStore().selectedTermName}`)
+      useDepartmentStore().init(departmentId).then(() => {
+        useContextStore().loadingComplete(`${useDepartmentStore().department.deptName} ${useContextStore().selectedTermName}`)
       })
     }
   }
