@@ -130,7 +130,7 @@
       hide-default-footer
       hide-default-header
       :items="evaluations"
-      :loading="loading"
+      :loading="contextStore.loading"
       :sort-by.sync="sortBy"
       :sort-desc.sync="sortDesc"
       @current-items="onChangeSearchFilter"
@@ -538,23 +538,28 @@
   </v-container>
 </template>
 
+<script setup>
+import {useContextStore} from '@/stores/context'
+import {useTheme} from 'vuetify'
+
+const contextStore = useContextStore()
+const theme = useTheme()
+</script>
+
 <script>
 import {addInstructor} from '@/api/instructor'
+import {alertScreenReader, oxfordJoin, pluralize, toFormatFromISO, toFormatFromJsDate, toLocaleFromISO} from '@/lib/utils'
 import {clone, cloneDeep, each, find, get, isEmpty, keys, pickBy, size, some} from 'lodash'
 import {putFocusNextTick} from '@/lib/utils'
 import AddCourseSection from '@/components/evaluation/AddCourseSection'
 import ConfirmDialog from '@/components/util/ConfirmDialog'
-import Context from '@/mixins/Context'
 import DepartmentEditSession from '@/mixins/DepartmentEditSession'
 import EvaluationActions from '@/components/evaluation/EvaluationActions'
 import EvaluationError from '@/components/evaluation/EvaluationError'
 import PersonLookup from '@/components/admin/PersonLookup'
 import SortableTableHeader from '@/components/util/SortableTableHeader'
-import {oxfordJoin, pluralize, toFormatFromISO, toFormatFromJsDate, toLocaleFromISO} from '@/lib/utils'
 import {mdiAlertCircle, mdiCheckCircle, mdiMagnify, mdiPlusCircle} from '@mdi/js'
 import {nextTick} from 'vue'
-import {useContextStore} from '@/stores/context'
-import {useTheme} from 'vuetify'
 
 export default {
   name: 'EvaluationTable',
@@ -566,7 +571,7 @@ export default {
     PersonLookup,
     SortableTableHeader
   },
-  mixins: [Context, DepartmentEditSession],
+  mixins: [DepartmentEditSession],
   props: {
     readonly: {
       type: Boolean,
@@ -623,7 +628,7 @@ export default {
     },
     allowEdits() {
       const currentUser = useContextStore().currentUser
-      return currentUser.isAdmin || !this.isSelectedTermLocked
+      return currentUser.isAdmin || !useContextStore().isSelectedTermLocked
     },
     rowValid() {
       const evaluation = find(this.evaluations, ['id', this.editRowId])
@@ -634,7 +639,7 @@ export default {
         return keys(pickBy(this.filterTypes, 'enabled'))
       },
       set: function(types) {
-        this.alertScreenReader(`Showing ${types.length ? `evaluations marked ${oxfordJoin(types)}` : 'no evaluations'}`)
+        alertScreenReader(`Showing ${types.length ? `evaluations marked ${oxfordJoin(types)}` : 'no evaluations'}`)
         each(keys(this.filterTypes), type => {
           this.filterTypes[type].enabled = types.includes(type)
         })
@@ -652,7 +657,7 @@ export default {
     }
 
     this.departmentForms = [{id: null, name: 'Revert'}].concat(this.activeDepartmentForms)
-    this.evaluationTypes = [{id: null, name: 'Revert'}].concat(this.config.evaluationTypes)
+    this.evaluationTypes = [{id: null, name: 'Revert'}].concat(useContextStore().config.evaluationTypes)
 
     this.rules.instructorUid = () => {
       return get(this.pendingInstructor, 'uid') ? true : 'Instructor is required.'}
@@ -674,7 +679,7 @@ export default {
       putFocusNextTick(`edit-evaluation-${this.focusedEditButtonEvaluationId}-btn`)
     },
     afterSelectDepartmentForm(selected) {
-      this.alertScreenReader(`${selected.name} department form selected.`)
+      alertScreenReader(`${selected.name} department form selected.`)
       putFocusNextTick('input-department-form')
     },
     customFilter(value, search, item) {
@@ -768,7 +773,7 @@ export default {
       putFocusNextTick(`edit-evaluation-${this.focusedEditButtonEvaluationId}-btn`)
     },
     onCancelEdit(evaluation) {
-      this.alertScreenReader('Edit canceled.')
+      alertScreenReader('Edit canceled.')
       this.afterEditEvaluation(evaluation)
     },
     onCancelNonSisInstructor() {
@@ -884,14 +889,14 @@ export default {
       if (some(this.evaluations, {'id': this.editRowId, 'status': type})) {
         this.editRowId = null
       }
-      this.alertScreenReader(`Filter ${filter.label} ${filter.enabled ? 'enabled' : 'disabled'}.`)
+      alertScreenReader(`Filter ${filter.label} ${filter.enabled ? 'enabled' : 'disabled'}.`)
     },
     toggleSelectAll() {
       if (this.allEvaluationsSelected || this.someEvaluationsSelected) {
         this.deselectAllEvaluations()
-        this.alertScreenReader('All evaluations unselected')
+        alertScreenReader('All evaluations unselected')
       } else {
-        this.alertScreenReader('All evaluations selected')
+        alertScreenReader('All evaluations selected')
         this.selectAllEvaluations({
           searchFilterResults: this.searchFilterResults,
           enabledStatuses: this.selectedFilterTypes
@@ -900,7 +905,7 @@ export default {
     },
     updateEvaluation(evaluation, fields) {
       this.saving = true
-      this.alertScreenReader('Saving evaluation row.')
+      alertScreenReader('Saving evaluation row.')
       return new Promise(resolve => {
         if (fields.status === 'confirmed' &&
           !(fields.departmentFormId && fields.evaluationTypeId && fields.instructorUid)) {
@@ -911,10 +916,10 @@ export default {
           this.editEvaluation({
             evaluationId: evaluation.id,
             sectionId: evaluation.courseNumber,
-            termId: this.selectedTermId,
+            termId: useContextStore().selectedTermId,
             fields
           }).then(() => {
-            this.alertScreenReader('Changes saved.')
+            alertScreenReader('Changes saved.')
             this.saving = false
             this.afterEditEvaluation(evaluation)
             this.deselectAllEvaluations()

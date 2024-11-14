@@ -117,11 +117,11 @@
 </template>
 
 <script setup>
+import {alertScreenReader, putFocusNextTick} from '@/lib/utils'
 import {cloneDeep, indexOf, size, trim} from 'lodash'
 import {computed, onMounted, ref} from 'vue'
 import {mdiCloseCircle} from '@mdi/js'
 import {notifyContacts} from '@/api/departments'
-import {putFocusNextTick} from '@/lib/utils'
 import {useContextStore} from '@/stores/context'
 
 const props = defineProps({
@@ -152,7 +152,7 @@ const disabled = computed(() => {
 
 onMounted(() => {
   selectedRecipients.value = cloneDeep(props.recipients)
-  contextStore.setScreenReaderAlert('Send notification form is ready.')
+  alertScreenReader('Send notification form is ready.')
   putFocusNextTick('send-notification-section-header')
 })
 
@@ -166,13 +166,13 @@ const removeRecipient = (department, recipient, index) => {
   } else {
     selectedRecipients.value[indexOfDepartment].recipients.splice(index, 1)
   }
-  contextStore.setScreenReaderAlert(`Removed ${label} from list of recipients.`)
+  alertScreenReader(`Removed ${label} from list of recipients.`)
   return false
 }
 
 const sendNotification = () => {
   isSending.value = true
-  contextStore.setScreenReaderAlert('Sending')
+  alertScreenReader('Sending')
   notifyContacts(message.value, selectedRecipients.value, subject.value).then(response => {
     if (response) {
       props.afterSend()

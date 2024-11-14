@@ -99,15 +99,15 @@
 </template>
 
 <script>
+import DepartmentEditSession from '@/mixins/DepartmentEditSession'
+import {alertScreenReader, putFocusNextTick} from '@/lib/utils'
 import {getSection} from '@/api/sections'
 import {mdiAlert, mdiPlusThick} from '@mdi/js'
-import {putFocusNextTick} from '@/lib/utils'
-import Context from '@/mixins/Context.vue'
-import DepartmentEditSession from '@/mixins/DepartmentEditSession'
+import {useContextStore} from '@/stores/context'
 
 export default {
   name: 'AddCourseSection',
-  mixins: [Context, DepartmentEditSession],
+  mixins: [DepartmentEditSession],
   props: {
     allowEdits: {
       required: false,
@@ -136,7 +136,7 @@ export default {
     },
     isAddingSection(isAddingSection) {
       if (isAddingSection) {
-        this.alertScreenReader('Add course section form is ready.')
+        alertScreenReader('Add course section form is ready.')
         putFocusNextTick('lookup-course-number-input')
       }
     }
@@ -151,15 +151,15 @@ export default {
     lookupSection() {
       this.errorMessage = null
       if (this.$refs.lookupCourseNumberInput.validate()) {
-        getSection(this.courseNumber, this.selectedTermId).then(data => {
-          this.alertScreenReader(`Section ${this.courseNumber} found.`)
+        getSection(this.courseNumber, useContextStore().selectedTermId).then(data => {
+          alertScreenReader(`Section ${this.courseNumber} found.`)
           this.courseNumber = null
           this.section = data
           putFocusNextTick('add-section-title')
         }, () => {
           this.sectionError = true
           this.errorMessage = `Section ${this.courseNumber} not found.`
-          this.alertScreenReader(this.errorMessage)
+          alertScreenReader(this.errorMessage)
           putFocusNextTick('lookup-course-number-input')
         })
       }
@@ -169,25 +169,25 @@ export default {
       this.errorMessage = null
       if (this.section) {
         this.section = null
-        this.alertScreenReader('Canceled. Add course section form is ready.')
+        alertScreenReader('Canceled. Add course section form is ready.')
         putFocusNextTick('lookup-course-number-input')
       } else {
         this.isAddingSection = false
-        this.alertScreenReader('Section lookup canceled.')
+        alertScreenReader('Section lookup canceled.')
         putFocusNextTick('add-course-section-btn')
       }
     },
     onSubmit(courseNumber) {
-      this.alertScreenReader(`Adding section ${courseNumber}.`)
+      alertScreenReader(`Adding section ${courseNumber}.`)
       this.addSection({
         sectionId: courseNumber,
-        termId: this.selectedTermId
+        termId: useContextStore().selectedTermId
       }).then(() => {
         this.isAddingSection = false
         this.courseNumber = null
         this.errorMessage = null
         this.section = null
-        this.alertScreenReader(`Section ${courseNumber} added.`)
+        alertScreenReader(`Section ${courseNumber} added.`)
       }, error => this.showErrorDialog(error.response.data.message))
         .finally(() => this.setDisableControls(false))
     }

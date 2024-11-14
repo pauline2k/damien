@@ -22,10 +22,10 @@
         </v-col>
         <v-col>
           <div class="float-right">
-            <span v-if="contextStore.config.isVueAppDebugMode && contextStore.screenReaderAlert">
-              {{ contextStore.screenReaderAlert }}
+            <span v-if="contextStore.config.isVueAppDebugMode && screenReaderAlert.message">
+              {{ screenReaderAlert.message }}
             </span>
-            <span v-if="!contextStore.config.isVueAppDebugMode || !contextStore.screenReaderAlert">
+            <span v-if="!contextStore.config.isVueAppDebugMode || !screenReaderAlert.message">
               <v-icon :icon="mdiCopyright" size="small" /> {{ new Date().getFullYear() }}
               The Regents of the University of California
             </span>
@@ -42,6 +42,7 @@ import {useContextStore} from '@/stores/context'
 
 const contextStore = useContextStore()
 const emailSupport = contextStore.config.emailSupport
+const screenReaderAlert = contextStore.screenReaderAlert
 </script>
 
 <style scoped>

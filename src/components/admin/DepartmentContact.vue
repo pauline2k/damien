@@ -119,7 +119,7 @@
 import ConfirmDialog from '@/components/util/ConfirmDialog'
 import EditDepartmentContact from '@/components/admin/EditDepartmentContact'
 import {computed, ref, watch} from 'vue'
-import {putFocusNextTick} from '@/lib/utils'
+import {alertScreenReader, putFocusNextTick} from '@/lib/utils'
 import {sortBy} from 'lodash'
 import {useContextStore} from '@/stores/context'
 import {useDepartmentStore} from '@/stores/department-edit-session'
@@ -159,19 +159,19 @@ watch(() => props.isExpanded, () => {
 
 const afterSave = () => {
   isEditing.value = false
-  contextStore.alertScreenReader(`Updated contact ${fullName.value}.`)
+  alertScreenReader(`Updated contact ${fullName.value}.`)
   putFocusNextTick(`edit-dept-contact-${props.contact.id}-btn`)
 }
 
 const onCancelDelete = () => {
   isConfirming.value = false
-  contextStore.alertScreenReader('Canceled. Nothing deleted.')
+  alertScreenReader('Canceled. Nothing deleted.')
   putFocusNextTick(`delete-dept-contact-${props.contact.id}-btn`)
 }
 
 const onCancelEdit = () => {
   isEditing.value = false
-  contextStore.alertScreenReader('Canceled. Nothing saved.')
+  alertScreenReader('Canceled. Nothing saved.')
   putFocusNextTick(`edit-dept-contact-${props.contact.id}-btn`)
 }
 
@@ -179,7 +179,7 @@ const onDelete = () => {
   const nameOfDeleted = fullName.value
   departmentStore.deleteContact(props.contact.userId).then(() => {
     isConfirming.value = false
-    contextStore.alertScreenReader(`Deleted contact ${nameOfDeleted}.`)
+    alertScreenReader(`Deleted contact ${nameOfDeleted}.`)
     putFocusNextTick('add-dept-contact-btn')
   })
 }

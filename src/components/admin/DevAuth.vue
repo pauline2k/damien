@@ -45,8 +45,8 @@ import {devAuthLogIn} from '@/api/auth'
 import {putFocusNextTick} from '@/lib/utils'
 import {ref} from 'vue'
 import {trim} from 'lodash'
-import {useTheme} from 'vuetify'
 import {useContextStore} from '@/stores/context'
+import {useTheme} from 'vuetify'
 import {useRoute, useRouter} from 'vue-router'
 
 const contextStore = useContextStore()

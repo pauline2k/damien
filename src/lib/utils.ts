@@ -1,6 +1,25 @@
 import {DateTime} from 'luxon'
 import {concat, filter, head, initial, join, keys, last, split, trim} from 'lodash'
 import {nextTick} from 'vue'
+import {useContextStore} from '@/stores/context'
+
+let $_screenReaderAlertExpiry: number
+
+const clearScreenReaderAlert = () => {
+  window.clearInterval($_screenReaderAlertExpiry)
+  useContextStore().setScreenReaderAlert({message: ''})
+}
+
+export function alertScreenReader(message: string, persistent?: boolean, politeness?: string) {
+  clearScreenReaderAlert()
+  nextTick(() => {
+    useContextStore().setScreenReaderAlert({message, politeness})
+    window.clearInterval($_screenReaderAlertExpiry)
+    if (!persistent) {
+      $_screenReaderAlertExpiry = window.setInterval(clearScreenReaderAlert, 5000)
+    }
+  })
+}
 
 export function getCatalogListings(department) {
   return filter(keys(department.catalogListings), trim)

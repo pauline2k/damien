@@ -3,7 +3,7 @@
     <v-row no-gutters>
       <v-col cols="9" class="d-flex align-center">
         <h1 id="page-title" class="text-title">
-          Publish<span v-if="selectedTermName"> - {{ selectedTermName }}</span>
+          Publish<span v-if="contextStore.selectedTermName"> - {{ contextStore.selectedTermName }}</span>
         </h1>
       </v-col>
       <v-col cols="3">
@@ -33,7 +33,7 @@
           id="publish-btn"
           class="publish-btn align-self-end my-4 mr-2"
           color="secondary"
-          :disabled="isExporting || loading || !!size(blockers)"
+          :disabled="isExporting || contextStore.loading || !!size(blockers)"
           @click="publish"
         >
           <span v-if="!isExporting">Publish</span>
@@ -53,7 +53,7 @@
           id="status-btn"
           class="mx-2"
           color="secondary"
-          :disabled="isUpdatingStatus || !isExporting || loading"
+          :disabled="isUpdatingStatus || !isExporting || contextStore.loading"
           fab
           x-small
           @click="onUpdateStatus"
@@ -66,7 +66,7 @@
         <v-expansion-panels
           v-model="exportsPanel"
           class="term-exports"
-          :disabled="loading"
+          :disabled="contextStore.loading"
           flat
         >
           <v-expansion-panel class="panel-override">
@@ -80,7 +80,7 @@
                   <a
                     :id="`term-export-${index}`"
                     download
-                    :href="`${config.apiBaseUrl}/api/export/${encodeURIComponent(e.s3Path)}`"
+                    :href="`${contextStore.config.apiBaseUrl}/api/export/${encodeURIComponent(e.s3Path)}`"
                   >
                     <v-icon
                       aria-hidden="false"
@@ -101,24 +101,26 @@
         </v-expansion-panels>
       </v-col>
     </v-row>
-    <v-card v-if="!loading" outlined class="elevation-1">
+    <v-card v-if="!contextStore.loading" outlined class="elevation-1">
       <EvaluationTable :readonly="true" />
     </v-card>
   </div>
 </template>
 
+<script setup>
+import {useContextStore} from '@/stores/context'
+const contextStore = useContextStore()
+</script>
+
 <script>
 import {DateTime} from 'luxon'
+import {alertScreenReader, putFocusNextTick, toLocaleFromISO} from '@/lib/utils'
 import {exportEvaluations, getConfirmed, getExportStatus, getExports, getValidation} from '@/api/evaluations'
 import {find, isEmpty, size, sortBy} from 'lodash'
-import {putFocusNextTick} from '@/lib/utils'
-import Context from '@/mixins/Context.vue'
 import DepartmentEditSession from '@/mixins/DepartmentEditSession'
 import EvaluationTable from '@/components/evaluation/EvaluationTable'
 import TermSelect from '@/components/util/TermSelect'
-import {toLocaleFromISO} from '@/lib/utils'
 import {nextTick} from 'vue'
-import {useContextStore} from '@/stores/context'
 import {mdiAlertCircle, mdiRefresh, mdiTrayArrowDown} from '@mdi/js'
 
 export default {
@@ -127,7 +129,7 @@ export default {
     EvaluationTable,
     TermSelect
   },
-  mixins: [Context, DepartmentEditSession],
+  mixins: [DepartmentEditSession],
   data: () => ({
     blockers: {},
     confirmed: [],
@@ -153,21 +155,20 @@ export default {
     },
     publish() {
       this.isExporting = true
-      this.alertScreenReader('Publishing.')
-      exportEvaluations(this.selectedTermId).then(() => {
+      alertScreenReader('Publishing.')
+      exportEvaluations(useContextStore().selectedTermId).then(() => {
         this.snackbarOpen('Publication has started and will run in the background.')
         putFocusNextTick('publish-btn')
       })
     },
     refresh() {
-      const contextStore = useContextStore()
-      contextStore.loadingStart()
-      this.alertScreenReader(`Loading ${this.selectedTermName}`)
-      Promise.all([getValidation(this.selectedTermId), getConfirmed(this.selectedTermId), getExports(this.selectedTermId)]).then(responses => {
+      useContextStore().loadingStart()
+      alertScreenReader(`Loading ${useContextStore().selectedTermName}`)
+      Promise.all([getValidation(useContextStore().selectedTermId), getConfirmed(useContextStore().selectedTermId), getExports(useContextStore().selectedTermId)]).then(responses => {
         this.setEvaluations(sortBy(responses[0], 'sortableCourseName'))
         this.confirmed = responses[1]
         this.termExports = responses[2]
-        contextStore.loadingComplete(`Publish ${this.selectedTermName || ''}`)
+        useContextStore().loadingComplete(`Publish ${useContextStore().selectedTermName || ''}`)
       })
     },
     size,
@@ -189,14 +190,14 @@ export default {
     },
     showStatus(termExport) {
       const exportLabel = toLocaleFromISO(termExport.createdAt, this.dateFormat)
-      const term = find(this.config.availableTerms, {'id': termExport.termId})
+      const term = find(useContextStore().config.availableTerms, {'id': termExport.termId})
       if (termExport.status === 'success') {
         this.snackbarOpen(
           `Success! Publication of ${term.name} term export <b>${exportLabel || ''}</b> is complete.`,
           'success'
         )
       } else if (termExport.status === 'error') {
-        this.reportError(`Error: Publication of ${term.name} term export <b>${exportLabel || ''}</b> failed.`)
+        useContextStore().snackbarReportError(`Error: Publication of ${term.name} term export <b>${exportLabel || ''}</b> failed.`)
       } else {
         this.isExporting = true
       }

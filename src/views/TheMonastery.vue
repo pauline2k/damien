@@ -4,12 +4,12 @@
       <h1 id="page-title" class="text-title">Group Management</h1>
       <v-spacer class="d-flex justify-center"></v-spacer>
       <v-banner
-        v-if="config.isVueAppDebugMode && config.easterEggMonastery && theme.global.current.value.dark"
+        v-if="contextStore.config.isVueAppDebugMode && contextStore.config.easterEggMonastery && $vuetify.theme.dark"
         shaped
         single-line
         class="pr-4 my-auto"
       >
-        Welcome to <a :href="config.easterEggMonastery" target="_blank">The Monastery</a>
+        Welcome to <a :href="contextStore.config.easterEggMonastery" target="_blank">The Monastery</a>
       </v-banner>
     </div>
     <v-card outlined class="elevation-1">
@@ -20,7 +20,7 @@
         :headers="headers"
         hide-default-footer
         :items="departments"
-        :loading="loading"
+        :loading="contextStore.loading"
         must-sort
       >
         <template #body="{items}">
@@ -117,19 +117,21 @@
   </div>
 </template>
 
+<script setup>
+import {useContextStore} from '@/stores/context'
+const contextStore = useContextStore()
+</script>
+
 <script>
 import {getCatalogListings} from '@/lib/utils'
 import {getDepartmentsEnrolled} from '@/api/departments'
 import {isEmpty, size} from 'lodash'
 import BooleanIcon from '@/components/util/BooleanIcon'
-import Context from '@/mixins/Context'
-import {useContextStore} from '@/stores/context'
 import {useTheme} from 'vuetify'
 
 export default {
   name: 'TheMonastery',
   components: {BooleanIcon},
-  mixins: [Context],
   data: () => ({
     departments: [],
     headers: [
@@ -145,11 +147,10 @@ export default {
     theme: useTheme()
   }),
   created() {
-    const contextStore = useContextStore()
-    contextStore.loadingStart()
+    useContextStore().loadingStart()
     getDepartmentsEnrolled(true, true).then(data => {
       this.departments = data
-      contextStore.loadingComplete('Group Management')
+      useContextStore().loadingComplete('Group Management')
     })
   },
   methods: {

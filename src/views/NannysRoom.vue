@@ -10,12 +10,12 @@
       </h1>
       <v-spacer class="d-flex justify-center"></v-spacer>
       <v-banner
-        v-if="config.isVueAppDebugMode && config.easterEggMonastery && theme.global.current.value.dark"
+        v-if="contextStore.config.isVueAppDebugMode && contextStore.config.easterEggMonastery && $vuetify.theme.dark"
         shaped
         single-line
         class="pr-4 my-auto"
       >
-        <a :href="config.easterEggNannysRoom" target="_blank">The Nanny's Room</a>
+        <a :href="contextStore.config.easterEggNannysRoom" target="_blank">The Nanny's Room</a>
       </v-banner>
     </div>
     <v-container class="px-0 mx-0" fluid>
@@ -381,12 +381,12 @@
           <v-card elevation="2" class="mr-4 mt-4">
             <v-card-title>Automatically Publish</v-card-title>
             <v-card-text>
-              <span v-if="config.scheduleLochRefresh">
+              <span v-if="contextStore.config.scheduleLochRefresh">
                 When enabled, publication will run daily at
-                {{ `${String(config.scheduleLochRefresh.hour).padStart(2, '0')}:${String(config.scheduleLochRefresh.minute).padStart(2, '0')}` }}
+                {{ `${String(contextStore.config.scheduleLochRefresh.hour).padStart(2, '0')}:${String(contextStore.config.scheduleLochRefresh.minute).padStart(2, '0')}` }}
                 local time, immediately before loch refresh.
               </span>
-              <span v-if="!config.scheduleLochRefresh">
+              <span v-if="!contextStore.config.scheduleLochRefresh">
                 Nightly loch refresh must be scheduled in app configs to enable auto-publish.
               </span>
               <v-switch
@@ -395,7 +395,7 @@
                 :aria-label="`Auto-publish is ${autoPublishEnabled ? 'enabled' : 'disabled'}`"
                 color="success"
                 density="compact"
-                :disabled="!config.scheduleLochRefresh"
+                :disabled="!contextStore.config.scheduleLochRefresh"
                 hide-details
                 :label="autoPublishEnabled ? 'Enabled' : 'Disabled'"
                 @change="toggleAutoPublishEnabled(autoPublishEnabled)"
@@ -416,23 +416,26 @@
   </div>
 </template>
 
-<script>
-import {get} from 'lodash'
-import {getAutoPublishStatus, setAutoPublishStatus} from '@/api/config'
-import {mdiPlusThick} from '@mdi/js'
+<script setup>
 import {useContextStore} from '@/stores/context'
-import {useTheme} from 'vuetify'
-import {putFocusNextTick} from '@/lib/utils'
+const contextStore = useContextStore()
+</script>
+
+<script>
 import ConfirmDialog from '@/components/util/ConfirmDialog'
-import Context from '@/mixins/Context.vue'
 import EditServiceAnnouncement from '@/components/admin/EditServiceAnnouncement'
 import ListManagementSession from '@/mixins/ListManagementSession'
 import SortableTableHeader from '@/components/util/SortableTableHeader'
+import {alertScreenReader, putFocusNextTick} from '@/lib/utils'
+import {get} from 'lodash'
+import {getAutoPublishStatus, setAutoPublishStatus} from '@/api/config'
+import {mdiPlusThick} from '@mdi/js'
+import {useTheme} from 'vuetify'
 
 export default {
   name: 'NannysRoom',
   components: {ConfirmDialog, EditServiceAnnouncement, SortableTableHeader},
-  mixins: [Context, ListManagementSession],
+  mixins: [ListManagementSession],
   data: () => ({
     autoPublishEnabled: undefined,
     instructorValid: true,
@@ -467,11 +470,10 @@ export default {
     theme: useTheme()
   }),
   created() {
-    const contextStore = useContextStore()
-    contextStore.loadingStart()
+    useContextStore().loadingStart()
     this.resetNewInstructor()
     this.init().then(() => {
-      contextStore.loadingComplete('List Management')
+      useContextStore().loadingComplete('List Management')
       putFocusNextTick('page-title')
     })
     getAutoPublishStatus().then(data => {
@@ -481,19 +483,19 @@ export default {
   methods: {
     afterDelete(deletedItem) {
       this.setDisableControls(false)
-      this.alertScreenReader(`Deleted ${deletedItem.description} ${deletedItem.name}.`)
+      alertScreenReader(`Deleted ${deletedItem.description} ${deletedItem.name}.`)
     },
     cancelAdd(elementId) {
       this.newItemName = ''
       this.resetNewInstructor()
       this.reset()
-      this.alertScreenReader('Canceled. Nothing saved.')
+      alertScreenReader('Canceled. Nothing saved.')
       putFocusNextTick(elementId)
     },
     cancelDelete() {
       putFocusNextTick(this.itemToDelete.elementId)
       this.reset()
-      this.alertScreenReader('Canceled. Nothing deleted.')
+      alertScreenReader('Canceled. Nothing deleted.')
     },
     confirmDelete() {
       this.setDisableControls(true)
@@ -521,7 +523,7 @@ export default {
     onSubmitAddDepartmentForm() {
       if (this.newItemName) {
         this.addDepartmentForm(this.newItemName).then(() => {
-          this.alertScreenReader(`Created department form ${this.newItemName}.`)
+          alertScreenReader(`Created department form ${this.newItemName}.`)
           this.newItemName = ''
           putFocusNextTick('add-dept-form-btn')
         })
@@ -530,7 +532,7 @@ export default {
     onSubmitAddInstructor() {
       if (this.newInstructor) {
         this.addInstructor(this.newInstructor).then(() => {
-          this.alertScreenReader(`Added instructor with UID ${this.newInstructor.uid}.`)
+          alertScreenReader(`Added instructor with UID ${this.newInstructor.uid}.`)
           this.resetNewInstructor()
           putFocusNextTick('add-instructor-btn')
         })
@@ -539,7 +541,7 @@ export default {
     onSubmitAddEvaluationType() {
       if (this.newItemName) {
         this.addEvaluationType(this.newItemName).then(() => {
-          this.alertScreenReader(`Created evaluation type ${this.newItemName}.`)
+          alertScreenReader(`Created evaluation type ${this.newItemName}.`)
           this.newItemName = ''
           putFocusNextTick('add-eval-type-btn')
         })
@@ -569,7 +571,7 @@ export default {
     toggleAutoPublishEnabled(enabled) {
       setAutoPublishStatus(enabled).then(data => {
         this.autoPublishEnabled = data.enabled
-        this.alertScreenReader(`Auto-publish ${this.autoPublishEnabled ? 'enabled' : 'disabled'}`)
+        alertScreenReader(`Auto-publish ${this.autoPublishEnabled ? 'enabled' : 'disabled'}`)
       })
     }
   }
