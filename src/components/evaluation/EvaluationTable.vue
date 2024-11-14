@@ -167,7 +167,7 @@
                     :disabled="editRowId === evaluation.id"
                     :ripple="false"
                     :value="selectedEvaluationIds.includes(evaluation.id)"
-                    @change="toggleSelectEvaluation(evaluation)"
+                    @change="departmentStore.toggleSelectEvaluation(evaluation)"
                   />
                 </td>
                 <td
@@ -218,7 +218,7 @@
                         Select...
                       </option>
                       <option
-                        v-for="s in evaluationStatuses"
+                        v-for="s in EVALUATION_STATUSES"
                         :key="s.text"
                         :selected="selectedEvaluationStatus === s.value"
                         :value="s.value"
@@ -539,27 +539,31 @@
 </template>
 
 <script setup>
+import {EVALUATION_STATUSES, useDepartmentStore} from '@/stores/department/department-edit-session'
+import {storeToRefs} from 'pinia'
 import {useContextStore} from '@/stores/context'
 import {useTheme} from 'vuetify'
 
 const contextStore = useContextStore()
+const departmentStore = useDepartmentStore()
+const {disableControls, dismissErrorDialog, errorDialog, errorDialogText, evaluations, selectedEvaluationIds} = storeToRefs(useDepartmentStore())
 const theme = useTheme()
 </script>
 
 <script>
-import {addInstructor} from '@/api/instructor'
-import {alertScreenReader, oxfordJoin, pluralize, toFormatFromISO, toFormatFromJsDate, toLocaleFromISO} from '@/lib/utils'
-import {clone, cloneDeep, each, find, get, isEmpty, keys, pickBy, size, some} from 'lodash'
-import {putFocusNextTick} from '@/lib/utils'
 import AddCourseSection from '@/components/evaluation/AddCourseSection'
 import ConfirmDialog from '@/components/util/ConfirmDialog'
-import DepartmentEditSession from '@/mixins/DepartmentEditSession'
 import EvaluationActions from '@/components/evaluation/EvaluationActions'
 import EvaluationError from '@/components/evaluation/EvaluationError'
 import PersonLookup from '@/components/admin/PersonLookup'
 import SortableTableHeader from '@/components/util/SortableTableHeader'
+import {addInstructor} from '@/api/instructor'
+import {alertScreenReader, oxfordJoin, pluralize, toFormatFromISO, toFormatFromJsDate, toLocaleFromISO} from '@/lib/utils'
+import {clone, cloneDeep, each, find, get, isEmpty, keys, pickBy, size, some} from 'lodash'
+import {putFocusNextTick} from '@/lib/utils'
 import {mdiAlertCircle, mdiCheckCircle, mdiMagnify, mdiPlusCircle} from '@mdi/js'
 import {nextTick} from 'vue'
+import {validateMarkAsDone} from '@/stores/department/utils'
 
 export default {
   name: 'EvaluationTable',
@@ -571,7 +575,6 @@ export default {
     PersonLookup,
     SortableTableHeader
   },
-  mixins: [DepartmentEditSession],
   props: {
     readonly: {
       type: Boolean,
@@ -624,14 +627,14 @@ export default {
   }),
   computed: {
     allEvaluationsSelected() {
-      return !!(size(this.selectedEvaluationIds) && size(this.selectedEvaluationIds) === size(this.evaluations))
+      return !!(size(useDepartmentStore().selectedEvaluationIds) && size(useDepartmentStore().selectedEvaluationIds) === size(useDepartmentStore().evaluations))
     },
     allowEdits() {
       const currentUser = useContextStore().currentUser
       return currentUser.isAdmin || !useContextStore().isSelectedTermLocked
     },
     rowValid() {
-      const evaluation = find(this.evaluations, ['id', this.editRowId])
+      const evaluation = find(useDepartmentStore().evaluations, ['id', this.editRowId])
       return this.selectedStartDate >= this.minStartDate(evaluation) && this.selectedStartDate <= evaluation.maxStartDate
     },
     selectedFilterTypes: {
@@ -646,7 +649,7 @@ export default {
       }
     },
     someEvaluationsSelected() {
-      return !!(size(this.selectedEvaluationIds) && size(this.selectedEvaluationIds) < size(this.evaluations))
+      return !!(size(useDepartmentStore().selectedEvaluationIds) && size(useDepartmentStore().selectedEvaluationIds) < size(useDepartmentStore().evaluations))
     }
   },
   created() {
@@ -656,7 +659,7 @@ export default {
       this.evaluationHeaders = [{class: 'text-start text-nowrap pl-1', text: 'Select', value: 'isSelected', width: '30px'}].concat(this.evaluationHeaders)
     }
 
-    this.departmentForms = [{id: null, name: 'Revert'}].concat(this.activeDepartmentForms)
+    this.departmentForms = [{id: null, name: 'Revert'}].concat(useDepartmentStore().activeDepartmentForms)
     this.evaluationTypes = [{id: null, name: 'Revert'}].concat(useContextStore().config.evaluationTypes)
 
     this.rules.instructorUid = () => {
@@ -782,8 +785,8 @@ export default {
     },
     onChangeSearchFilter(searchFilterResults) {
       this.searchFilterResults = searchFilterResults
-      if (size(this.selectedEvaluationIds)) {
-        this.filterSelectedEvaluations({
+      if (size(useDepartmentStore().selectedEvaluationIds)) {
+        useDepartmentStore().filterSelectedEvaluations({
           searchFilterResults: this.searchFilterResults,
           enabledStatuses: this.selectedFilterTypes
         })
@@ -795,7 +798,7 @@ export default {
     onConfirm() {
       this.isConfirmingCancelEdit = false
       this.editRowId = null
-      const evaluation = find(this.evaluations, ['id', this.pendingEditRowId])
+      const evaluation = find(useDepartmentStore().evaluations, ['id', this.pendingEditRowId])
       this.onEditEvaluation(evaluation)
     },
     onConfirmNonSisInstructor() {
@@ -803,7 +806,7 @@ export default {
     },
     onEditEvaluation(evaluation) {
       if (this.editRowId) {
-        const editingEvaluation = find(this.evaluations, ['id', this.editRowId])
+        const editingEvaluation = find(useDepartmentStore().evaluations, ['id', this.editRowId])
         this.isConfirmingCancelEdit = editingEvaluation && (
           get(this.pendingInstructor, 'uid') !== get(editingEvaluation, 'instructor.uid')
           || this.selectedDepartmentForm !== get(editingEvaluation, 'departmentForm.id')
@@ -831,9 +834,9 @@ export default {
       this.updateEvaluation(evaluation, fields)
     },
     onSort() {
-      const selectedEvaluationIds = cloneDeep(this.selectedEvaluationIds)
+      const selectedEvaluationIds = cloneDeep(useDepartmentStore().selectedEvaluationIds)
       nextTick(() => {
-        this.setSelectedEvaluations(selectedEvaluationIds)
+        useDepartmentStore().setSelectedEvaluations(selectedEvaluationIds)
       })
     },
     pluralize,
@@ -854,7 +857,7 @@ export default {
       if (status === 'confirmed') {
         // If evaluation start-date is in the past then put up a warning dialog.
         const proposedUpdate = {...evaluation, ...fields}
-        warning = this.validateMarkAsDone([proposedUpdate])
+        warning = validateMarkAsDone([proposedUpdate])
       }
       if (warning) {
         this.markAsDoneWarning = {evaluation, fields, message: warning}
@@ -886,18 +889,18 @@ export default {
         searchFilterResults: this.searchFilterResults,
         enabledStatuses: this.selectedFilterTypes
       })
-      if (some(this.evaluations, {'id': this.editRowId, 'status': type})) {
+      if (some(useDepartmentStore().evaluations, {'id': this.editRowId, 'status': type})) {
         this.editRowId = null
       }
       alertScreenReader(`Filter ${filter.label} ${filter.enabled ? 'enabled' : 'disabled'}.`)
     },
     toggleSelectAll() {
       if (this.allEvaluationsSelected || this.someEvaluationsSelected) {
-        this.deselectAllEvaluations()
+        useDepartmentStore().deselectAllEvaluations()
         alertScreenReader('All evaluations unselected')
       } else {
         alertScreenReader('All evaluations selected')
-        this.selectAllEvaluations({
+        useDepartmentStore().selectAllEvaluations({
           searchFilterResults: this.searchFilterResults,
           enabledStatuses: this.selectedFilterTypes
         })
@@ -909,11 +912,11 @@ export default {
       return new Promise(resolve => {
         if (fields.status === 'confirmed' &&
           !(fields.departmentFormId && fields.evaluationTypeId && fields.instructorUid)) {
-          this.showErrorDialog('Cannot confirm an evaluation with missing fields.')
+          useDepartmentStore().showErrorDialog('Cannot confirm an evaluation with missing fields.')
           this.saving = false
           resolve()
         } else {
-          this.editEvaluation({
+          useDepartmentStore().editEvaluation({
             evaluationId: evaluation.id,
             sectionId: evaluation.courseNumber,
             termId: useContextStore().selectedTermId,
@@ -922,10 +925,10 @@ export default {
             alertScreenReader('Changes saved.')
             this.saving = false
             this.afterEditEvaluation(evaluation)
-            this.deselectAllEvaluations()
+            useDepartmentStore().deselectAllEvaluations()
             resolve()
           }).catch(error => {
-            this.showErrorDialog(get(error, 'response.data.message', 'An unknown error occurred.'))
+            useDepartmentStore().showErrorDialog(get(error, 'response.data.message', 'An unknown error occurred.'))
             this.saving = false
             resolve()
           })
@@ -934,9 +937,9 @@ export default {
     },
     filterTypeCounts(type) {
       if (type === 'unmarked') {
-        return this.evaluations.filter(e => e.status === null).length
+        return useDepartmentStore().evaluations.filter(e => e.status === null).length
       }
-      return this.evaluations.filter(e => e.status === type).length
+      return useDepartmentStore().evaluations.filter(e => e.status === type).length
     }
   }
 }

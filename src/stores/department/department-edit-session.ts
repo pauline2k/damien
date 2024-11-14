@@ -29,6 +29,15 @@ import {
 } from 'lodash'
 import {useContextStore} from '@/stores/context'
 
+export const EVALUATION_STATUSES = [
+  {text: 'None', value: 'none'},
+  {text: 'To-do', value: 'review'},
+  {text: 'Done', value: 'confirmed'},
+  {text: 'Ignore', value: 'ignore'}
+]
+
+export const NUMBER_OF_THE_BEAST = '666'
+
 export type Department = {
   id: number,
   evaluations: any[]

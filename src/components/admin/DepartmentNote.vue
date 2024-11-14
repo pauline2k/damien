@@ -109,19 +109,21 @@
 </template>
 
 <script setup>
+import {storeToRefs} from 'pinia'
 import {useContextStore} from '@/stores/context'
+import {useDepartmentStore} from '@/stores/department/department-edit-session'
+
 const contextStore = useContextStore()
+const {disableControls} = storeToRefs(useDepartmentStore())
 </script>
 
 <script>
 import {alertScreenReader, putFocusNextTick} from '@/lib/utils'
 import ConfirmDialog from '@/components/util/ConfirmDialog'
-import DepartmentEditSession from '@/mixins/DepartmentEditSession'
 
 export default {
   name: 'DepartmentNote',
   components: {ConfirmDialog},
-  mixins: [DepartmentEditSession],
   data: () => ({
     isConfirming: false,
     isEditable: false,
@@ -143,7 +145,7 @@ export default {
       this.reset()
     },
     onDelete() {
-      this.updateNote({note: null, termId: useContextStore().selectedTermId}).then(() => {
+      useDepartmentStore().updateNote({note: null, termId: useContextStore().selectedTermId}).then(() => {
         alertScreenReader('Note deleted.')
         putFocusNextTick('notes-title')
         this.reset()
@@ -154,7 +156,7 @@ export default {
       putFocusNextTick('dept-note-textarea')
     },
     onSave() {
-      this.updateNote({note: this.item, termId: useContextStore().selectedTermId}).then(() => {
+      useDepartmentStore().updateNote({note: this.item, termId: useContextStore().selectedTermId}).then(() => {
         alertScreenReader('Note saved.')
         putFocusNextTick('edit-dept-note-btn')
         this.reset()
@@ -164,7 +166,7 @@ export default {
       this.isConfirming = false
       this.isEditable = useContextStore().selectedTermId === useContextStore().config.currentTermId
       this.isEditing = false
-      this.item = this.note
+      this.item = useDepartmentStore().note
     }
   }
 }

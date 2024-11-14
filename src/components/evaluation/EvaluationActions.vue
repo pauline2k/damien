@@ -64,7 +64,7 @@
               :value="status"
               v-on="on"
             >
-              <option v-for="s in evaluationStatuses" :key="s.text" :value="s.value">{{ s.text }}</option>
+              <option v-for="s in EVALUATION_STATUSES" :key="s.text" :value="s.value">{{ s.text }}</option>
             </select>
           </v-col>
         </v-row>
@@ -89,7 +89,7 @@
               :value="form"
               v-on="on"
             >
-              <option v-for="df in activeDepartmentForms" :key="df.id" :value="df.id">{{ df.name }}</option>
+              <option v-for="df in departmentStore.activeDepartmentForms" :key="df.id" :value="df.id">{{ df.name }}</option>
             </select>
           </v-col>
         </v-row>
@@ -108,9 +108,15 @@
   </div>
 </template>
 
+<script setup>
+import {EVALUATION_STATUSES, useDepartmentStore} from '@/stores/department/department-edit-session'
+import {storeToRefs} from 'pinia'
+
+const {disableControls, selectedEvaluationIds} = storeToRefs(useDepartmentStore())
+</script>
+
 <script>
 import ConfirmDialog from '@/components/util/ConfirmDialog'
-import DepartmentEditSession from '@/mixins/DepartmentEditSession'
 import UpdateEvaluations from '@/components/evaluation/UpdateEvaluations'
 import {alertScreenReader, putFocusNextTick} from '@/lib/utils'
 import {chain, each, every, filter as _filter, get, has, includes, map, uniq} from 'lodash'
@@ -119,6 +125,7 @@ import {toFormatFromISO} from '@/lib/utils'
 import {updateEvaluations} from '@/api/departments'
 import {useContextStore} from '@/stores/context'
 import {useTheme} from 'vuetify'
+import {validateConfirmable, validateDuplicable, validateMarkAsDone} from '@/stores/department/utils'
 
 export default {
   name: 'EvaluationActions',
@@ -126,7 +133,6 @@ export default {
     ConfirmDialog,
     UpdateEvaluations
   },
-  mixins: [DepartmentEditSession],
   data: () => ({
     applyingAction: null,
     bulkUpdateOptions: {
@@ -153,7 +159,7 @@ export default {
       return currentUser.isAdmin || !useContextStore().isSelectedTermLocked
     },
     selectedEvaluations() {
-      return _filter(this.evaluations, e => this.selectedEvaluationIds.includes(e.id))
+      return _filter(useDepartmentStore().evaluations, e => useDepartmentStore().selectedEvaluationIds.includes(e.id))
     }
   },
   created() {
@@ -221,10 +227,10 @@ export default {
     onClickDuplicate() {
       this.showUpdateOptions()
       this.bulkUpdateOptions.instructor = {}
-      this.midtermFormAvailable = this.department.usesMidtermForms
+      this.midtermFormAvailable = useDepartmentStore().department.usesMidtermForms
       if (this.midtermFormAvailable) {
         // Show midterm form option only if a midterm form exists for all selected evals.
-        const availableFormNames = map(this.activeDepartmentForms, 'name')
+        const availableFormNames = map(useDepartmentStore().activeDepartmentForms, 'name')
         each(this.selectedEvaluations, e => {
           const formName = get(e, 'departmentForm.name')
           if (!formName || !(formName.endsWith('_MID') || availableFormNames.includes(formName + '_MID'))) {
@@ -259,8 +265,8 @@ export default {
       this.validateAndUpdate(key)
     },
     onClickMarkDone(key) {
-      const selected = _filter(this.evaluations, e => includes(this.selectedEvaluationIds, e.id))
-      this.markAsDoneWarning = this.validateMarkAsDone(selected)
+      const selected = _filter(useDepartmentStore().evaluations, e => includes(useDepartmentStore().selectedEvaluationIds, e.id))
+      this.markAsDoneWarning = validateMarkAsDone(selected)
       if (!this.markAsDoneWarning) {
         this.validateAndUpdate(key)
       }
@@ -276,10 +282,10 @@ export default {
       this.validateAndUpdate('duplicate')
     },
     onConfirmEdit(options) {
-      const selected = _filter(this.evaluations, e => includes(this.selectedEvaluationIds, e.id))
+      const selected = _filter(useDepartmentStore().evaluations, e => includes(useDepartmentStore().selectedEvaluationIds, e.id))
       this.bulkUpdateOptions = options
       if ('confirmed' === this.bulkUpdateOptions.evaluationStatus) {
-        this.markAsDoneWarning = this.validateMarkAsDone(selected)
+        this.markAsDoneWarning = validateMarkAsDone(selected)
       }
       if (!this.markAsDoneWarning) {
         this.validateAndUpdate('edit')
@@ -317,7 +323,7 @@ export default {
       return fields
     },
     isInvalidAction(action) {
-      const uniqueStatuses = uniq(this.evaluations.filter(e => this.selectedEvaluationIds.includes(e.id)).map(e => e.status))
+      const uniqueStatuses = uniq(useDepartmentStore().evaluations.filter(e => useDepartmentStore().selectedEvaluationIds.includes(e.id)).map(e => e.status))
       return (uniqueStatuses.length === 1 && uniqueStatuses[0] === action.status)
     },
     reset() {
@@ -354,20 +360,20 @@ export default {
       }
     },
     update(fields, key) {
-      this.setDisableControls(true)
+      useDepartmentStore().setDisableControls(true)
       this.isLoading = true
-      const selectedCourseNumbers = uniq(this.evaluations
-        .filter(e => this.selectedEvaluationIds.includes(e.id))
+      const selectedCourseNumbers = uniq(useDepartmentStore().evaluations
+        .filter(e => useDepartmentStore().selectedEvaluationIds.includes(e.id))
         .map(e => e.courseNumber))
       const refresh = () => {
         return selectedCourseNumbers.length === 1
-          ? this.refreshSection({sectionId: selectedCourseNumbers[0], termId: useContextStore().selectedTermId})
-          : this.refreshAll()
+          ? useDepartmentStore().refreshSection({sectionId: selectedCourseNumbers[0], termId: useContextStore().selectedTermId})
+          : useDepartmentStore().refreshAll()
       }
       updateEvaluations(
-        this.department.id,
+        useDepartmentStore().department.id,
         key,
-        this.selectedEvaluationIds,
+        useDepartmentStore().selectedEvaluationIds,
         useContextStore().selectedTermId,
         fields
       ).then(
@@ -380,12 +386,12 @@ export default {
             this.reset()
           }).finally(() => {
             this.isApplying = false
-            this.setDisableControls(false)
+            useDepartmentStore().disableControls = false
           })
         },
         error => {
-          this.showErrorDialog(get(error, 'response.data.message', 'An unknown error occurred.'))
-          this.setDisableControls(false)
+          useDepartmentStore().showErrorDialog(get(error, 'response.data.message', 'An unknown error occurred.'))
+          useDepartmentStore().disableControls = false
           this.isApplying = false
           this.isLoading = false
         }
@@ -393,16 +399,16 @@ export default {
     },
     validateAndUpdate(key) {
       let valid = true
-      const target = `${this.selectedEvaluationIds.length || 0} ${this.selectedEvaluationIds.length === 1 ? 'row' : 'rows'}`
+      const target = `${useDepartmentStore().selectedEvaluationIds.length || 0} ${useDepartmentStore().selectedEvaluationIds.length === 1 ? 'row' : 'rows'}`
       this.applyingAction = this.courseActions[key]
       this.isApplying = true
       alertScreenReader(`${this.applyingAction.inProgressText} ${target}`)
 
       const fields = this.getEvaluationFieldsForUpdate(key)
       if (key === 'duplicate') {
-        valid = this.validateDuplicable(this.selectedEvaluationIds, fields)
+        valid = validateDuplicable(useDepartmentStore().selectedEvaluationIds, fields)
       } else if (key === 'confirm' || (key === 'edit' && this.bulkUpdateOptions.evaluationStatus === 'confirmed')) {
-        valid = this.validateConfirmable(this.selectedEvaluationIds, fields)
+        valid = validateConfirmable(useDepartmentStore().selectedEvaluationIds, fields)
       }
       if (valid) {
         this.update(fields, key)
