@@ -2,12 +2,12 @@
   <v-expansion-panel
     :id="`department-contact-${index}`"
     class="text-condensed my-1"
-    :class="{'theme--light v-sheet--outlined': isEditing && !$vuetify.theme.dark, 'theme--dark v-sheet--outlined': isEditing && $vuetify.theme.dark}"
+    :class="{'theme--light v-sheet--outlined': isEditing && !themes.dark, 'theme--dark v-sheet--outlined': isEditing && $vuetify.theme.dark}"
   >
-    <v-expansion-panel-header class="py-1 rounded-b-0 height-unset">
+    <v-expansion-panel-title class="py-1 rounded-b-0 height-unset">
       <strong :id="`dept-contact-${contact.id}-name`">{{ fullName }}</strong>
-    </v-expansion-panel-header>
-    <v-expansion-panel-content class="edit-contact-container">
+    </v-expansion-panel-title>
+    <v-expansion-panel-text class="edit-contact-container">
       <v-container v-if="!isEditing" class="pb-0 px-0" fluid>
         <v-row :id="`dept-contact-${contact.id}-email`">
           <v-col cols="12">{{ contact.email }}</v-col>
@@ -112,84 +112,75 @@
         :contact="contact"
         :on-cancel="onCancelEdit"
       />
-    </v-expansion-panel-content>
+    </v-expansion-panel-text>
   </v-expansion-panel>
 </template>
 
-<script>
+<script setup>
+import ConfirmDialog from '@/components/util/ConfirmDialog'
+import EditDepartmentContact from '@/components/admin/EditDepartmentContact'
+import {computed, ref, watch} from 'vue'
 import {putFocusNextTick} from '@/lib/utils'
 import {sortBy} from 'lodash'
-import ConfirmDialog from '@/components/util/ConfirmDialog'
-import Context from '@/mixins/Context.vue'
-import DepartmentEditSession from '@/mixins/DepartmentEditSession'
-import EditDepartmentContact from '@/components/admin/EditDepartmentContact'
 import {useContextStore} from '@/stores/context'
+import {useDepartmentStore} from '@/stores/department-edit-session'
+import {useTheme} from 'vuetify'
 
-export default {
-  name: 'DepartmentContact',
-  components: {ConfirmDialog, EditDepartmentContact},
-  mixins: [Context, DepartmentEditSession],
-  props: {
-    contact: {
-      required: true,
-      type: Object
-    },
-    index: {
-      required: true,
-      type: Number
-    },
-    isExpanded: {
-      required: false,
-      type: Boolean
-    }
+const props = defineProps({
+  contact: {
+    required: true,
+    type: Object
   },
-  data: () => ({
-    isConfirming: false,
-    isEditing: false
-  }),
-  computed: {
-    currentUser() {
-      return useContextStore().currentUser
-    },
-    departmentForms() {
-      return sortBy(this.contact.departmentForms, 'name')
-    },
-    fullName() {
-      return `${this.contact.firstName} ${this.contact.lastName}`
-    }
+  index: {
+    required: true,
+    type: Number
   },
-  watch: {
-    isExpanded(isExpanded) {
-      if (!isExpanded) {
-        this.isEditing = false
-      }
-    }
-  },
-  methods: {
-    afterSave() {
-      this.isEditing = false
-      this.alertScreenReader(`Updated contact ${this.fullName}.`)
-      putFocusNextTick(`edit-dept-contact-${this.contact.id}-btn`)
-    },
-    onCancelDelete() {
-      this.isConfirming = false
-      this.alertScreenReader('Canceled. Nothing deleted.')
-      putFocusNextTick(`delete-dept-contact-${this.contact.id}-btn`)
-    },
-    onCancelEdit() {
-      this.isEditing = false
-      this.alertScreenReader('Canceled. Nothing saved.')
-      putFocusNextTick(`edit-dept-contact-${this.contact.id}-btn`)
-    },
-    onDelete() {
-      const nameOfDeleted = this.fullName
-      this.deleteContact(this.contact.userId).then(() => {
-        this.isConfirming = false
-        this.alertScreenReader(`Deleted contact ${nameOfDeleted}.`)
-        putFocusNextTick('add-dept-contact-btn')
-      })
-    }
+  isExpanded: {
+    required: false,
+    type: Boolean
   }
+})
+
+const contextStore = useContextStore()
+
+const currentUser = contextStore.currentUser
+const departmentForms = computed(() => sortBy(props.contact.departmentForms, 'name'))
+const fullName = computed(() => `${props.contact.firstName} ${props.contact.lastName}`)
+const isConfirming = ref(false)
+const isEditing = ref(false)
+const themes = useTheme().themes.value
+
+watch(() => props.isExpanded, () => {
+  if (!props.isExpanded) {
+    isEditing.value = false
+  }
+})
+
+const afterSave = () => {
+  isEditing.value = false
+  contextStore.alertScreenReader(`Updated contact ${fullName.value}.`)
+  putFocusNextTick(`edit-dept-contact-${props.contact.id}-btn`)
+}
+
+const onCancelDelete = () => {
+  isConfirming.value = false
+  contextStore.alertScreenReader('Canceled. Nothing deleted.')
+  putFocusNextTick(`delete-dept-contact-${props.contact.id}-btn`)
+}
+
+const onCancelEdit = () => {
+  isEditing.value = false
+  contextStore.alertScreenReader('Canceled. Nothing saved.')
+  putFocusNextTick(`edit-dept-contact-${props.contact.id}-btn`)
+}
+
+const onDelete = () => {
+  const nameOfDeleted = fullName.value
+  useDepartmentStore().deleteContact(props.contact.userId).then(() => {
+    isConfirming.value = false
+    contextStore.alertScreenReader(`Deleted contact ${nameOfDeleted}.`)
+    putFocusNextTick('add-dept-contact-btn')
+  })
 }
 </script>
 

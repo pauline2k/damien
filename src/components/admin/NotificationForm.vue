@@ -31,10 +31,10 @@
           v-for="(department, deptIndex) in selectedRecipients"
           :key="deptIndex"
         >
-          <v-expansion-panel-header class="pa-2 height-unset">
+          <v-expansion-panel-title class="pa-2 height-unset">
             <h4 :id="`dept-head-${deptIndex}`">{{ department.deptName }}</h4>
-          </v-expansion-panel-header>
-          <v-expansion-panel-content>
+          </v-expansion-panel-title>
+          <v-expansion-panel-text>
             <v-chip
               v-for="(recipient, index) in department.recipients"
               :key="index"
@@ -53,7 +53,7 @@
                 <v-icon>mdi-close-circle</v-icon>
               </v-btn>
             </v-chip>
-          </v-expansion-panel-content>
+          </v-expansion-panel-text>
         </v-expansion-panel>
       </v-expansion-panels>
     </v-card-subtitle>
