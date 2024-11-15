@@ -13,15 +13,9 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'NotFound',
-}
-</script>
-
 <style scoped>
 .background-fade {
-  background: url('~@/assets/background_fade.png') no-repeat center center;
+  background: url('@/assets/background_fade.png') no-repeat center center;
   -webkit-background-size: cover;
   -moz-background-size: cover;
   -o-background-size: cover;

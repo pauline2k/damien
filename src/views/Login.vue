@@ -74,9 +74,6 @@ const logIn = () => getCasLoginURL().then(data => window.location.href = data.ca
 .accent-border {
   border: 1px solid #F04A00 !important;
 }
-.page-container {
-  height: calc(100vh - 0px);
-}
 .background-lecture-hall {
   background: url('@/assets/lecture_hall_background.jpg') no-repeat center center fixed;
   -webkit-background-size: cover;
