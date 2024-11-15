@@ -163,6 +163,7 @@ import {filter as _filter, get, includes, isEmpty, size} from 'lodash'
 import {mdiClose, mdiMinusBoxMultipleOutline, mdiPlusBoxMultipleOutline, mdiPlusThick} from '@mdi/js'
 import {storeToRefs} from 'pinia'
 import {useContextStore} from '@/stores/context'
+import {useRoute} from 'vue-router'
 
 const contextStore = useContextStore()
 const departmentStore = useDepartmentStore()
@@ -172,6 +173,7 @@ const contactDetailsPanel = ref([])
 const contactsPanel = ref(undefined)
 const isAddingContact = ref(false)
 const isCreatingNotification = ref(false)
+const route = useRoute()
 
 const notificationRecipients = computed(() => {
   return {
@@ -181,7 +183,7 @@ const notificationRecipients = computed(() => {
   }
 })
 
-onMounted(() => departmentStore.setShowTheOmenPoster(this.$route.query.n === NUMBER_OF_THE_BEAST))
+onMounted(() => departmentStore.setShowTheOmenPoster(route.query.n === NUMBER_OF_THE_BEAST))
 
 const afterSaveContact = () => {
   isAddingContact.value = false
@@ -218,7 +220,7 @@ const onCancelAddContact = () => {
 const refresh = () => {
   useContextStore().loadingStart()
   alertScreenReader(`Loading ${useContextStore().selectedTermName}`)
-  const departmentId = get(this.$route, 'params.departmentId')
+  const departmentId = get(route, 'params.departmentId')
   departmentStore.init(departmentId).then(() => {
     useContextStore().loadingComplete(`${department.deptName} ${useContextStore().selectedTermName}`)
   })

@@ -7,7 +7,7 @@
             :id="`apply-course-action-btn-${key}`"
             :key="key"
             class="text-capitalize text-nowrap mx-0 px-2"
-            :color="theme.global.current.value.dark ? 'tertiary' : 'secondary'"
+            :color="theme.current.dark ? 'tertiary' : 'secondary'"
             :disabled="disableControls || !allowEdits || !selectedEvaluationIds.length || isLoading || isInvalidAction(action)"
             @click.stop="action.apply(key)"
           >
@@ -89,7 +89,7 @@
               :value="form"
               v-on="on"
             >
-              <option v-for="df in departmentStore.activeDepartmentForms" :key="df.id" :value="df.id">{{ df.name }}</option>
+              <option v-for="df in activeDepartmentForms" :key="df.id" :value="df.id">{{ df.name }}</option>
             </select>
           </v-col>
         </v-row>
@@ -109,313 +109,312 @@
 </template>
 
 <script setup>
-import {EVALUATION_STATUSES, useDepartmentStore} from '@/stores/department/department-edit-session'
-import {storeToRefs} from 'pinia'
-
-const {disableControls, selectedEvaluationIds} = storeToRefs(useDepartmentStore())
-</script>
-
-<script>
 import ConfirmDialog from '@/components/util/ConfirmDialog'
 import UpdateEvaluations from '@/components/evaluation/UpdateEvaluations'
+import {EVALUATION_STATUSES, useDepartmentStore} from '@/stores/department/department-edit-session'
 import {alertScreenReader, putFocusNextTick} from '@/lib/utils'
 import {chain, each, every, filter as _filter, get, has, includes, map, uniq} from 'lodash'
+import {computed, onMounted, ref} from 'vue'
 import {mdiAlertCircle} from '@mdi/js'
+import {storeToRefs} from 'pinia'
 import {toFormatFromISO} from '@/lib/utils'
 import {updateEvaluations} from '@/api/departments'
 import {useContextStore} from '@/stores/context'
 import {useTheme} from 'vuetify'
 import {validateConfirmable, validateDuplicable, validateMarkAsDone} from '@/stores/department/utils'
 
-export default {
-  name: 'EvaluationActions',
-  components: {
-    ConfirmDialog,
-    UpdateEvaluations
-  },
-  data: () => ({
-    applyingAction: null,
-    bulkUpdateOptions: {
-      departmentForm: undefined,
-      evaluationStatus: undefined,
-      evaluationType: undefined,
-      instructor: undefined,
-      midtermFormEnabled: false,
-      startDate: undefined,
-    },
-    courseActions: {},
-    isApplying: false,
-    isDuplicating: false,
-    isEditing: false,
-    isLoading: false,
-    markAsDoneWarning: undefined,
-    mdiAlertCircle,
-    midtermFormAvailable: false,
-    theme: useTheme()
-  }),
-  computed: {
-    allowEdits() {
-      const currentUser = useContextStore().currentUser
-      return currentUser.isAdmin || !useContextStore().isSelectedTermLocked
-    },
-    selectedEvaluations() {
-      return _filter(useDepartmentStore().evaluations, e => useDepartmentStore().selectedEvaluationIds.includes(e.id))
-    }
-  },
-  created() {
-    this.courseActions = {
-      // TO DO: Clean up dictionary keys and statuses
-      review: {
-        apply: this.onClickReview,
-        completedText: 'Marked as to-do',
-        inProgressText: 'Marking as to-do',
-        key: 'review',
-        status: 'review',
-        text: 'Mark as to-do'
-      },
-      confirm: {
-        apply: this.onClickMarkDone,
-        completedText: 'Marked as done',
-        inProgressText: 'Marking as done',
-        key: 'confirm',
-        status: 'confirmed',
-        text: 'Mark as done'
-      },
-      unmark: {
-        apply: this.onClickUnmark,
-        completedText: 'Unmarked',
-        inProgressText: 'Unmarking',
-        key: 'unmark',
-        status: null,
-        text: 'Unmark'
-      },
-      ignore: {
-        apply: this.onClickIgnore,
-        completedText: 'Ignored',
-        inProgressText: 'Ignoring',
-        key: 'ignore',
-        status: 'ignore',
-        text: 'Ignore'
-      },
-      duplicate: {
-        apply: this.onClickDuplicate,
-        completedText: 'Duplicated',
-        inProgressText: 'Duplicating',
-        key: 'duplicate',
-        text: 'Duplicate'
-      },
-      edit: {
-        apply: this.onClickEdit,
-        completedText: 'Edited',
-        inProgressText: 'Editing',
-        key: 'edit',
-        text: 'Edit'
-      }
-    }
-  },
-  methods: {
-    onCancelDuplicate() {
-      this.reset()
-      alertScreenReader('Canceled duplication.')
-      putFocusNextTick('apply-course-action-btn-duplicate')
-    },
-    onCancelEdit() {
-      this.reset()
-      alertScreenReader('Canceled edit.')
-      putFocusNextTick('apply-course-action-btn-edit')
-    },
-    onClickDuplicate() {
-      this.showUpdateOptions()
-      this.bulkUpdateOptions.instructor = {}
-      this.midtermFormAvailable = useDepartmentStore().department.usesMidtermForms
-      if (this.midtermFormAvailable) {
-        // Show midterm form option only if a midterm form exists for all selected evals.
-        const availableFormNames = map(useDepartmentStore().activeDepartmentForms, 'name')
-        each(this.selectedEvaluations, e => {
-          const formName = get(e, 'departmentForm.name')
-          if (!formName || !(formName.endsWith('_MID') || availableFormNames.includes(formName + '_MID'))) {
-            this.midtermFormAvailable = false
-            return false
-          }
-        })
-      }
-      this.isDuplicating = true
-      putFocusNextTick('update-evaluations-instructor-lookup-autocomplete')
-    },
-    onClickEdit() {
-      this.showUpdateOptions()
-      // Pre-populate form if shared by all selected evals
-      const uniqueForms = chain(this.selectedEvaluations).map(e => get(e, 'departmentForm.id')).uniq().value()
-      if (uniqueForms.length === 1) {
-        this.bulkUpdateOptions.departmentForm = get(this.selectedEvaluations, '0.departmentForm.id')
-      }
-      // Show instructor lookup if instructor is missing from all selected evals
-      if (every(this.selectedEvaluations, {'instructor': null})) {
-        this.bulkUpdateOptions.instructor = {}
-      }
-      // Pre-populate status if shared by all selected evals
-      const uniqueStatuses = chain(this.selectedEvaluations).map(e => get(e, 'status')).uniq().value()
-      if (uniqueStatuses.length === 1) {
-        this.bulkUpdateOptions.evaluationStatus = get(this.selectedEvaluations, '0.status', 'none')
-      }
-      this.isEditing = true
-      putFocusNextTick('update-evaluations-select-status')
-    },
-    onClickIgnore(key) {
-      this.validateAndUpdate(key)
-    },
-    onClickMarkDone(key) {
-      const selected = _filter(useDepartmentStore().evaluations, e => includes(useDepartmentStore().selectedEvaluationIds, e.id))
-      this.markAsDoneWarning = validateMarkAsDone(selected)
-      if (!this.markAsDoneWarning) {
-        this.validateAndUpdate(key)
-      }
-    },
-    onClickReview(key) {
-      this.validateAndUpdate(key)
-    },
-    onClickUnmark(key) {
-      this.validateAndUpdate(key)
-    },
-    onConfirmDuplicate(options) {
-      this.bulkUpdateOptions = options
-      this.validateAndUpdate('duplicate')
-    },
-    onConfirmEdit(options) {
-      const selected = _filter(useDepartmentStore().evaluations, e => includes(useDepartmentStore().selectedEvaluationIds, e.id))
-      this.bulkUpdateOptions = options
-      if ('confirmed' === this.bulkUpdateOptions.evaluationStatus) {
-        this.markAsDoneWarning = validateMarkAsDone(selected)
-      }
-      if (!this.markAsDoneWarning) {
-        this.validateAndUpdate('edit')
-      }
-    },
-    onProceedMarkAsDone() {
-      this.markAsDoneWarning = null
-      this.validateAndUpdate(this.isEditing ? 'edit' : 'confirm')
-    },
-    getEvaluationFieldsForUpdate(key) {
-      let fields = null
-      if (['duplicate', 'edit'].includes(key)) {
-        fields = {}
-        if (this.bulkUpdateOptions.departmentForm) {
-          fields.departmentFormId = this.bulkUpdateOptions.departmentForm
-        }
-        if (has(this.bulkUpdateOptions, 'evaluationStatus')) {
-          fields.status = this.bulkUpdateOptions.evaluationStatus
-        }
-        if (this.bulkUpdateOptions.evaluationType) {
-          fields.evaluationTypeId = this.bulkUpdateOptions.evaluationType
-        }
-        if (this.bulkUpdateOptions.instructor) {
-          fields.instructorUid = get(this.bulkUpdateOptions.instructor, 'uid')
-        }
-        if (this.bulkUpdateOptions.startDate) {
-          fields.startDate = toFormatFromISO(this.bulkUpdateOptions.startDate, 'y-LL-dd')
-        }
-        if (key === 'duplicate') {
-          if (this.bulkUpdateOptions.midtermFormEnabled) {
-            fields.midterm = 'true'
-          }
-        }
-      }
-      return fields
-    },
-    isInvalidAction(action) {
-      const uniqueStatuses = uniq(useDepartmentStore().evaluations.filter(e => useDepartmentStore().selectedEvaluationIds.includes(e.id)).map(e => e.status))
-      return (uniqueStatuses.length === 1 && uniqueStatuses[0] === action.status)
-    },
-    reset() {
-      this.bulkUpdateOptions = {
-        departmentForm: null,
-        evaluationStatus: null,
-        evaluationType: null,
-        instructor: null,
-        midtermFormEnabled: false,
-        startDate: null,
-      }
-      this.isDuplicating = false
-      this.isEditing = false
-      this.applyingAction = null
-      this.isApplying = false
-      this.isLoading = false
-      this.markAsDoneWarning = null
-      this.midtermFormAvailable = false
-    },
-    selectInstructor(suggestion) {
-      this.bulkUpdateOptions.instructor = suggestion
-      putFocusNextTick('update-evaluations-instructor-lookup-autocomplete')
-    },
-    showUpdateOptions() {
-      // Pre-populate start date if shared by all selected evals.
-      const uniqueStartDates = chain(this.selectedEvaluations).map(e => new Date(e.startDate).toDateString()).uniq().value()
-      if (uniqueStartDates.length === 1) {
-        this.bulkUpdateOptions.startDate = new Date(uniqueStartDates[0])
-      }
-      // Pre-populate type if shared by all selected evals
-      const uniqueTypes = chain(this.selectedEvaluations).map(e => get(e, 'evaluationType.id')).uniq().value()
-      if (uniqueTypes.length === 1) {
-        this.bulkUpdateOptions.evaluationType = get(this.selectedEvaluations, '0.evaluationType.id')
-      }
-    },
-    update(fields, key) {
-      useDepartmentStore().setDisableControls(true)
-      this.isLoading = true
-      const selectedCourseNumbers = uniq(useDepartmentStore().evaluations
-        .filter(e => useDepartmentStore().selectedEvaluationIds.includes(e.id))
-        .map(e => e.courseNumber))
-      const refresh = () => {
-        return selectedCourseNumbers.length === 1
-          ? useDepartmentStore().refreshSection({sectionId: selectedCourseNumbers[0], termId: useContextStore().selectedTermId})
-          : useDepartmentStore().refreshAll()
-      }
-      updateEvaluations(
-        useDepartmentStore().department.id,
-        key,
-        useDepartmentStore().selectedEvaluationIds,
-        useContextStore().selectedTermId,
-        fields
-      ).then(
-        response => {
-          refresh().then(() => {
-            const selectedRowCount = this.applyingAction.key === 'duplicate' ? ((response.length || 0) / 2) : (response.length || 0)
-            const target = `${selectedRowCount} ${selectedRowCount === 1 ? 'row' : 'rows'}`
-            alertScreenReader(`${this.applyingAction.completedText} ${target}`)
-            putFocusNextTick('select-all-evals-checkbox')
-            this.reset()
-          }).finally(() => {
-            this.isApplying = false
-            useDepartmentStore().disableControls = false
-          })
-        },
-        error => {
-          useDepartmentStore().showErrorDialog(get(error, 'response.data.message', 'An unknown error occurred.'))
-          useDepartmentStore().disableControls = false
-          this.isApplying = false
-          this.isLoading = false
-        }
-      )
-    },
-    validateAndUpdate(key) {
-      let valid = true
-      const target = `${useDepartmentStore().selectedEvaluationIds.length || 0} ${useDepartmentStore().selectedEvaluationIds.length === 1 ? 'row' : 'rows'}`
-      this.applyingAction = this.courseActions[key]
-      this.isApplying = true
-      alertScreenReader(`${this.applyingAction.inProgressText} ${target}`)
+const departmentStore = useDepartmentStore()
+const {activeDepartmentForms, department, disableControls, evaluations, selectedEvaluationIds} = storeToRefs(departmentStore)
 
-      const fields = this.getEvaluationFieldsForUpdate(key)
-      if (key === 'duplicate') {
-        valid = validateDuplicable(useDepartmentStore().selectedEvaluationIds, fields)
-      } else if (key === 'confirm' || (key === 'edit' && this.bulkUpdateOptions.evaluationStatus === 'confirmed')) {
-        valid = validateConfirmable(useDepartmentStore().selectedEvaluationIds, fields)
+const applyingAction = ref(undefined)
+const bulkUpdateOptions = ref({
+  departmentForm: undefined,
+  evaluationStatus: undefined,
+  evaluationType: undefined,
+  instructor: undefined,
+  midtermFormEnabled: false,
+  startDate: undefined
+})
+const courseActions = ref({})
+const isApplying = ref(false)
+const isDuplicating = ref(false)
+const isEditing = ref(false)
+const isLoading = ref(false)
+const markAsDoneWarning = ref(undefined)
+const midtermFormAvailable = ref(false)
+const theme = useTheme()
+
+const allowEdits = computed(() => {
+  const currentUser = useContextStore().currentUser
+  return currentUser.isAdmin || !useContextStore().isSelectedTermLocked
+})
+const selectedEvaluations = computed(() => {
+  return _filter(evaluations.value, e => selectedEvaluationIds.includes(e.id))
+})
+onMounted(() => {
+  courseActions.value = {
+    // TO DO: Clean up dictionary keys and statuses
+    review: {
+      apply: onClickReview,
+      completedText: 'Marked as to-do',
+      inProgressText: 'Marking as to-do',
+      key: 'review',
+      status: 'review',
+      text: 'Mark as to-do'
+    },
+    confirm: {
+      apply: onClickMarkDone,
+      completedText: 'Marked as done',
+      inProgressText: 'Marking as done',
+      key: 'confirm',
+      status: 'confirmed',
+      text: 'Mark as done'
+    },
+    unmark: {
+      apply: onClickUnmark,
+      completedText: 'Unmarked',
+      inProgressText: 'Unmarking',
+      key: 'unmark',
+      status: null,
+      text: 'Unmark'
+    },
+    ignore: {
+      apply: onClickIgnore,
+      completedText: 'Ignored',
+      inProgressText: 'Ignoring',
+      key: 'ignore',
+      status: 'ignore',
+      text: 'Ignore'
+    },
+    duplicate: {
+      apply: onClickDuplicate,
+      completedText: 'Duplicated',
+      inProgressText: 'Duplicating',
+      key: 'duplicate',
+      text: 'Duplicate'
+    },
+    edit: {
+      apply: onClickEdit,
+      completedText: 'Edited',
+      inProgressText: 'Editing',
+      key: 'edit',
+      text: 'Edit'
+    }
+  }
+})
+
+const onCancelDuplicate = () => {
+  reset()
+  alertScreenReader('Canceled duplication.')
+  putFocusNextTick('apply-course-action-btn-duplicate')
+}
+
+const onCancelEdit = () => {
+  reset()
+  alertScreenReader('Canceled edit.')
+  putFocusNextTick('apply-course-action-btn-edit')
+}
+
+const onClickDuplicate = () => {
+  showUpdateOptions()
+  bulkUpdateOptions.value.instructor = {}
+  midtermFormAvailable.value = department.value.usesMidtermForms
+  if (midtermFormAvailable.value) {
+    // Show midterm form option only if a midterm form exists for all selected evals.
+    const availableFormNames = map(activeDepartmentForms.value, 'name')
+    each(selectedEvaluations.value, e => {
+      const formName = get(e, 'departmentForm.name')
+      if (!formName || !(formName.endsWith('_MID') || availableFormNames.includes(formName + '_MID'))) {
+        midtermFormAvailable.value = false
+        return false
       }
-      if (valid) {
-        this.update(fields, key)
-      } else {
-        this.isApplying = false
+    })
+  }
+  isDuplicating.value = true
+  putFocusNextTick('update-evaluations-instructor-lookup-autocomplete')
+}
+
+const onClickEdit = () => {
+  showUpdateOptions()
+  // Pre-populate form if shared by all selected evals
+  const uniqueForms = chain(selectedEvaluations.value).map(e => get(e, 'departmentForm.id')).uniq().value()
+  if (uniqueForms.length === 1) {
+    bulkUpdateOptions.value.departmentForm = get(selectedEvaluations.value, '0.departmentForm.id')
+  }
+  // Show instructor lookup if instructor is missing from all selected evals
+  if (every(selectedEvaluations.value, {'instructor': null})) {
+    bulkUpdateOptions.value.instructor = {}
+  }
+  // Pre-populate status if shared by all selected evals
+  const uniqueStatuses = chain(selectedEvaluations.value).map(e => get(e, 'status')).uniq().value()
+  if (uniqueStatuses.length === 1) {
+    bulkUpdateOptions.value.evaluationStatus = get(selectedEvaluations.value, '0.status', 'none')
+  }
+  isEditing.value = true
+  putFocusNextTick('update-evaluations-select-status')
+}
+
+const onClickIgnore = key => {
+  validateAndUpdate(key)
+}
+
+const onClickMarkDone = key => {
+  const selected = _filter(evaluations.value, e => includes(selectedEvaluationIds.value, e.id))
+  markAsDoneWarning.value = validateMarkAsDone(selected)
+  if (!markAsDoneWarning.value) {
+    validateAndUpdate(key)
+  }
+}
+
+const onClickReview = key => {
+  validateAndUpdate(key)
+}
+
+const onClickUnmark = key => {
+  validateAndUpdate(key)
+}
+
+const onConfirmDuplicate = options => {
+  bulkUpdateOptions.value = options
+  validateAndUpdate('duplicate')
+}
+
+const onConfirmEdit = options => {
+  const selected = _filter(evaluations.value, e => includes(selectedEvaluationIds.value, e.id))
+  bulkUpdateOptions.value = options
+  if ('confirmed' === bulkUpdateOptions.value.evaluationStatus) {
+    markAsDoneWarning.value = validateMarkAsDone(selected)
+  }
+  if (!markAsDoneWarning.value) {
+    validateAndUpdate('edit')
+  }
+}
+
+const onProceedMarkAsDone = () => {
+  markAsDoneWarning.value = null
+  validateAndUpdate(isEditing.value ? 'edit' : 'confirm')
+}
+
+const getEvaluationFieldsForUpdate = key => {
+  let fields = null
+  if (['duplicate', 'edit'].includes(key)) {
+    fields = {}
+    if (bulkUpdateOptions.value.departmentForm) {
+      fields.departmentFormId = bulkUpdateOptions.value.departmentForm
+    }
+    if (has(bulkUpdateOptions.value, 'evaluationStatus')) {
+      fields.status = bulkUpdateOptions.value.evaluationStatus
+    }
+    if (bulkUpdateOptions.value.evaluationType) {
+      fields.evaluationTypeId = bulkUpdateOptions.value.evaluationType
+    }
+    if (bulkUpdateOptions.value.instructor) {
+      fields.instructorUid = get(bulkUpdateOptions.value.instructor, 'uid')
+    }
+    if (bulkUpdateOptions.value.startDate) {
+      fields.startDate = toFormatFromISO(bulkUpdateOptions.value.startDate, 'y-LL-dd')
+    }
+    if (key === 'duplicate') {
+      if (bulkUpdateOptions.value.midtermFormEnabled) {
+        fields.midterm = 'true'
       }
     }
+  }
+  return fields
+}
+
+const isInvalidAction = action => {
+  const uniqueStatuses = uniq(evaluations.value.filter(e => selectedEvaluationIds.value.includes(e.id)).map(e => e.status))
+  return (uniqueStatuses.length === 1 && uniqueStatuses[0] === action.status)
+}
+
+const reset = () => {
+  bulkUpdateOptions.value = {
+    departmentForm: null,
+    evaluationStatus: null,
+    evaluationType: null,
+    instructor: null,
+    midtermFormEnabled: false,
+    startDate: null,
+  }
+  isDuplicating.value = false
+  isEditing.value = false
+  applyingAction.value = null
+  isApplying.value = false
+  isLoading.value = false
+  markAsDoneWarning.value = null
+  midtermFormAvailable.value = false
+}
+
+const showUpdateOptions = () => {
+  // Pre-populate start date if shared by all selected evals.
+  const uniqueStartDates = chain(selectedEvaluations.value).map(e => new Date(e.startDate).toDateString()).uniq().value()
+  if (uniqueStartDates.length === 1) {
+    bulkUpdateOptions.value.startDate = new Date(uniqueStartDates[0])
+  }
+  // Pre-populate type if shared by all selected evals
+  const uniqueTypes = chain(selectedEvaluations.value).map(e => get(e, 'evaluationType.id')).uniq().value()
+  if (uniqueTypes.length === 1) {
+    bulkUpdateOptions.value.evaluationType = get(selectedEvaluations.value, '0.evaluationType.id')
+  }
+}
+
+const update = (fields, key) => {
+  disableControls.value = true
+  isLoading.value = true
+  const selectedCourseNumbers = uniq(evaluations.value
+    .filter(e => selectedEvaluationIds.value.includes(e.id))
+    .map(e => e.courseNumber))
+  const refresh = () => {
+    return selectedCourseNumbers.length === 1
+      ? departmentStore.refreshSection({sectionId: selectedCourseNumbers[0], termId: useContextStore().selectedTermId})
+      : departmentStore.refreshAll()
+  }
+  updateEvaluations(
+    department.value.id,
+    key,
+    selectedEvaluationIds.value,
+    useContextStore().selectedTermId,
+    fields
+  ).then(
+    response => {
+      refresh().then(() => {
+        const selectedRowCount = applyingAction.value.key === 'duplicate' ? ((response.length || 0) / 2) : (response.length || 0)
+        const target = `${selectedRowCount} ${selectedRowCount === 1 ? 'row' : 'rows'}`
+        alertScreenReader(`${applyingAction.value.completedText} ${target}`)
+        putFocusNextTick('select-all-evals-checkbox')
+        reset()
+      }).finally(() => {
+        isApplying.value = false
+        disableControls.value = false
+      })
+    },
+    error => {
+      departmentStore.showErrorDialog(get(error, 'response.data.message', 'An unknown error occurred.'))
+      disableControls.value = false
+      isApplying.value = false
+      isLoading.value = false
+    }
+  )
+}
+
+const validateAndUpdate = key => {
+  let valid = true
+  const target = `${selectedEvaluationIds.value.length || 0} ${selectedEvaluationIds.value.length === 1 ? 'row' : 'rows'}`
+  applyingAction.value = courseActions.value[key]
+  isApplying.value = true
+  alertScreenReader(`${applyingAction.value.inProgressText} ${target}`)
+
+  const fields = getEvaluationFieldsForUpdate(key)
+  if (key === 'duplicate') {
+    valid = validateDuplicable(selectedEvaluationIds.value, fields)
+  } else if (key === 'confirm' || (key === 'edit' && bulkUpdateOptions.value.evaluationStatus === 'confirmed')) {
+    valid = validateConfirmable(selectedEvaluationIds.value, fields)
+  }
+  if (valid) {
+    update(fields, key)
+  } else {
+    isApplying.value = false
   }
 }
 </script>
