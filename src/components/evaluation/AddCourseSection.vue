@@ -99,104 +99,90 @@
 </template>
 
 <script setup>
+import {alertScreenReader, putFocusNextTick} from '@/lib/utils'
+import {computed, ref, watch} from 'vue'
+import {getSection} from '@/api/sections'
+import {mdiAlert, mdiPlusThick} from '@mdi/js'
 import {storeToRefs} from 'pinia'
+import {useContextStore} from '@/stores/context'
 import {useDepartmentStore} from '@/stores/department/department-edit-session'
 
 const {disableControls} = storeToRefs(useDepartmentStore())
-</script>
 
-<script>
-import {alertScreenReader, putFocusNextTick} from '@/lib/utils'
-import {getSection} from '@/api/sections'
-import {mdiAlert, mdiPlusThick} from '@mdi/js'
-import {useContextStore} from '@/stores/context'
-
-export default {
-  name: 'AddCourseSection',
-  props: {
-    allowEdits: {
-      required: false,
-      type: Boolean
-    }
-  },
-  data: () => ({
-    courseNumber: null,
-    errorMessage: '',
-    isAddingSection: false,
-    mdiAlert,
-    mdiPlusThick,
-    rules: {},
-    section: null,
-    sectionError: false
-  }),
-  computed: {
-    courseNumberReady() {
-      return this.courseNumber && /^\d{5}/.test(this.courseNumber) && (this.rules.notPresent(this.courseNumber) === true)
-    }
-  },
-  watch: {
-    courseNumber() {
-      this.errorMessage = null
-      this.sectionError = false
-    },
-    isAddingSection(isAddingSection) {
-      if (isAddingSection) {
-        alertScreenReader('Add course section form is ready.')
-        putFocusNextTick('lookup-course-number-input')
-      }
-    }
-  },
-  created() {
-    this.rules = {
-      courseNumber: value => !value || /^\d+$/.test(value) || 'Invalid course number.',
-      notPresent: value => !find(useDepartmentStore().evaluations, {courseNumber: value}) || `Course number ${value} already present on page.`
-    }
-  },
-  methods: {
-    lookupSection() {
-      this.errorMessage = null
-      if (this.$refs.lookupCourseNumberInput.validate()) {
-        getSection(this.courseNumber, useContextStore().selectedTermId).then(data => {
-          alertScreenReader(`Section ${this.courseNumber} found.`)
-          this.courseNumber = null
-          this.section = data
-          putFocusNextTick('add-section-title')
-        }, () => {
-          this.sectionError = true
-          this.errorMessage = `Section ${this.courseNumber} not found.`
-          alertScreenReader(this.errorMessage)
-          putFocusNextTick('lookup-course-number-input')
-        })
-      }
-    },
-    onCancel() {
-      this.courseNumber = null
-      this.errorMessage = null
-      if (this.section) {
-        this.section = null
-        alertScreenReader('Canceled. Add course section form is ready.')
-        putFocusNextTick('lookup-course-number-input')
-      } else {
-        this.isAddingSection = false
-        alertScreenReader('Section lookup canceled.')
-        putFocusNextTick('add-course-section-btn')
-      }
-    },
-    onSubmit(courseNumber) {
-      alertScreenReader(`Adding section ${courseNumber}.`)
-      useDepartmentStore().addSection({
-        sectionId: courseNumber,
-        termId: useContextStore().selectedTermId
-      }).then(() => {
-        this.isAddingSection = false
-        this.courseNumber = null
-        this.errorMessage = null
-        this.section = null
-        alertScreenReader(`Section ${courseNumber} added.`)
-      }, error => useDepartmentStore().showErrorDialog(error.response.data.message))
-        .finally(() => useDepartmentStore().setDisableControls(false))
-    }
+defineProps({
+  allowEdits: {
+    required: false,
+    type: Boolean
   }
+})
+
+const courseNumber = ref(undefined)
+const errorMessage = ref('')
+const isAddingSection = ref(false)
+const lookupCourseNumberInput = ref()
+const rules = {
+  courseNumber: value => !value || /^\d+$/.test(value) || 'Invalid course number.',
+  notPresent: value => !find(useDepartmentStore().evaluations, {courseNumber: value}) || `Course number ${value} already present on page.`
+}
+const section = ref(undefined)
+const sectionError = ref(false)
+
+const courseNumberReady = computed(() => {
+  return courseNumber.value && /^\d{5}/.test(courseNumber.value) && (rules.notPresent(courseNumber.value) === true)
+})
+
+watch(courseNumber, () => {
+  errorMessage.value = null
+  sectionError.value = false
+})
+watch(isAddingSection, v => {
+  if (v) {
+    alertScreenReader('Add course section form is ready.')
+    putFocusNextTick('lookup-course-number-input')
+  }
+})
+
+const lookupSection = () => {
+  errorMessage.value = null
+  if (lookupCourseNumberInput.value.validate()) {
+    getSection(courseNumber.value, useContextStore().selectedTermId).then(data => {
+      alertScreenReader(`Section ${courseNumber.value} found.`)
+      courseNumber.value = null
+      section.value = data
+      putFocusNextTick('add-section-title')
+    }, () => {
+      sectionError.value = true
+      errorMessage.value = `Section ${courseNumber.value} not found.`
+      alertScreenReader(errorMessage.value)
+      putFocusNextTick('lookup-course-number-input')
+    })
+  }
+}
+
+const onCancel = () => {
+  courseNumber.value = null
+  errorMessage.value = null
+  if (section.value) {
+    section.value = null
+    alertScreenReader('Canceled. Add course section form is ready.')
+    putFocusNextTick('lookup-course-number-input')
+  } else {
+    isAddingSection.value = false
+    alertScreenReader('Section lookup canceled.')
+    putFocusNextTick('add-course-section-btn')
+  }
+}
+
+const onSubmit = courseNumber => {
+  alertScreenReader(`Adding section ${courseNumber}.`)
+  useDepartmentStore().addSection(courseNumber, useContextStore().selectedTermId).then(() => {
+    isAddingSection.value = false
+    courseNumber.value = null
+    errorMessage.value = null
+    section.value = null
+    alertScreenReader(`Section ${courseNumber} added.`)
+  }, error => useDepartmentStore().showErrorDialog(error.response.data.message))
+    .finally(() => useDepartmentStore().disableControls = false)
 }
 </script>
 

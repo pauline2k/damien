@@ -2,7 +2,7 @@
   <div v-if="evaluations.length > 0">
     <div
       class="elevation-2 sticky"
-      :class="theme.global.current.value.dark ? 'sticky-dark' : 'sticky-light'"
+      :class="theme.current.dark ? 'sticky-dark' : 'sticky-light'"
       role="search"
     >
       <div class="align-baseline d-flex flex-wrap px-5 pb-3 pt-1 w-75">
@@ -146,11 +146,12 @@
           name="evaluation-row"
           tag="tbody"
         >
-          <template v-for="(evaluation, rowIndex) in items">
-            <v-hover v-if="statusFilterEnabled(evaluation)" v-slot="{ hover }" :key="evaluation.id">
+          <template v-for="(evaluation, rowIndex) in items" :key="evaluation.id">
+            <v-hover v-if="statusFilterEnabled(evaluation)" v-slot="{ isHovering, props: hoverProps }">
               <tr
                 class="evaluation-row"
-                :class="evaluationClass(evaluation, hover)"
+                :class="evaluationClass(evaluation, isHovering)"
+                v-bind="hoverProps"
               >
                 <td v-if="readonly" :id="`evaluation-${rowIndex}-department`" class="align-middle py-1">
                   <router-link :to="`/department/${get(evaluation.department, 'id')}`">
@@ -163,7 +164,7 @@
                     :id="`evaluation-${rowIndex}-checkbox`"
                     :aria-label="`${evaluation.subjectArea} ${evaluation.catalogId} ${selectedEvaluationIds.includes(evaluation.id) ? '' : 'not '}selected`"
                     class="pr-1"
-                    :color="`${hover ? 'primary' : 'tertiary'}`"
+                    :color="`${isHovering ? 'primary' : 'tertiary'}`"
                     :disabled="editRowId === evaluation.id"
                     :ripple="false"
                     :value="selectedEvaluationIds.includes(evaluation.id)"
@@ -179,7 +180,7 @@
                   <div
                     v-if="isStatusVisible(evaluation)"
                     class="pill mx-auto"
-                    :class="evaluationPillClass(evaluation, hover)"
+                    :class="evaluationPillClass(evaluation, isHovering)"
                   >
                     {{ displayStatus(evaluation) }}
                   </div>
@@ -190,7 +191,7 @@
                     <v-btn
                       :id="`edit-evaluation-${evaluation.id}-btn`"
                       class="primary-contrast primary--text"
-                      :class="{'sr-only': !hover && evaluation.id !== focusedEditButtonEvaluationId, 'focus-btn': evaluation.id === focusedEditButtonEvaluationId}"
+                      :class="{'sr-only': !isHovering && evaluation.id !== focusedEditButtonEvaluationId, 'focus-btn': evaluation.id === focusedEditButtonEvaluationId}"
                       block
                       :disabled="!allowEdits"
                       :ripple="false"
@@ -269,7 +270,7 @@
                   <EvaluationError
                     v-if="!evaluation.instructor && !isEditing(evaluation) && (evaluation.status === 'review' || evaluation.status === 'confirmed')"
                     id="error-msg-evaluation-instructor"
-                    :hover="hover || focusedEditButtonEvaluationId === evaluation.id"
+                    :hover="isHovering || focusedEditButtonEvaluationId === evaluation.id"
                     message="Instructor required"
                   />
                   <div v-if="!evaluation.instructor && isEditing(evaluation) && allowEdits">
@@ -300,14 +301,14 @@
                       v-for="(conflict, index) in evaluation.conflicts.departmentForm"
                       :id="`error-msg-evaluation-department-form-conflict-${index}`"
                       :key="index"
-                      :hover="hover || focusedEditButtonEvaluationId === evaluation.id"
+                      :hover="isHovering || focusedEditButtonEvaluationId === evaluation.id"
                       :message="`Conflicts with value ${conflict.value} from ${conflict.department} department`"
                     />
                   </div>
                   <EvaluationError
                     v-if="!evaluation.departmentForm && !isEditing(evaluation) && (evaluation.status === 'review' || evaluation.status === 'confirmed')"
                     id="error-msg-evaluation-department-form"
-                    :hover="hover || focusedEditButtonEvaluationId === evaluation.id"
+                    :hover="isHovering || focusedEditButtonEvaluationId === evaluation.id"
                     message="Department form required"
                   />
                   <div v-if="allowEdits && isEditing(evaluation)" class="mt-1 py-2">
@@ -331,14 +332,14 @@
                       v-for="(conflict, index) in evaluation.conflicts.evaluationType"
                       :id="`error-msg-evaluation-type-conflict-${index}`"
                       :key="index"
-                      :hover="hover || focusedEditButtonEvaluationId === evaluation.id"
+                      :hover="isHovering || focusedEditButtonEvaluationId === evaluation.id"
                       :message="`Conflicts with value ${conflict.value} from ${conflict.department} department`"
                     />
                   </div>
                   <EvaluationError
                     v-if="!evaluation.evaluationType && !isEditing(evaluation) && (evaluation.status === 'review' || evaluation.status === 'confirmed')"
                     id="error-msg-evaluation-type"
-                    :hover="hover || focusedEditButtonEvaluationId === evaluation.id"
+                    :hover="isHovering || focusedEditButtonEvaluationId === evaluation.id"
                     message="Evaluation type required"
                   />
                   <div v-if="allowEdits && isEditing(evaluation)" class="mt-1 py-2">
@@ -380,7 +381,7 @@
                       v-for="(conflict, index) in evaluation.conflicts.evaluationPeriod"
                       :id="`error-msg-evaluation-period-conflict-${index}`"
                       :key="index"
-                      :hover="hover || focusedEditButtonEvaluationId === evaluation.id"
+                      :hover="isHovering || focusedEditButtonEvaluationId === evaluation.id"
                       :message="`Conflicts with period starting
                       ${toLocaleFromISO(conflict.value, 'LL/dd/yyyy')}
                       from ${conflict.department} department`"
@@ -539,408 +540,390 @@
 </template>
 
 <script setup>
-import {EVALUATION_STATUSES, useDepartmentStore} from '@/stores/department/department-edit-session'
-import {storeToRefs} from 'pinia'
-import {useContextStore} from '@/stores/context'
-import {useTheme} from 'vuetify'
-
-const contextStore = useContextStore()
-const departmentStore = useDepartmentStore()
-const {disableControls, dismissErrorDialog, errorDialog, errorDialogText, evaluations, selectedEvaluationIds} = storeToRefs(useDepartmentStore())
-const theme = useTheme()
-</script>
-
-<script>
 import AddCourseSection from '@/components/evaluation/AddCourseSection'
 import ConfirmDialog from '@/components/util/ConfirmDialog'
 import EvaluationActions from '@/components/evaluation/EvaluationActions'
 import EvaluationError from '@/components/evaluation/EvaluationError'
 import PersonLookup from '@/components/admin/PersonLookup'
 import SortableTableHeader from '@/components/util/SortableTableHeader'
+import {EVALUATION_STATUSES, useDepartmentStore} from '@/stores/department/department-edit-session'
 import {addInstructor} from '@/api/instructor'
 import {alertScreenReader, oxfordJoin, pluralize, toFormatFromISO, toFormatFromJsDate, toLocaleFromISO} from '@/lib/utils'
 import {clone, cloneDeep, each, find, get, isEmpty, keys, pickBy, size, some} from 'lodash'
+import {computed, nextTick, onMounted, ref} from 'vue'
 import {putFocusNextTick} from '@/lib/utils'
 import {mdiAlertCircle, mdiCheckCircle, mdiMagnify, mdiPlusCircle} from '@mdi/js'
-import {nextTick} from 'vue'
+import {storeToRefs} from 'pinia'
+import {useContextStore} from '@/stores/context'
+import {useTheme} from 'vuetify'
 import {validateMarkAsDone} from '@/stores/department/utils'
 
-export default {
-  name: 'EvaluationTable',
-  components: {
-    AddCourseSection,
-    ConfirmDialog,
-    EvaluationActions,
-    EvaluationError,
-    PersonLookup,
-    SortableTableHeader
-  },
-  props: {
-    readonly: {
-      type: Boolean,
-      required: false
-    }
-  },
-  data: () => ({
-    departmentForms: [],
-    editRowId: null,
-    evaluationTypes: [],
-    filterTypes: {
-      unmarked: {label: 'None', enabled: true},
-      review: {label: 'To-Do', enabled: true},
-      confirmed: {label: 'Done', enabled: true},
-      ignore: {label: 'Ignore', enabled: false}
-    },
-    focusedEditButtonEvaluationId: null,
-    evaluationHeaders: [
-      {class: 'text-center text-nowrap', text: 'Status', value: 'status', width: '115px'},
-      {class: 'text-start text-nowrap', text: 'Last Updated', value: 'lastUpdated', width: '5%'},
-      {class: 'text-start text-nowrap', text: 'Course Number', value: 'sortableCourseNumber', width: '5%'},
-      {class: 'text-start course-name', text: 'Course Name', value: 'sortableCourseName', width: '20%'},
-      {class: 'text-start text-nowrap', text: 'Instructor', value: 'sortableInstructor', width: '20%'},
-      {class: 'text-start', text: 'Department Form', value: 'departmentForm.name', width: '20%'},
-      {class: 'text-start', text: 'Evaluation Type', value: 'evaluationType.name', width: '20%'},
-      {class: 'text-start text-nowrap', text: 'Evaluation Period', value: 'startDate', width: '10%'}
-    ],
-    isConfirmingCancelEdit: false,
-    isConfirmingNonSisInstructor: false,
-    markAsDoneWarning: undefined,
-    mdiAlertCircle,
-    mdiCheckCircle,
-    mdiMagnify,
-    mdiPlusCircle,
-    pendingEditRowId: null,
-    pendingInstructor: null,
-    rules: {
-      instructorUid: null
-    },
-    saving: false,
-    searchFilter: '',
-    searchFilterResults: [],
-    selectedDepartmentForm: null,
-    selectedEvaluationStatus: null,
-    selectedEvaluationType: null,
-    selectedStartDate: null,
-    sortBy: null,
-    sortDesc: false,
-    theme: useTheme()
-  }),
-  computed: {
-    allEvaluationsSelected() {
-      return !!(size(useDepartmentStore().selectedEvaluationIds) && size(useDepartmentStore().selectedEvaluationIds) === size(useDepartmentStore().evaluations))
-    },
-    allowEdits() {
-      const currentUser = useContextStore().currentUser
-      return currentUser.isAdmin || !useContextStore().isSelectedTermLocked
-    },
-    rowValid() {
-      const evaluation = find(useDepartmentStore().evaluations, ['id', this.editRowId])
-      return this.selectedStartDate >= this.minStartDate(evaluation) && this.selectedStartDate <= evaluation.maxStartDate
-    },
-    selectedFilterTypes: {
-      get: function() {
-        return keys(pickBy(this.filterTypes, 'enabled'))
-      },
-      set: function(types) {
-        alertScreenReader(`Showing ${types.length ? `evaluations marked ${oxfordJoin(types)}` : 'no evaluations'}`)
-        each(keys(this.filterTypes), type => {
-          this.filterTypes[type].enabled = types.includes(type)
-        })
-      }
-    },
-    someEvaluationsSelected() {
-      return !!(size(useDepartmentStore().selectedEvaluationIds) && size(useDepartmentStore().selectedEvaluationIds) < size(useDepartmentStore().evaluations))
-    }
-  },
-  created() {
-    if (this.readonly) {
-      this.evaluationHeaders = [{class: 'text-start text-nowrap pl-3', text: 'Department', value: 'department.id'}].concat(this.evaluationHeaders)
-    } else if (this.allowEdits) {
-      this.evaluationHeaders = [{class: 'text-start text-nowrap pl-1', text: 'Select', value: 'isSelected', width: '30px'}].concat(this.evaluationHeaders)
-    }
+const contextStore = useContextStore()
+const departmentStore = useDepartmentStore()
+const {disableControls, dismissErrorDialog, errorDialog, errorDialogText, evaluations, selectedEvaluationIds} = storeToRefs(useDepartmentStore())
+const theme = useTheme()
 
-    this.departmentForms = [{id: null, name: 'Revert'}].concat(useDepartmentStore().activeDepartmentForms)
-    this.evaluationTypes = [{id: null, name: 'Revert'}].concat(useContextStore().config.evaluationTypes)
+const props = defineProps({
+  readonly: {
+    type: Boolean,
+    required: false
+  }
+})
 
-    this.rules.instructorUid = () => {
-      return get(this.pendingInstructor, 'uid') ? true : 'Instructor is required.'}
+const departmentForms = ref([])
+const editRowId = ref(undefined)
+const evaluationTypes = ref([])
+const filterTypes = {
+  unmarked: {label: 'None', enabled: true},
+  review: {label: 'To-Do', enabled: true},
+  confirmed: {label: 'Done', enabled: true},
+  ignore: {label: 'Ignore', enabled: false}
+}
+const focusedEditButtonEvaluationId = ref(undefined)
+let evaluationHeaders = [
+  {class: 'text-center text-nowrap', text: 'Status', value: 'status', width: '115px'},
+  {class: 'text-start text-nowrap', text: 'Last Updated', value: 'lastUpdated', width: '5%'},
+  {class: 'text-start text-nowrap', text: 'Course Number', value: 'sortableCourseNumber', width: '5%'},
+  {class: 'text-start course-name', text: 'Course Name', value: 'sortableCourseName', width: '20%'},
+  {class: 'text-start text-nowrap', text: 'Instructor', value: 'sortableInstructor', width: '20%'},
+  {class: 'text-start', text: 'Department Form', value: 'departmentForm.name', width: '20%'},
+  {class: 'text-start', text: 'Evaluation Type', value: 'evaluationType.name', width: '20%'},
+  {class: 'text-start text-nowrap', text: 'Evaluation Period', value: 'startDate', width: '10%'}
+]
+const isConfirmingCancelEdit = ref(false)
+const isConfirmingNonSisInstructor = ref(false)
+const markAsDoneWarning = ref(undefined)
+const pendingEditRowId = ref(undefined)
+const pendingInstructor = ref(undefined)
+const rules = {
+  instructorUid: undefined
+}
+const saving = ref(false)
+const searchFilter = ref('')
+const searchFilterResults = ref([])
+const selectedDepartmentForm = ref(undefined)
+const selectedEvaluationStatus = ref(undefined)
+const selectedEvaluationType = ref(undefined)
+const selectedStartDate = ref(undefined)
+const sortBy = ref(undefined)
+const sortDesc = ref(false)
+
+const selectedFilterTypes = defineModel({
+  get() {
+    return keys(pickBy(filterTypes, 'enabled'))
   },
-  methods: {
-    afterEditEvaluation(evaluation) {
-      if (this.pendingInstructor && this.pendingInstructor.isSisInstructor === false) {
-        addInstructor(this.pendingInstructor)
-      }
-      this.editRowId = null
-      this.pendingEditRowId = null
-      this.pendingInstructor = null
-      this.saving = false
-      this.selectedDepartmentForm = null
-      this.selectedEvaluationStatus = null
-      this.selectedEvaluationType = null
-      this.selectedStartDate = null
-      this.focusedEditButtonEvaluationId = evaluation.id
-      putFocusNextTick(`edit-evaluation-${this.focusedEditButtonEvaluationId}-btn`)
-    },
-    afterSelectDepartmentForm(selected) {
-      alertScreenReader(`${selected.name} department form selected.`)
-      putFocusNextTick('input-department-form')
-    },
-    customFilter(value, search, item) {
-      if (!search) {
-        return true
-      }
-      if (!value || typeof value === 'boolean') {
-        return false
-      }
-      if (value === item.sortableInstructor) {
-        value = item.searchableInstructor
-      }
-      if (value === item.lastUpdated) {
-        value = toLocaleFromISO(item.lastUpdated, 'LL/dd/yyyy')
-      }
-      if (value === item.sortableCourseName) {
-        value = item.searchableCourseName
-      }
-      if (value === item.sortableCourseNumber) {
-        value = item.courseNumber
-        if (item.crossListedWith) {
-          value += (' ' + item.crossListedWith.join(', '))
-        }
-        if (item.roomSharedWith) {
-          value += (' ' + item.roomSharedWith.join(', '))
-        }
-      }
-      if (value === item.startDate) {
-        value = [
-          toLocaleFromISO(item.startDate, 'LL/dd/yyyy'),
-          '-',
-          toLocaleFromISO(item.endDate, 'LL/dd/yyyy'),
-          (item.modular ? '2' : '3'),
-          'weeks'
-        ].join(' ')
-      }
-      return value.toString().toLocaleLowerCase().indexOf(search.toLocaleLowerCase()) !== -1
-    },
-    displayStatus(evaluation) {
-      if (evaluation.status === 'review') {
-        return 'To Do'
-      } else if (evaluation.status === 'confirmed') {
-        return 'Done'
-      } else {
-        return evaluation.status
-      }
-    },
-    evaluationClass(evaluation, hover) {
-      return {
-        'evaluation-row-confirmed': evaluation.id !== this.editRowId && evaluation.status === 'confirmed',
-        'evaluation-row-ignore muted--text': !hover && evaluation.id !== this.editRowId && evaluation.status === 'ignore',
-        'secondary white--text border-bottom-none': evaluation.id === this.editRowId,
-        'evaluation-row-review': evaluation.id !== this.editRowId && evaluation.status === 'review',
-        'evaluation-row-xlisting': evaluation.id !== this.editRowId && !evaluation.status && (evaluation.crossListedWith || evaluation.roomSharedWith),
-        'primary-contrast primary--text': (hover || evaluation.id === this.focusedEditButtonEvaluationId) && !this.isEditing(evaluation)
-      }
-    },
-    evaluationPillClass(evaluation, hover) {
-      return {
-        'pill-confirmed': evaluation.status === 'confirmed',
-        'pill-ignore': evaluation.status === 'ignore',
-        'pill-review': evaluation.status === 'review',
-        'sr-only': hover && this.allowEdits && !this.readonly
-      }
-    },
-    toFormatFromJsDate,
-    toLocaleFromISO,
-    get,
-    instructorConfirmationText(instructor) {
-      return `
-        ${instructor.firstName} ${instructor.lastName} (${instructor.uid})
-        is not currently listed in SIS data as an instructor for any courses.`
-    },
-    isEditing(evaluation) {
-      return this.editRowId === evaluation.id
-    },
-    isEmpty,
-    isStatusVisible(evaluation) {
-      return !this.isEditing(evaluation)
-        && evaluation.status
-        && evaluation.id !== this.focusedEditButtonEvaluationId
-    },
-    keys,
-    minStartDate(evaluation) {
-      return new Date(get(evaluation, 'meetingDates.start'))
-    },
-    onCancelConfirm() {
-      this.isConfirmingCancelEdit = false
-      this.focusedEditButtonEvaluationId = clone(this.pendingEditRowId)
-      this.pendingEditRowId = null
-      putFocusNextTick(`edit-evaluation-${this.focusedEditButtonEvaluationId}-btn`)
-    },
-    onCancelEdit(evaluation) {
-      alertScreenReader('Edit canceled.')
-      this.afterEditEvaluation(evaluation)
-    },
-    onCancelNonSisInstructor() {
-      this.isConfirmingNonSisInstructor = false
-      this.pendingInstructor = null
-    },
-    onChangeSearchFilter(searchFilterResults) {
-      this.searchFilterResults = searchFilterResults
-      if (size(useDepartmentStore().selectedEvaluationIds)) {
-        useDepartmentStore().filterSelectedEvaluations({
-          searchFilterResults: this.searchFilterResults,
-          enabledStatuses: this.selectedFilterTypes
-        })
-      }
-      if (!some(this.searchFilterResults, {'id': this.editRowId})) {
-        this.editRowId = null
-      }
-    },
-    onConfirm() {
-      this.isConfirmingCancelEdit = false
-      this.editRowId = null
-      const evaluation = find(useDepartmentStore().evaluations, ['id', this.pendingEditRowId])
-      this.onEditEvaluation(evaluation)
-    },
-    onConfirmNonSisInstructor() {
-      this.isConfirmingNonSisInstructor = false
-    },
-    onEditEvaluation(evaluation) {
-      if (this.editRowId) {
-        const editingEvaluation = find(useDepartmentStore().evaluations, ['id', this.editRowId])
-        this.isConfirmingCancelEdit = editingEvaluation && (
-          get(this.pendingInstructor, 'uid') !== get(editingEvaluation, 'instructor.uid')
-          || this.selectedDepartmentForm !== get(editingEvaluation, 'departmentForm.id')
-          || this.selectedEvaluationStatus !== get(editingEvaluation, 'status')
-          || this.selectedEvaluationType !== get(editingEvaluation, 'evaluationType.id')
-          || this.selectedStartDate !== editingEvaluation.startDate
-        )
-      }
-      if (this.isConfirmingCancelEdit) {
-        this.pendingEditRowId = evaluation.id
-      } else {
-        this.editRowId = evaluation.id
-        this.pendingInstructor = evaluation.instructor
-        this.selectedDepartmentForm = get(evaluation, 'departmentForm.id')
-        this.selectedEvaluationStatus = get(evaluation, 'status')
-        this.selectedEvaluationType = get(evaluation, 'evaluationType.id')
-        this.selectedStartDate = evaluation.startDate
-        putFocusNextTick(`${this.readonly ? '' : 'select-evaluation-status'}`)
-      }
-    },
-    onProceedMarkAsDone() {
-      const evaluation = this.markAsDoneWarning.evaluation
-      const fields = this.markAsDoneWarning.fields
-      this.markAsDoneWarning = undefined
-      this.updateEvaluation(evaluation, fields)
-    },
-    onSort() {
-      const selectedEvaluationIds = cloneDeep(useDepartmentStore().selectedEvaluationIds)
-      nextTick(() => {
-        useDepartmentStore().setSelectedEvaluations(selectedEvaluationIds)
-      })
-    },
-    pluralize,
-    size,
-    validateAndSave(evaluation) {
-      this.markAsDoneWarning = undefined
-      const departmentFormId = this.selectedDepartmentForm || get(evaluation, 'defaultDepartmentForm.id') || null
-      const status = this.selectedEvaluationStatus === 'none' ? null : this.selectedEvaluationStatus
-      const startDate = this.selectedStartDate ? toFormatFromISO(this.selectedStartDate, 'y-LL-dd') : null
-      const fields = {
-        departmentFormId,
-        evaluationTypeId: this.selectedEvaluationType,
-        instructorUid: get(this.pendingInstructor, 'uid'),
-        startDate,
-        status
-      }
-      let warning
-      if (status === 'confirmed') {
-        // If evaluation start-date is in the past then put up a warning dialog.
-        const proposedUpdate = {...evaluation, ...fields}
-        warning = validateMarkAsDone([proposedUpdate])
-      }
-      if (warning) {
-        this.markAsDoneWarning = {evaluation, fields, message: warning}
-      } else {
-        this.updateEvaluation(evaluation, fields)
-      }
-    },
-    selectInstructor(instructor) {
-      if (instructor) {
-        instructor.emailAddress = instructor.email
-        if (!instructor.isSisInstructor) {
-          this.isConfirmingNonSisInstructor = true
-        }
-      }
-      this.pendingInstructor = instructor
-    },
-    sort(sortBy, sortDesc) {
-      this.sortBy = sortBy
-      this.sortDesc = sortDesc
-    },
-    statusFilterEnabled(evaluation) {
-      const status = evaluation.status || 'unmarked'
-      return this.filterTypes[status].enabled
-    },
-    toggleFilter(type) {
-      const filter = this.filterTypes[type]
-      filter.enabled = !filter.enabled
-      this.filterSelectedEvaluations({
-        searchFilterResults: this.searchFilterResults,
-        enabledStatuses: this.selectedFilterTypes
-      })
-      if (some(useDepartmentStore().evaluations, {'id': this.editRowId, 'status': type})) {
-        this.editRowId = null
-      }
-      alertScreenReader(`Filter ${filter.label} ${filter.enabled ? 'enabled' : 'disabled'}.`)
-    },
-    toggleSelectAll() {
-      if (this.allEvaluationsSelected || this.someEvaluationsSelected) {
+  set(types) {
+    alertScreenReader(`Showing ${types.length ? `evaluations marked ${oxfordJoin(types)}` : 'no evaluations'}`)
+    each(keys(filterTypes), type => {
+      filterTypes[type].enabled = types.includes(type)
+    })
+  },
+  type: Array
+})
+
+const allEvaluationsSelected = computed(() => {
+  return !!(size(useDepartmentStore().selectedEvaluationIds) && size(useDepartmentStore().selectedEvaluationIds) === size(useDepartmentStore().evaluations))
+})
+const allowEdits = computed(() => {
+  const currentUser = useContextStore().currentUser
+  return currentUser.isAdmin || !useContextStore().isSelectedTermLocked
+})
+const rowValid = computed(() => {
+  const evaluation = find(useDepartmentStore().evaluations, ['id', editRowId.value])
+  return selectedStartDate.value >= minStartDate(evaluation) && selectedStartDate.value <= evaluation.maxStartDate
+})
+const someEvaluationsSelected = computed(() => {
+  return !!(size(useDepartmentStore().selectedEvaluationIds) && size(useDepartmentStore().selectedEvaluationIds) < size(useDepartmentStore().evaluations))
+})
+
+onMounted(() => {
+  if (props.readonly) {
+    evaluationHeaders = [{class: 'text-start text-nowrap pl-3', text: 'Department', value: 'department.id'}].concat(evaluationHeaders)
+  } else if (allowEdits.value) {
+    evaluationHeaders = [{class: 'text-start text-nowrap pl-1', text: 'Select', value: 'isSelected', width: '30px'}].concat(evaluationHeaders)
+  }
+
+  departmentForms.value = [{id: null, name: 'Revert'}].concat(useDepartmentStore().activeDepartmentForms)
+  evaluationTypes.value = [{id: null, name: 'Revert'}].concat(useContextStore().config.evaluationTypes)
+
+  rules.instructorUid = () => {
+    return get(pendingInstructor.value, 'uid') ? true : 'Instructor is required.'}
+})
+
+const afterEditEvaluation = evaluation => {
+  if (pendingInstructor.value && pendingInstructor.value.isSisInstructor === false) {
+    addInstructor(pendingInstructor.value)
+  }
+  editRowId.value = null
+  pendingEditRowId.value = null
+  pendingInstructor.value = null
+  saving.value = false
+  selectedDepartmentForm.value = null
+  selectedEvaluationStatus.value = null
+  selectedEvaluationType.value = null
+  selectedStartDate.value = null
+  focusedEditButtonEvaluationId.value = evaluation.id
+  putFocusNextTick(`edit-evaluation-${focusedEditButtonEvaluationId.value}-btn`)
+}
+
+const customFilter = (value, search, item) => {
+  if (!search) {
+    return true
+  }
+  if (!value || typeof value === 'boolean') {
+    return false
+  }
+  if (value === item.sortableInstructor) {
+    value = item.searchableInstructor
+  }
+  if (value === item.lastUpdated) {
+    value = toLocaleFromISO(item.lastUpdated, 'LL/dd/yyyy')
+  }
+  if (value === item.sortableCourseName) {
+    value = item.searchableCourseName
+  }
+  if (value === item.sortableCourseNumber) {
+    value = item.courseNumber
+    if (item.crossListedWith) {
+      value += (' ' + item.crossListedWith.join(', '))
+    }
+    if (item.roomSharedWith) {
+      value += (' ' + item.roomSharedWith.join(', '))
+    }
+  }
+  if (value === item.startDate) {
+    value = [
+      toLocaleFromISO(item.startDate, 'LL/dd/yyyy'),
+      '-',
+      toLocaleFromISO(item.endDate, 'LL/dd/yyyy'),
+      (item.modular ? '2' : '3'),
+      'weeks'
+    ].join(' ')
+  }
+  return value.toString().toLocaleLowerCase().indexOf(search.toLocaleLowerCase()) !== -1
+}
+
+const displayStatus = evaluation => {
+  if (evaluation.status === 'review') {
+    return 'To Do'
+  } else if (evaluation.status === 'confirmed') {
+    return 'Done'
+  } else {
+    return evaluation.status
+  }
+}
+
+const evaluationClass = (evaluation, isHovering) => {
+  return {
+    'evaluation-row-confirmed': evaluation.id !== editRowId.value && evaluation.status === 'confirmed',
+    'evaluation-row-ignore muted--text': !isHovering && evaluation.id !== editRowId.value && evaluation.status === 'ignore',
+    'secondary white--text border-bottom-none': evaluation.id === editRowId.value,
+    'evaluation-row-review': evaluation.id !== editRowId.value && evaluation.status === 'review',
+    'evaluation-row-xlisting': evaluation.id !== editRowId.value && !evaluation.status && (evaluation.crossListedWith || evaluation.roomSharedWith),
+    'primary-contrast primary--text': (isHovering || evaluation.id === focusedEditButtonEvaluationId.value) && !isEditing(evaluation)
+  }
+}
+
+const evaluationPillClass = (evaluation, isHovering) => {
+  return {
+    'pill-confirmed': evaluation.status === 'confirmed',
+    'pill-ignore': evaluation.status === 'ignore',
+    'pill-review': evaluation.status === 'review',
+    'sr-only': isHovering && allowEdits.value && !props.readonly
+  }
+}
+
+const filterTypeCounts = type => {
+  if (type === 'unmarked') {
+    return useDepartmentStore().evaluations.filter(e => e.status === null).length
+  }
+  return useDepartmentStore().evaluations.filter(e => e.status === type).length
+}
+
+const instructorConfirmationText = instructor => {
+  return `
+    ${instructor.firstName} ${instructor.lastName} (${instructor.uid})
+    is not currently listed in SIS data as an instructor for any courses.`
+}
+
+const isEditing = evaluation => {
+  return editRowId.value === evaluation.id
+}
+
+const isStatusVisible = evaluation => {
+  return !isEditing(evaluation)
+    && evaluation.status
+    && evaluation.id !== focusedEditButtonEvaluationId.value
+}
+
+const minStartDate = evaluation => {
+  return new Date(get(evaluation, 'meetingDates.start'))
+}
+
+const onCancelConfirm = () => {
+  isConfirmingCancelEdit.value = false
+  focusedEditButtonEvaluationId.value = clone(pendingEditRowId.value)
+  pendingEditRowId.value = null
+  putFocusNextTick(`edit-evaluation-${focusedEditButtonEvaluationId.value}-btn`)
+}
+
+const onCancelEdit = evaluation => {
+  alertScreenReader('Edit canceled.')
+  afterEditEvaluation(evaluation)
+}
+
+const onCancelNonSisInstructor = () => {
+  isConfirmingNonSisInstructor.value = false
+  pendingInstructor.value = null
+}
+
+const onChangeSearchFilter = searchFilterResults => {
+  searchFilterResults.value = searchFilterResults
+  if (size(useDepartmentStore().selectedEvaluationIds)) {
+    useDepartmentStore().filterSelectedEvaluations({
+      searchFilterResults: searchFilterResults.value,
+      enabledStatuses: selectedFilterTypes.value
+    })
+  }
+  if (!some(searchFilterResults.value, {'id': editRowId.value})) {
+    editRowId.value = null
+  }
+}
+
+const onConfirm = () => {
+  isConfirmingCancelEdit.value = false
+  editRowId.value = null
+  const evaluation = find(useDepartmentStore().evaluations, ['id', pendingEditRowId.value])
+  onEditEvaluation(evaluation)
+}
+
+const onConfirmNonSisInstructor = () => {
+  isConfirmingNonSisInstructor.value = false
+}
+
+const onEditEvaluation = evaluation => {
+  if (editRowId.value) {
+    const editingEvaluation = find(useDepartmentStore().evaluations, ['id', editRowId.value])
+    isConfirmingCancelEdit.value = editingEvaluation && (
+      get(pendingInstructor.value, 'uid') !== get(editingEvaluation, 'instructor.uid')
+      || selectedDepartmentForm.value !== get(editingEvaluation, 'departmentForm.id')
+      || selectedEvaluationStatus.value !== get(editingEvaluation, 'status')
+      || selectedEvaluationType.value !== get(editingEvaluation, 'evaluationType.id')
+      || selectedStartDate.value !== editingEvaluation.startDate
+    )
+  }
+  if (isConfirmingCancelEdit.value) {
+    pendingEditRowId.value = evaluation.id
+  } else {
+    editRowId.value = evaluation.id
+    pendingInstructor.value = evaluation.instructor
+    selectedDepartmentForm.value = get(evaluation, 'departmentForm.id')
+    selectedEvaluationStatus.value = get(evaluation, 'status')
+    selectedEvaluationType.value = get(evaluation, 'evaluationType.id')
+    selectedStartDate.value = evaluation.startDate
+    putFocusNextTick(`${props.readonly ? '' : 'select-evaluation-status'}`)
+  }
+}
+
+const onProceedMarkAsDone = () => {
+  const evaluation = markAsDoneWarning.value.evaluation
+  const fields = markAsDoneWarning.value.fields
+  markAsDoneWarning.value = undefined
+  updateEvaluation(evaluation, fields)
+}
+
+const onSort = () => {
+  const selectedEvaluationIds = cloneDeep(useDepartmentStore().selectedEvaluationIds)
+  nextTick(() => {
+    useDepartmentStore().setSelectedEvaluations(selectedEvaluationIds)
+  })
+}
+
+const selectInstructor = instructor => {
+  if (instructor) {
+    instructor.emailAddress = instructor.email
+    if (!instructor.isSisInstructor) {
+      isConfirmingNonSisInstructor.value = true
+    }
+  }
+  pendingInstructor.value = instructor
+}
+
+const sort = (sortBy, sortDesc) => {
+  sortBy.value = sortBy
+  sortDesc.value = sortDesc
+}
+
+const statusFilterEnabled = evaluation => {
+  const status = evaluation.status || 'unmarked'
+  return filterTypes[status].enabled
+}
+
+const toggleSelectAll = () => {
+  if (allEvaluationsSelected.value || someEvaluationsSelected.value) {
+    useDepartmentStore().deselectAllEvaluations()
+    alertScreenReader('All evaluations unselected')
+  } else {
+    alertScreenReader('All evaluations selected')
+    useDepartmentStore().selectAllEvaluations({
+      searchFilterResults: searchFilterResults.value,
+      enabledStatuses: selectedFilterTypes.value
+    })
+  }
+}
+
+const updateEvaluation = (evaluation, fields) => {
+  saving.value = true
+  alertScreenReader('Saving evaluation row.')
+  return new Promise(resolve => {
+    if (fields.status === 'confirmed' &&
+      !(fields.departmentFormId && fields.evaluationTypeId && fields.instructorUid)) {
+      useDepartmentStore().showErrorDialog('Cannot confirm an evaluation with missing fields.')
+      saving.value = false
+      resolve()
+    } else {
+      useDepartmentStore().editEvaluation({
+        evaluationId: evaluation.id,
+        sectionId: evaluation.courseNumber,
+        termId: useContextStore().selectedTermId,
+        fields
+      }).then(() => {
+        alertScreenReader('Changes saved.')
+        saving.value = false
+        afterEditEvaluation(evaluation)
         useDepartmentStore().deselectAllEvaluations()
-        alertScreenReader('All evaluations unselected')
-      } else {
-        alertScreenReader('All evaluations selected')
-        useDepartmentStore().selectAllEvaluations({
-          searchFilterResults: this.searchFilterResults,
-          enabledStatuses: this.selectedFilterTypes
-        })
-      }
-    },
-    updateEvaluation(evaluation, fields) {
-      this.saving = true
-      alertScreenReader('Saving evaluation row.')
-      return new Promise(resolve => {
-        if (fields.status === 'confirmed' &&
-          !(fields.departmentFormId && fields.evaluationTypeId && fields.instructorUid)) {
-          useDepartmentStore().showErrorDialog('Cannot confirm an evaluation with missing fields.')
-          this.saving = false
-          resolve()
-        } else {
-          useDepartmentStore().editEvaluation({
-            evaluationId: evaluation.id,
-            sectionId: evaluation.courseNumber,
-            termId: useContextStore().selectedTermId,
-            fields
-          }).then(() => {
-            alertScreenReader('Changes saved.')
-            this.saving = false
-            this.afterEditEvaluation(evaluation)
-            useDepartmentStore().deselectAllEvaluations()
-            resolve()
-          }).catch(error => {
-            useDepartmentStore().showErrorDialog(get(error, 'response.data.message', 'An unknown error occurred.'))
-            this.saving = false
-            resolve()
-          })
-        }
+        resolve()
+      }).catch(error => {
+        useDepartmentStore().showErrorDialog(get(error, 'response.data.message', 'An unknown error occurred.'))
+        saving.value = false
+        resolve()
       })
-    },
-    filterTypeCounts(type) {
-      if (type === 'unmarked') {
-        return useDepartmentStore().evaluations.filter(e => e.status === null).length
-      }
-      return useDepartmentStore().evaluations.filter(e => e.status === type).length
     }
+  })
+}
+
+const validateAndSave = evaluation => {
+  markAsDoneWarning.value = null
+  const departmentFormId = selectedDepartmentForm.value || get(evaluation, 'defaultDepartmentForm.id') || null
+  const status = selectedEvaluationStatus.value === 'none' ? null : selectedEvaluationStatus.value
+  const startDate = selectedStartDate.value ? toFormatFromISO(selectedStartDate.value, 'y-LL-dd') : null
+  const fields = {
+    departmentFormId,
+    evaluationTypeId: selectedEvaluationType.value,
+    instructorUid: get(pendingInstructor.value, 'uid'),
+    startDate,
+    status
+  }
+  let warning
+  if (status === 'confirmed') {
+    // If evaluation start-date is in the past then put up a warning dialog.
+    const proposedUpdate = {...evaluation, ...fields}
+    warning = validateMarkAsDone([proposedUpdate])
+  }
+  if (warning) {
+    markAsDoneWarning.value = {evaluation, fields, message: warning}
+  } else {
+    updateEvaluation(evaluation, fields)
   }
 }
 </script>

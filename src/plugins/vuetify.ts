@@ -18,6 +18,7 @@ import {VDialog} from 'vuetify/components/VDialog'
 import {VDivider} from 'vuetify/components/VDivider'
 import {VExpansionPanel, VExpansionPanels} from 'vuetify/components/VExpansionPanel'
 import {VFooter} from 'vuetify/components/VFooter'
+import {VHover} from 'vuetify/components'
 import {VIcon} from 'vuetify/components/VIcon'
 import {VImg} from 'vuetify/components/VImg'
 import {VList, VListItem, VListItemAction, VListItemTitle} from 'vuetify/components/VList'
@@ -28,6 +29,7 @@ import {VOverlay} from 'vuetify/components/VOverlay'
 import {VProgressCircular} from 'vuetify/components/VProgressCircular'
 import {VRadio} from 'vuetify/components/VRadio'
 import {VRadioGroup} from 'vuetify/components/VRadioGroup'
+import {VTable} from 'vuetify/components/VTable'
 import {VTextarea} from 'vuetify/components/VTextarea'
 import {VTextField} from 'vuetify/components/VTextField'
 import {VSlideXReverseTransition, VSnackbar, VSwitch, VToolbar} from 'vuetify/components'
@@ -56,6 +58,7 @@ export default createVuetify({
     VExpansionPanel,
     VExpansionPanels,
     VFooter,
+    VHover,
     VIcon,
     VImg,
     VList,
@@ -74,6 +77,7 @@ export default createVuetify({
     VSnackbar,
     VSpacer,
     VSwitch,
+    VTable,
     VTextarea,
     VTextField,
     VToolbar

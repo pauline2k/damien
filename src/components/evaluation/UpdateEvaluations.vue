@@ -5,7 +5,6 @@
     class="overflow-y-visible"
     width="800"
     v-bind="$attrs"
-    v-on="$listeners"
     @click:outside="onClickCancel"
     @keydown.esc="onClickCancel"
   >
@@ -101,7 +100,7 @@
           </v-row>
         </v-container>
         <div v-if="size(selectedEvaluations)" class="bulk-action-preview pt-2">
-          <v-simple-table dense class="bulk-action-preview-table">
+          <v-table dense class="bulk-action-preview-table">
             <caption class="bulk-action-preview-caption text-left"><div class="px-6 pb-3">Preview Your Changes</div></caption>
             <thead>
               <tr>
@@ -204,7 +203,7 @@
                 </tr>
               </template>
             </tbody>
-          </v-simple-table>
+          </v-table>
         </div>
       </v-card-text>
       <v-divider />
@@ -252,235 +251,226 @@
 </template>
 
 <script setup>
-import {EVALUATION_STATUSES, useDepartmentStore} from '@/stores/department/department-edit-session'
-import {storeToRefs} from 'pinia'
-
-const {disableControls} = storeToRefs(useDepartmentStore())
-</script>
-
-<script>
 import ConfirmDialog from '@/components/util/ConfirmDialog'
 import PersonLookup from '@/components/admin/PersonLookup'
+import {EVALUATION_STATUSES, useDepartmentStore} from '@/stores/department/department-edit-session'
 import {addInstructor} from '@/api/instructor'
+import {computed, onMounted, ref, watch} from 'vue'
 import {endsWith, find, get, isEmpty, isObject, map, max, min, reduce, size, toInteger} from 'lodash'
+import {storeToRefs} from 'pinia'
 import {toLocaleFromISO, toFormatFromISO} from '@/lib/utils'
 import {useContextStore} from '@/stores/context'
 import {useTheme} from 'vuetify'
 
-export default {
-  name: 'UpdateEvaluations',
-  components: {
-    ConfirmDialog,
-    PersonLookup
+const props = defineProps({
+  action: {
+    required: true,
+    type: String
   },
-  props: {
-    action: {
-      required: true,
-      type: String
-    },
-    applyAction: {
-      required: true,
-      type: Function
-    },
-    cancelAction: {
-      required: true,
-      type: Function
-    },
-    departmentForm: {
-      default: undefined,
-      required: false,
-      type: Number
-    },
-    evaluationStatus: {
-      default: undefined,
-      required: false,
-      type: String
-    },
-    evaluationType: {
-      default: undefined,
-      required: false,
-      type: Number
-    },
-    instructor: {
-      default: undefined,
-      required: false,
-      type: Object
-    },
-    isApplying: {
-      required: true,
-      type: Boolean
-    },
-    isUpdating: {
-      required: true,
-      type: Boolean
-    },
-    midtermFormAvailable: {
-      required: false,
-      type: Boolean
-    },
-    startDate: {
-      default: undefined,
-      required: false,
-      type: Date
+  applyAction: {
+    required: true,
+    type: Function
+  },
+  cancelAction: {
+    required: true,
+    type: Function
+  },
+  departmentForm: {
+    default: undefined,
+    required: false,
+    type: Number
+  },
+  evaluationStatus: {
+    default: undefined,
+    required: false,
+    type: String
+  },
+  evaluationType: {
+    default: undefined,
+    required: false,
+    type: Number
+  },
+  instructor: {
+    default: undefined,
+    required: false,
+    type: Object
+  },
+  isApplying: {
+    required: true,
+    type: Boolean
+  },
+  isUpdating: {
+    required: true,
+    type: Boolean
+  },
+  midtermFormAvailable: {
+    required: false,
+    type: Boolean
+  },
+  startDate: {
+    default: undefined,
+    required: false,
+    type: Date
+  }
+})
+
+const {disableControls} = storeToRefs(useDepartmentStore())
+const evaluationTypes = ref([])
+const isConfirmingNonSisInstructor = ref(false)
+const isInstructorRequired = ref(false)
+const midtermFormEnabled = ref(false)
+const model = ref(undefined)
+const previewHeaders = {
+  'Status': 'bulk-action-status-col',
+  'Course Number': 'bulk-action-courseNumber-col',
+  'Course Name': 'bulk-action-courseName-col',
+  'Instructor': 'bulk-action-instructor-col',
+  'Department Form': 'bulk-action-departmentForm-col',
+  'Evaluation Type': 'bulk-action-evaluationType-col',
+  'Start Date': 'bulk-action-startDate-col'
+}
+const selectedDepartmentForm = ref(undefined)
+const selectedEvaluations = ref([])
+const selectedEvaluationStatus = ref(undefined)
+const selectedEvaluationType = ref(undefined)
+const selectedInstructor = ref(undefined)
+const selectedStartDate = ref(undefined)
+const theme = useTheme()
+
+const allowEdits = computed(() => {
+  const currentUser = useContextStore().currentUser
+  return currentUser.isAdmin || !useContextStore().isSelectedTermLocked
+})
+const disableApply = computed(() => {
+  return disableControls.value ||
+    !allowEdits.value ||
+    (isInstructorRequired.value && !get(selectedInstructor.value, 'uid'))
+})
+const selectedDepartmentFormName = computed(() => {
+  return get(find(useContextStore().config.departmentForms, df => df.id === selectedDepartmentForm.value), 'name')
+})
+const selectedEvaluationsDescription = computed(() => {
+  if (isEmpty(useDepartmentStore().selectedEvaluationIds)) {
+    return ''
+  }
+  return `${useDepartmentStore().selectedEvaluationIds.length} ${useDepartmentStore().selectedEvaluationIds.length === 1 ? 'row' : 'rows'}`
+})
+const selectedEvaluationTypeName = computed(() => {
+  return get(find(useContextStore().config.evaluationTypes, et => et.id === selectedEvaluationType.value), 'name')
+})
+const selectedStartDay = computed(() => {
+  return selectedStartDate.value ? toFormatFromISO(selectedStartDate.value, 'o') : null
+})
+const validStartDates = computed(() => {
+  // The intersection of the selected rows' allowed evaluation start dates
+  return {
+    'max': min(map(selectedEvaluations.value, e => e.maxStartDate)),
+    'min': max(map(selectedEvaluations.value, e => e.meetingDates.start))
+  }
+})
+
+onMounted(() => {
+  evaluationTypes.value = [{id: null, name: 'Default'}].concat(useContextStore().config.evaluationTypes)
+  model.value = props.isUpdating
+})
+
+watch(midtermFormEnabled, v => {
+  isInstructorRequired.value = !v
+})
+watch(props.isUpdating, v => {
+  model.value = v
+})
+watch(model, () => {
+  reset()
+})
+
+const getStatusText = status => {
+  return status === 'none' ? null : get(find(EVALUATION_STATUSES, es => es.value === status), 'text')
+}
+
+const instructorConfirmationText = instructor => {
+  return `
+    ${instructor.firstName} ${instructor.lastName} (${instructor.uid})
+    is not currently listed in SIS data as an instructor for any courses.`
+}
+
+const onCancelNonSisInstructor = () => {
+  isConfirmingNonSisInstructor.value = false
+  selectedInstructor.value = null
+}
+
+const onClickApply = () => {
+  props.applyAction({
+    departmentForm: selectedDepartmentForm.value,
+    evaluationStatus: selectedEvaluationStatus.value === 'none' ? null : selectedEvaluationStatus.value,
+    evaluationType: selectedEvaluationType.value,
+    instructor: selectedInstructor.value || props.instructor,
+    midtermFormEnabled: midtermFormEnabled.value,
+    startDate: selectedStartDate.value
+  })
+  if (selectedInstructor.value && selectedInstructor.value.isSisInstructor === false) {
+    addInstructor(selectedInstructor.value)
+  }
+}
+
+const onClickCancel = () => {
+  isInstructorRequired.value = false
+  midtermFormEnabled.value = false
+  selectedDepartmentForm.value = null
+  selectedEvaluationStatus.value = null
+  selectedEvaluationType.value = null
+  selectedInstructor.value = null
+  selectedStartDate.value = null
+  props.cancelAction()
+}
+
+const onConfirmNonSisInstructor = () => {
+  isConfirmingNonSisInstructor.value = false
+}
+
+const showSelectedDepartmentForm = evaluation => {
+  return selectedDepartmentForm.value && selectedDepartmentForm.value !== get(evaluation, 'departmentForm.id')
+}
+
+const showSelectedEvaluationType = evaluation => {
+  return selectedEvaluationType.value && selectedEvaluationType.value !== get(evaluation, 'evaluationType.id')
+}
+
+const showSelectedInstructor = evaluation => {
+  return get(selectedInstructor.value, 'uid') && selectedInstructor.value.uid !== get(evaluation, 'instructor.uid')
+}
+
+const showSelectedStartDate = evaluation => {
+  return selectedStartDate.value && selectedStartDay.value !== toFormatFromISO(evaluation.startDate, 'o')
+}
+
+const showSelectedStatus = evaluation => {
+  return selectedEvaluationStatus.value && selectedEvaluationStatus.value !== evaluation.status
+}
+
+const reset = () => {
+  selectedEvaluations.value = reduce(useDepartmentStore().evaluations, (evaluations, e) => {
+    if (e.isSelected) {
+      evaluations.push(e)
     }
-  },
-  data: () => ({
-    evaluationTypes: [],
-    isConfirmingNonSisInstructor: false,
-    isInstructorRequired: false,
-    midtermFormEnabled: false,
-    model: undefined,
-    previewHeaders: {
-      'Status': 'bulk-action-status-col',
-      'Course Number': 'bulk-action-courseNumber-col',
-      'Course Name': 'bulk-action-courseName-col',
-      'Instructor': 'bulk-action-instructor-col',
-      'Department Form': 'bulk-action-departmentForm-col',
-      'Evaluation Type': 'bulk-action-evaluationType-col',
-      'Start Date': 'bulk-action-startDate-col'
-    },
-    selectedDepartmentForm: undefined,
-    selectedEvaluations: [],
-    selectedEvaluationStatus: undefined,
-    selectedEvaluationType: undefined,
-    selectedInstructor: undefined,
-    selectedStartDate: undefined,
-    theme: useTheme()
-  }),
-  computed: {
-    allowEdits() {
-      const currentUser = useContextStore().currentUser
-      return currentUser.isAdmin || !useContextStore().isSelectedTermLocked
-    },
-    disableApply() {
-      return this.disableControls ||
-        !this.allowEdits ||
-        (this.isInstructorRequired && !get(this.selectedInstructor, 'uid'))
-    },
-    selectedDepartmentFormName() {
-      return get(find(useContextStore().config.departmentForms, df => df.id === this.selectedDepartmentForm), 'name')
-    },
-    selectedEvaluationsDescription() {
-      if (isEmpty(useDepartmentStore().selectedEvaluationIds)) {
-        return ''
-      }
-      return `${useDepartmentStore().selectedEvaluationIds.length} ${useDepartmentStore().selectedEvaluationIds.length === 1 ? 'row' : 'rows'}`
-    },
-    selectedEvaluationTypeName() {
-      return get(find(useContextStore().config.evaluationTypes, et => et.id === this.selectedEvaluationType), 'name')
-    },
-    selectedStartDay() {
-      return this.selectedStartDate ? toFormatFromISO(this.selectedStartDate, 'o') : null
-    },
-    validStartDates() {
-      // The intersection of the selected rows' allowed evaluation start dates
-      return {
-        'max': min(map(this.selectedEvaluations, e => e.maxStartDate)),
-        'min': max(map(this.selectedEvaluations, e => e.meetingDates.start))
-      }
+    return evaluations
+  }, [])
+  midtermFormEnabled.value = false
+  selectedDepartmentForm.value = props.departmentForm
+  selectedEvaluationStatus.value = props.evaluationStatus
+  selectedEvaluationType.value = props.evaluationType
+  selectedInstructor.value = props.instructor
+  selectedStartDate.value = props.startDate
+  isInstructorRequired.value = props.midtermFormAvailable
+}
+
+const selectInstructor = suggestion => {
+  selectedInstructor.value = suggestion
+  if (selectedInstructor.value) {
+    selectedInstructor.value.emailAddress = selectedInstructor.value.email
+    if (selectedInstructor.value.isSisInstructor === false) {
+      isConfirmingNonSisInstructor.value = true
     }
-  },
-  watch: {
-    midtermFormEnabled(midtermFormEnabled) {
-      if (this.midtermFormAvailable) {
-        this.isInstructorRequired = !midtermFormEnabled
-      }
-    },
-    isUpdating(isUpdating) {
-      this.model = isUpdating
-    },
-    model() {
-      this.reset()
-    }
-  },
-  created() {
-    this.evaluationTypes = [{id: null, name: 'Default'}].concat(useContextStore().config.evaluationTypes)
-    this.model = this.isUpdating
-  },
-  methods: {
-    endsWith,
-    get,
-    getStatusText(status) {
-      return status === 'none' ? null : get(find(EVALUATION_STATUSES, es => es.value === status), 'text')
-    },
-    instructorConfirmationText(instructor) {
-      return `
-        ${instructor.firstName} ${instructor.lastName} (${instructor.uid})
-        is not currently listed in SIS data as an instructor for any courses.`
-    },
-    isObject,
-    onCancelNonSisInstructor() {
-      this.isConfirmingNonSisInstructor = false
-      this.selectedInstructor = null
-    },
-    onClickApply() {
-      this.applyAction({
-        departmentForm: this.selectedDepartmentForm,
-        evaluationStatus: this.selectedEvaluationStatus === 'none' ? null : this.selectedEvaluationStatus,
-        evaluationType: this.selectedEvaluationType,
-        instructor: this.selectedInstructor || this.instructor,
-        midtermFormEnabled: this.midtermFormEnabled,
-        startDate: this.selectedStartDate
-      })
-      if (this.selectedInstructor && this.selectedInstructor.isSisInstructor === false) {
-        addInstructor(this.selectedInstructor)
-      }
-    },
-    onClickCancel() {
-      this.isInstructorRequired = false
-      this.midtermFormEnabled = false
-      this.selectedDepartmentForm = null
-      this.selectedEvaluationStatus = null
-      this.selectedEvaluationType = null
-      this.selectedInstructor = null
-      this.selectedStartDate = null
-      this.cancelAction()
-    },
-    onConfirmNonSisInstructor() {
-      this.isConfirmingNonSisInstructor = false
-    },
-    showSelectedDepartmentForm(evaluation) {
-      return this.selectedDepartmentForm && this.selectedDepartmentForm !== get(evaluation, 'departmentForm.id')
-    },
-    showSelectedEvaluationType(evaluation) {
-      return this.selectedEvaluationType && this.selectedEvaluationType !== get(evaluation, 'evaluationType.id')
-    },
-    showSelectedInstructor(evaluation) {
-      return get(this.selectedInstructor, 'uid') && this.selectedInstructor.uid !== get(evaluation, 'instructor.uid')
-    },
-    showSelectedStartDate(evaluation) {
-      return this.selectedStartDate && this.selectedStartDay !== toFormatFromISO(evaluation.startDate, 'o')
-    },
-    showSelectedStatus(evaluation) {
-      return this.selectedEvaluationStatus && this.selectedEvaluationStatus !== evaluation.status
-    },
-    reset() {
-      this.selectedEvaluations = reduce(useDepartmentStore().evaluations, (evaluations, e) => {
-        if (e.isSelected) {
-          evaluations.push(e)
-        }
-        return evaluations
-      }, [])
-      this.midtermFormEnabled = false
-      this.selectedDepartmentForm = this.departmentForm
-      this.selectedEvaluationStatus = this.evaluationStatus
-      this.selectedEvaluationType = this.evaluationType
-      this.selectedInstructor = this.instructor
-      this.selectedStartDate = this.startDate
-      this.isInstructorRequired = this.midtermFormAvailable
-    },
-    selectInstructor(suggestion) {
-      this.selectedInstructor = suggestion
-      if (this.selectedInstructor) {
-        this.selectedInstructor.emailAddress = this.selectedInstructor.email
-        if (this.selectedInstructor.isSisInstructor === false) {
-          this.isConfirmingNonSisInstructor = true
-        }
-      }
-    },
-    size,
-    toInteger,
-    toLocaleFromISO
   }
 }
 </script>
