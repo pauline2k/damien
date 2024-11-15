@@ -19,19 +19,16 @@
   </v-banner>
 </template>
 
-<script>
-import {useContextStore} from '@/stores/context'
+<script setup>
 import {mdiAlert} from '@mdi/js'
+import {onMounted, ref} from 'vue'
+import {useContextStore} from '@/stores/context'
+import {useRoute} from 'vue-router'
 
-export default {
-  name: 'Error',
-  data: () => ({
-    mdiAlert,
-    message: undefined
-  }),
-  mounted() {
-    this.message = this.$route.query.m
-    useContextStore().loadingComplete('Error')
-  }
-}
+const message = ref(undefined)
+
+onMounted(() => {
+  message.value = useRoute().query.m
+  useContextStore().loadingComplete('Error')
+})
 </script>
