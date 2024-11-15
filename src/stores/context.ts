@@ -14,7 +14,9 @@ export type DamienConfig = {
   apiBaseUrl: string,
   availableTerms: any[],
   currentTermId: string,
+  currentTermName: string,
   departmentForms: any[],
+  devAuthEnabled: false,
   evaluationTypes: any[],
   isVueAppDebugMode: boolean,
 }

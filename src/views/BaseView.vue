@@ -29,11 +29,10 @@
           v-for="(item, index) in navItems"
           :id="`sidebar-link-${index}`"
           :key="index"
-          role="link"
           class="primary-contrast--text sidebar-link pr-1"
           link
+          role="link"
           @click="toRoute(item.path)"
-          @keypress.enter.prevent="toRoute(item.path)"
         >
           <v-list-item-title class="py-2">
             <div>
@@ -48,7 +47,6 @@
           :id="`sidebar-link-${size(navItems)}`"
           class="primary-contrast--text sidebar-link pr-1"
           @click="toggleColorScheme"
-          @keypress.enter.prevent="toggleColorScheme"
         >
           <v-icon>
             <img alt="Lightbulb icon" src="@/assets/lightbulb-outline.svg" />
