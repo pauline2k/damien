@@ -10,7 +10,7 @@
       </h1>
       <v-spacer class="d-flex justify-center"></v-spacer>
       <v-banner
-        v-if="contextStore.config.isVueAppDebugMode && contextStore.config.easterEggMonastery && $vuetify.theme.dark"
+        v-if="contextStore.config.isVueAppDebugMode && contextStore.config.easterEggMonastery && theme.current.dark"
         shaped
         single-line
         class="pr-4 my-auto"
@@ -417,165 +417,168 @@
 </template>
 
 <script setup>
-import {useContextStore} from '@/stores/context'
-
-const contextStore = useContextStore()
-</script>
-
-<script>
 import ConfirmDialog from '@/components/util/ConfirmDialog'
 import EditServiceAnnouncement from '@/components/admin/EditServiceAnnouncement'
-import ListManagementSession from '@/mixins/ListManagementSession'
+// import ListManagementSession from '@/mixins/ListManagementSession'
 import SortableTableHeader from '@/components/util/SortableTableHeader'
 import {alertScreenReader, putFocusNextTick} from '@/lib/utils'
 import {get} from 'lodash'
 import {getAutoPublishStatus, setAutoPublishStatus} from '@/api/config'
 import {mdiPlusThick} from '@mdi/js'
+import {onMounted, ref} from 'vue'
+import {useContextStore} from '@/stores/context'
 import {useTheme} from 'vuetify'
 
-export default {
-  name: 'NannysRoom',
-  components: {ConfirmDialog, EditServiceAnnouncement, SortableTableHeader},
-  mixins: [ListManagementSession],
-  data: () => ({
-    autoPublishEnabled: undefined,
-    instructorValid: true,
-    rules: {
-      email: [
-        v => !!v || 'E-mail is required',
-        v => /.+@.+\..+/.test(v) || 'E-mail must be valid',
-      ],
-      numeric: [v => !/[^\d]/.test(v) || 'Invalid number.']
-    },
-    instructorHeaders: [
-      {class: 'pl-3', text: 'UID', value: 'uid'},
-      {class: 'pl-3', text: 'SID', value: 'csid'},
-      {class: 'pl-3', text: 'First Name', value: 'firstName'},
-      {class: 'pl-3', text: 'Last Name', value: 'lastName'},
-      {class: 'pl-3', text: 'Email', value: 'email'},
-      {class: 'pl-3', text: '', value: 'delete', sortable: false}
-    ],
-    mdiPlusThick,
-    newInstructor: null,
-    newItemName: null,
-    sortBy: {
-      departmentForms: null,
-      evaluationTypes: null,
-      instructors: null
-    },
-    sortDesc: {
-      departmentForms: null,
-      evaluationTypes: null,
-      instructors: null
-    },
-    theme: useTheme()
-  }),
-  created() {
-    useContextStore().loadingStart()
-    this.resetNewInstructor()
-    this.init().then(() => {
-      useContextStore().loadingComplete('List Management')
-      putFocusNextTick('page-title')
+const contextStore = useContextStore()
+
+const autoPublishEnabled = ref(undefined)
+const instructorValid = ref(true)
+const rules = {
+  email: [
+    v => !!v || 'E-mail is required',
+    v => /.+@.+\..+/.test(v) || 'E-mail must be valid',
+  ],
+  numeric: [v => !/[^\d]/.test(v) || 'Invalid number.']
+}
+const instructorHeaders = [
+  {class: 'pl-3', text: 'UID', value: 'uid'},
+  {class: 'pl-3', text: 'SID', value: 'csid'},
+  {class: 'pl-3', text: 'First Name', value: 'firstName'},
+  {class: 'pl-3', text: 'Last Name', value: 'lastName'},
+  {class: 'pl-3', text: 'Email', value: 'email'},
+  {class: 'pl-3', text: '', value: 'delete', sortable: false}
+]
+const newInstructor = ref(null)
+const newItemName = ref(null)
+const sortBy = ref({
+  departmentForms: null,
+  evaluationTypes: null,
+  instructors: null
+})
+const sortDesc = ref({
+  departmentForms: null,
+  evaluationTypes: null,
+  instructors: null
+})
+const theme = useTheme()
+
+onMounted(() => {
+  useContextStore().loadingStart()
+  resetNewInstructor()
+  this.init().then(() => {
+    useContextStore().loadingComplete('List Management')
+    putFocusNextTick('page-title')
+  })
+  getAutoPublishStatus().then(data => {
+    autoPublishEnabled.value = data.enabled
+  })
+})
+
+const afterDelete = deletedItem => {
+  this.setDisableControls(false)
+  alertScreenReader(`Deleted ${deletedItem.description} ${deletedItem.name}.`)
+}
+
+const cancelAdd = elementId => {
+  newItemName.value = ''
+  resetNewInstructor()
+  this.reset()
+  alertScreenReader('Canceled. Nothing saved.')
+  putFocusNextTick(elementId)
+}
+
+const cancelDelete = () => {
+  putFocusNextTick(this.itemToDelete.elementId)
+  this.reset()
+  alertScreenReader('Canceled. Nothing deleted.')
+}
+
+const confirmDelete = () => {
+  this.setDisableControls(true)
+  this.onDelete().then(afterDelete)
+}
+
+const onClickAddDepartmentForm = () => {
+  this.setAddingDepartmentForm().then(() => {
+    newItemName.value = ''
+    putFocusNextTick('input-dept-form-name')
+  })
+}
+
+const onClickAddEvaluationType = () => {
+  this.setAddingEvaluationType().then(() => {
+    newItemName.value = ''
+    putFocusNextTick('input-eval-type-name')
+  })
+}
+
+const onClickAddInstructor = () => {
+  this.setAddingInstructor().then(() => {
+    resetNewInstructor()
+    putFocusNextTick('input-instructor-uid')
+  })
+}
+
+const onSubmitAddDepartmentForm = () => {
+  if (newItemName.value) {
+    this.addDepartmentForm(newItemName.value).then(() => {
+      alertScreenReader(`Created department form ${newItemName.value}.`)
+      newItemName.value = ''
+      putFocusNextTick('add-dept-form-btn')
     })
-    getAutoPublishStatus().then(data => {
-      this.autoPublishEnabled = data.enabled
-    })
-  },
-  methods: {
-    afterDelete(deletedItem) {
-      this.setDisableControls(false)
-      alertScreenReader(`Deleted ${deletedItem.description} ${deletedItem.name}.`)
-    },
-    cancelAdd(elementId) {
-      this.newItemName = ''
-      this.resetNewInstructor()
-      this.reset()
-      alertScreenReader('Canceled. Nothing saved.')
-      putFocusNextTick(elementId)
-    },
-    cancelDelete() {
-      putFocusNextTick(this.itemToDelete.elementId)
-      this.reset()
-      alertScreenReader('Canceled. Nothing deleted.')
-    },
-    confirmDelete() {
-      this.setDisableControls(true)
-      this.onDelete().then(this.afterDelete)
-    },
-    get,
-    onClickAddDepartmentForm() {
-      this.setAddingDepartmentForm().then(() => {
-        this.newItemName = ''
-        putFocusNextTick('input-dept-form-name')
-      })
-    },
-    onClickAddEvaluationType() {
-      this.setAddingEvaluationType().then(() => {
-        this.newItemName = ''
-        putFocusNextTick('input-eval-type-name')
-      })
-    },
-    onClickAddInstructor() {
-      this.setAddingInstructor().then(() => {
-        this.resetNewInstructor()
-        putFocusNextTick('input-instructor-uid')
-      })
-    },
-    onSubmitAddDepartmentForm() {
-      if (this.newItemName) {
-        this.addDepartmentForm(this.newItemName).then(() => {
-          alertScreenReader(`Created department form ${this.newItemName}.`)
-          this.newItemName = ''
-          putFocusNextTick('add-dept-form-btn')
-        })
-      }
-    },
-    onSubmitAddInstructor() {
-      if (this.newInstructor) {
-        this.addInstructor(this.newInstructor).then(() => {
-          alertScreenReader(`Added instructor with UID ${this.newInstructor.uid}.`)
-          this.resetNewInstructor()
-          putFocusNextTick('add-instructor-btn')
-        })
-      }
-    },
-    onSubmitAddEvaluationType() {
-      if (this.newItemName) {
-        this.addEvaluationType(this.newItemName).then(() => {
-          alertScreenReader(`Created evaluation type ${this.newItemName}.`)
-          this.newItemName = ''
-          putFocusNextTick('add-eval-type-btn')
-        })
-      }
-    },
-    resetNewInstructor() {
-      this.newInstructor = {
-        'csid': null,
-        'emailAddress': null,
-        'firstName': null,
-        'lastName': null,
-        'uid': null
-      }
-    },
-    sortDepartmentForms(sortBy, sortDesc) {
-      this.sortBy.departmentForms = sortBy
-      this.sortDesc.departmentForms = sortDesc
-    },
-    sortEvaluationTypes(sortBy, sortDesc) {
-      this.sortBy.evaluationTypes = sortBy
-      this.sortDesc.evaluationTypes = sortDesc
-    },
-    sortInstructors(sortBy, sortDesc) {
-      this.sortBy.instructors = sortBy
-      this.sortDesc.instructors = sortDesc
-    },
-    toggleAutoPublishEnabled(enabled) {
-      setAutoPublishStatus(enabled).then(data => {
-        this.autoPublishEnabled = data.enabled
-        alertScreenReader(`Auto-publish ${this.autoPublishEnabled ? 'enabled' : 'disabled'}`)
-      })
-    }
   }
+}
+
+const onSubmitAddInstructor = () => {
+  if (newInstructor.value) {
+    this.addInstructor(newInstructor.value).then(() => {
+      alertScreenReader(`Added instructor with UID ${newInstructor.value.uid}.`)
+      resetNewInstructor()
+      putFocusNextTick('add-instructor-btn')
+    })
+  }
+}
+
+const onSubmitAddEvaluationType = () => {
+  if (newItemName.value) {
+    this.addEvaluationType(newItemName.value).then(() => {
+      alertScreenReader(`Created evaluation type ${newItemName.value}.`)
+      newItemName.value = ''
+      putFocusNextTick('add-eval-type-btn')
+    })
+  }
+}
+
+const resetNewInstructor = () => {
+  newInstructor.value = {
+    'csid': null,
+    'emailAddress': null,
+    'firstName': null,
+    'lastName': null,
+    'uid': null
+  }
+}
+
+const sortDepartmentForms = (sortBy, sortDesc) => {
+  sortBy.value.departmentForms = sortBy
+  sortDesc.value.departmentForms = sortDesc
+}
+
+const sortEvaluationTypes = (sortBy, sortDesc) => {
+  sortBy.value.evaluationTypes = sortBy
+  sortDesc.value.evaluationTypes = sortDesc
+}
+
+const sortInstructors = (sortBy, sortDesc) => {
+  sortBy.value.instructors = sortBy
+  sortDesc.value.instructors = sortDesc
+}
+
+const toggleAutoPublishEnabled = enabled => {
+  setAutoPublishStatus(enabled).then(data => {
+    autoPublishEnabled.value = data.enabled
+    alertScreenReader(`Auto-publish ${autoPublishEnabled.value ? 'enabled' : 'disabled'}`)
+  })
 }
 </script>
 

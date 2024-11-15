@@ -108,99 +108,83 @@
 </template>
 
 <script setup>
-import {useContextStore} from '@/stores/context'
-const contextStore = useContextStore()
-</script>
-
-<script>
-import {DateTime} from 'luxon'
 import EvaluationTable from '@/components/evaluation/EvaluationTable'
 import TermSelect from '@/components/util/TermSelect'
+import {DateTime} from 'luxon'
 import {alertScreenReader, putFocusNextTick, toLocaleFromISO} from '@/lib/utils'
 import {exportEvaluations, getConfirmed, getExportStatus, getExports, getValidation} from '@/api/evaluations'
 import {find, isEmpty, size, sortBy} from 'lodash'
 import {mdiAlertCircle, mdiRefresh, mdiTrayArrowDown} from '@mdi/js'
-import {nextTick} from 'vue'
+import {nextTick, onMounted, ref} from 'vue'
+import {useContextStore} from '@/stores/context'
 import {useDepartmentStore} from '@/stores/department/department-edit-session'
 
-export default {
-  name: 'Megiddo',
-  components: {
-    EvaluationTable,
-    TermSelect
-  },
-  data: () => ({
-    blockers: {},
-    confirmed: [],
-    dateFormat: DateTime.DATETIME_SHORT_WITH_SECONDS,
-    exportsPanel: undefined,
-    isExporting: false,
-    isUpdatingStatus: false,
-    mdiAlertCircle,
-    mdiRefresh,
-    mdiTrayArrowDown,
-    termExports: []
-  }),
-  created() {
-    this.updateStatus()
-  },
-  methods: {
-    toLocaleFromISO,
-    isEmpty,
-    onUpdateStatus() {
-      this.isUpdatingStatus = true
-      this.updateStatus()
-      putFocusNextTick('status-btn')
-    },
-    publish() {
-      this.isExporting = true
-      alertScreenReader('Publishing.')
-      exportEvaluations(useContextStore().selectedTermId).then(() => {
-        this.snackbarOpen('Publication has started and will run in the background.')
-        putFocusNextTick('publish-btn')
-      })
-    },
-    refresh() {
-      useContextStore().loadingStart()
-      alertScreenReader(`Loading ${useContextStore().selectedTermName}`)
-      Promise.all([getValidation(useContextStore().selectedTermId), getConfirmed(useContextStore().selectedTermId), getExports(useContextStore().selectedTermId)]).then(responses => {
-        useDepartmentStore().setEvaluations(sortBy(responses[0], 'sortableCourseName'))
-        this.confirmed = responses[1]
-        this.termExports = responses[2]
-        useContextStore().loadingComplete(`Publish ${useContextStore().selectedTermName || ''}`)
-      })
-    },
-    size,
-    updateStatus() {
-      getExportStatus().then(response => {
-        this.isExporting = false
-        if (isEmpty(response)) {
-          return false
-        }
-        const lastUpdate = DateTime.fromISO(response.updatedAt)
-        if (DateTime.now().diff(lastUpdate, ['hours']) < 1) {
-          this.showStatus(response)
-        }
-      }).finally(() => {
-        nextTick(() => {
-          this.isUpdatingStatus = false
-        })
-      })
-    },
-    showStatus(termExport) {
-      const exportLabel = toLocaleFromISO(termExport.createdAt, this.dateFormat)
-      const term = find(useContextStore().config.availableTerms, {'id': termExport.termId})
-      if (termExport.status === 'success') {
-        this.snackbarOpen(
-          `Success! Publication of ${term.name} term export <b>${exportLabel || ''}</b> is complete.`,
-          'success'
-        )
-      } else if (termExport.status === 'error') {
-        useContextStore().snackbarReportError(`Error: Publication of ${term.name} term export <b>${exportLabel || ''}</b> failed.`)
-      } else {
-        this.isExporting = true
-      }
+const contextStore = useContextStore()
+const blockers = ref({})
+const confirmed = ref([])
+const dateFormat = DateTime.DATETIME_SHORT_WITH_SECONDS
+const exportsPanel = ref(undefined)
+const isExporting = ref(false)
+const isUpdatingStatus = ref(false)
+const termExports = ref([])
+
+onMounted(() => updateStatus())
+
+const onUpdateStatus = () => {
+  isUpdatingStatus.value = true
+  updateStatus()
+  putFocusNextTick('status-btn')
+}
+
+const publish = () => {
+  isExporting.value = true
+  alertScreenReader('Publishing.')
+  exportEvaluations(useContextStore().selectedTermId).then(() => {
+    useContextStore().snackbarOpen('Publication has started and will run in the background.')
+    putFocusNextTick('publish-btn')
+  })
+}
+
+const refresh = () => {
+  useContextStore().loadingStart()
+  alertScreenReader(`Loading ${useContextStore().selectedTermName}`)
+  Promise.all([getValidation(useContextStore().selectedTermId), getConfirmed(useContextStore().selectedTermId), getExports(useContextStore().selectedTermId)]).then(responses => {
+    useDepartmentStore().setEvaluations(sortBy(responses[0], 'sortableCourseName'))
+    confirmed.value = responses[1]
+    termExports.value = responses[2]
+    useContextStore().loadingComplete(`Publish ${useContextStore().selectedTermName || ''}`)
+  })
+}
+
+const updateStatus = () => {
+  getExportStatus().then(response => {
+    isExporting.value = false
+    if (isEmpty(response)) {
+      return false
     }
+    const lastUpdate = DateTime.fromISO(response.updatedAt)
+    if (DateTime.now().diff(lastUpdate, ['hours']) < 1) {
+      showStatus(response)
+    }
+  }).finally(() => {
+    nextTick(() => {
+      isUpdatingStatus.value = false
+    })
+  })
+}
+
+const showStatus = termExport => {
+  const exportLabel = toLocaleFromISO(termExport.createdAt, dateFormat)
+  const term = find(useContextStore().config.availableTerms, {'id': termExport.termId})
+  if (termExport.status === 'success') {
+    useContextStore().snackbarOpen(
+      `Success! Publication of ${term.name} term export <b>${exportLabel || ''}</b> is complete.`,
+      'success'
+    )
+  } else if (termExport.status === 'error') {
+    useContextStore().snackbarReportError(`Error: Publication of ${term.name} term export <b>${exportLabel || ''}</b> failed.`)
+  } else {
+    isExporting.value = true
   }
 }
 </script>

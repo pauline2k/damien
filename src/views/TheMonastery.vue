@@ -4,12 +4,12 @@
       <h1 id="page-title" class="text-title">Group Management</h1>
       <v-spacer class="d-flex justify-center"></v-spacer>
       <v-banner
-        v-if="contextStore.config.isVueAppDebugMode && contextStore.config.easterEggMonastery && $vuetify.theme.dark"
+        v-if="config.isVueAppDebugMode && config.easterEggMonastery && theme.current.dark"
         shaped
         single-line
         class="pr-4 my-auto"
       >
-        Welcome to <a :href="contextStore.config.easterEggMonastery" target="_blank">The Monastery</a>
+        Welcome to <a :href="config.easterEggMonastery" target="_blank">The Monastery</a>
       </v-banner>
     </div>
     <v-card outlined class="elevation-1">
@@ -118,49 +118,40 @@
 </template>
 
 <script setup>
-import {useContextStore} from '@/stores/context'
-const contextStore = useContextStore()
-</script>
-
-<script>
+import BooleanIcon from '@/components/util/BooleanIcon'
 import {getCatalogListings} from '@/lib/utils'
 import {getDepartmentsEnrolled} from '@/api/departments'
 import {isEmpty, size} from 'lodash'
-import BooleanIcon from '@/components/util/BooleanIcon'
+import {onMounted, ref} from 'vue'
+import {storeToRefs} from 'pinia'
+import {useContextStore} from '@/stores/context'
 import {useTheme} from 'vuetify'
 
-export default {
-  name: 'TheMonastery',
-  components: {BooleanIcon},
-  data: () => ({
-    departments: [],
-    headers: [
-      {class: 'text-nowrap', text: 'Department', value: 'deptName'},
-      {class: 'text-nowrap', sortable: false, text: 'Courses'},
-      {class: 'text-nowrap', sortable: false, text: 'Contacts'},
-      {class: 'text-nowrap', sortable: false, text: 'UID'},
-      {class: 'text-nowrap', sortable: false, text: 'Email Address'},
-      {sortable: false, text: 'Receives Notifications'},
-      {class: 'text-nowrap', sortable: false, text: 'Blue Access'},
-    ],
-    hoveredDept: undefined,
-    theme: useTheme()
-  }),
-  created() {
-    useContextStore().loadingStart()
-    getDepartmentsEnrolled(true, true).then(data => {
-      this.departments = data
-      useContextStore().loadingComplete('Group Management')
-    })
-  },
-  methods: {
-    getCatalogListings,
-    isEmpty,
-    size,
-    subRowClass(subIndex, subItems) {
-      return subIndex + 1 < subItems.length ? 'borderless' : ''
-    }
-  }
+const contextStore = useContextStore()
+const {config} = storeToRefs(contextStore)
+const departments = ref([])
+const headers = [
+  {class: 'text-nowrap', text: 'Department', value: 'deptName'},
+  {class: 'text-nowrap', sortable: false, text: 'Courses'},
+  {class: 'text-nowrap', sortable: false, text: 'Contacts'},
+  {class: 'text-nowrap', sortable: false, text: 'UID'},
+  {class: 'text-nowrap', sortable: false, text: 'Email Address'},
+  {sortable: false, text: 'Receives Notifications'},
+  {class: 'text-nowrap', sortable: false, text: 'Blue Access'},
+]
+const hoveredDept = ref(undefined)
+const theme = useTheme()
+
+onMounted(() => {
+  contextStore.loadingStart()
+  getDepartmentsEnrolled(true, true).then(data => {
+    departments.value = data
+    contextStore.loadingComplete('Group Management')
+  })
+})
+
+const subRowClass = (subIndex, subItems) => {
+  return subIndex + 1 < subItems.length ? 'borderless' : ''
 }
 </script>
 

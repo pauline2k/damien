@@ -150,101 +150,78 @@
 </template>
 
 <script setup>
-import {NUMBER_OF_THE_BEAST, useDepartmentStore} from '@/stores/department/department-edit-session'
-import {storeToRefs} from 'pinia'
-import {useContextStore} from '@/stores/context'
-
-const contextStore = useContextStore()
-const departmentStore = useDepartmentStore()
-const {contacts, department, disableControls, showTheOmenPoster} = storeToRefs(departmentStore)
-</script>
-
-<script>
-import {alertScreenReader, getCatalogListings, putFocusNextTick, scrollToTop} from '@/lib/utils'
-import {filter as _filter, get, includes, isEmpty, size} from 'lodash'
 import DepartmentContact from '@/components/admin/DepartmentContact'
 import DepartmentNote from '@/components/admin/DepartmentNote'
 import EditDepartmentContact from '@/components/admin/EditDepartmentContact'
 import EvaluationTable from '@/components/evaluation/EvaluationTable'
 import NotificationForm from '@/components/admin/NotificationForm'
 import TermSelect from '@/components/util/TermSelect'
+import {NUMBER_OF_THE_BEAST, useDepartmentStore} from '@/stores/department/department-edit-session'
+import {alertScreenReader, getCatalogListings, putFocusNextTick, scrollToTop} from '@/lib/utils'
+import {computed, onMounted, ref} from 'vue'
+import {filter as _filter, get, includes, isEmpty, size} from 'lodash'
 import {mdiClose, mdiMinusBoxMultipleOutline, mdiPlusBoxMultipleOutline, mdiPlusThick} from '@mdi/js'
+import {storeToRefs} from 'pinia'
+import {useContextStore} from '@/stores/context'
 
-export default {
-  name: 'Department',
-  components: {
-    DepartmentContact,
-    DepartmentNote,
-    EditDepartmentContact,
-    EvaluationTable,
-    NotificationForm,
-    TermSelect
-  },
-  data: () => ({
-    contactDetailsPanel: [],
-    contactsPanel: undefined,
-    isAddingContact: false,
-    isCreatingNotification: false,
-    mdiClose,
-    mdiMinusBoxMultipleOutline,
-    mdiPlusThick,
-    mdiPlusBoxMultipleOutline
-  }),
-  computed: {
-    notificationRecipients() {
-      return {
-        deptName: useDepartmentStore().department.deptName,
-        deptId: useDepartmentStore().department.id,
-        recipients: _filter(this.contacts, 'canReceiveCommunications')
-      }
-    }
-  },
-  created() {
-    useDepartmentStore().setShowTheOmenPoster(this.$route.query.n === NUMBER_OF_THE_BEAST)
-    putFocusNextTick('page-title')
-  },
-  methods: {
-    getCatalogListings,
-    size,
-    includes,
-    isEmpty,
-    afterSaveContact() {
-      this.isAddingContact = false
-      this.contactsPanel = 0
-      alertScreenReader('Contact saved.')
-      putFocusNextTick('add-dept-contact-btn')
-    },
-    afterSendNotification() {
-      this.isCreatingNotification = false
-      useContextStore().snackbarOpen('Notification sent.')
-      putFocusNextTick('open-notification-form-btn')
-    },
-    cancelSendNotification() {
-      this.isCreatingNotification = false
-      alertScreenReader('Notification canceled.')
-      scrollToTop(1000)
-      putFocusNextTick('open-notification-form-btn')
-    },
-    collapseAllContacts() {
-      if (this.contactsPanel === 0) {
-        this.contactDetailsPanel = []
-      }
-    },
-    get,
-    onCancelAddContact() {
-      this.isAddingContact = false
-      alertScreenReader('Canceled. Nothing saved.')
-      putFocusNextTick('add-dept-contact-btn')
-    },
-    refresh() {
-      useContextStore().loadingStart()
-      alertScreenReader(`Loading ${useContextStore().selectedTermName}`)
-      const departmentId = get(this.$route, 'params.departmentId')
-      useDepartmentStore().init(departmentId).then(() => {
-        useContextStore().loadingComplete(`${useDepartmentStore().department.deptName} ${useContextStore().selectedTermName}`)
-      })
-    }
+const contextStore = useContextStore()
+const departmentStore = useDepartmentStore()
+const {contacts, department, disableControls, showTheOmenPoster} = storeToRefs(departmentStore)
+
+const contactDetailsPanel = ref([])
+const contactsPanel = ref(undefined)
+const isAddingContact = ref(false)
+const isCreatingNotification = ref(false)
+
+const notificationRecipients = computed(() => {
+  return {
+    deptName: department.deptName,
+    deptId: department.id,
+    recipients: _filter(this.contacts, 'canReceiveCommunications')
   }
+})
+
+onMounted(() => departmentStore.setShowTheOmenPoster(this.$route.query.n === NUMBER_OF_THE_BEAST))
+
+const afterSaveContact = () => {
+  isAddingContact.value = false
+  contactsPanel.value = 0
+  alertScreenReader('Contact saved.')
+  putFocusNextTick('add-dept-contact-btn')
+}
+
+const afterSendNotification = () => {
+  isCreatingNotification.value = false
+  useContextStore().snackbarOpen('Notification sent.')
+  putFocusNextTick('open-notification-form-btn')
+}
+
+const cancelSendNotification = () => {
+  isCreatingNotification.value = false
+  alertScreenReader('Notification canceled.')
+  scrollToTop(1000)
+  putFocusNextTick('open-notification-form-btn')
+}
+
+const collapseAllContacts = () => {
+  if (contactsPanel.value === 0) {
+    contactDetailsPanel.value = []
+  }
+}
+
+const onCancelAddContact = () => {
+  isAddingContact.value = false
+  alertScreenReader('Canceled. Nothing saved.')
+  putFocusNextTick('add-dept-contact-btn')
+}
+
+const refresh = () => {
+  useContextStore().loadingStart()
+  alertScreenReader(`Loading ${useContextStore().selectedTermName}`)
+  const departmentId = get(this.$route, 'params.departmentId')
+  departmentStore.init(departmentId).then(() => {
+    useContextStore().loadingComplete(`${department.deptName} ${useContextStore().selectedTermName}`)
+  })
 }
 </script>
 

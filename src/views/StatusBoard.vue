@@ -148,127 +148,116 @@
 </template>
 
 <script setup>
-import {useContextStore} from '@/stores/context'
-const contextStore = useContextStore()
-</script>
-
-<script>
 import NotificationForm from '@/components/admin/NotificationForm'
 import SortableTableHeader from '@/components/util/SortableTableHeader'
 import TermSelect from '@/components/util/TermSelect'
 import {alertScreenReader, getCatalogListings, putFocusNextTick, toLocaleFromISO} from '@/lib/utils'
+import {computed, onMounted, ref} from 'vue'
 import {each, filter as _filter, get, includes, indexOf, isEmpty, kebabCase, map, size} from 'lodash'
 import {getDepartmentsEnrolled} from '@/api/departments'
 import {mdiCheckCircle} from '@mdi/js'
+import {useContextStore} from '@/stores/context'
 
-export default {
-  name: 'StatusBoard',
-  components: {NotificationForm, SortableTableHeader, TermSelect},
-  data: () => ({
-    blockers: {},
-    departments: [],
-    departmentHeaders: [
-      {class: 'text-start text-nowrap px-4', text: 'Select', value: 'select', width: '30px'},
-      {class: 'text-nowrap pt-12 pb-3', text: 'Department', value: 'deptName', width: '50%'},
-      {class: 'text-nowrap pt-12 pb-3', text: 'Last Updated', value: 'lastUpdated', width: '20%'},
-      {class: 'text-nowrap pt-12 pb-3', text: 'Errors', value: 'totalInError', width: '10%'},
-      {class: 'text-nowrap pt-12 pb-3', text: 'Confirmed', value: 'totalConfirmed', width: '10%'},
-      {class: 'text-nowrap pt-12 pb-3', text: 'Notes', value: 'note.note', width: '30%'}
-    ],
-    isCreatingNotification: false,
-    isExporting: false,
-    mdiCheckCircle,
-    selectedDepartmentIds: [],
-    sortBy: null,
-    sortDesc: false
-  }),
-  computed: {
-    allDepartmentsSelected() {
-      return !!(size(this.selectedDepartmentIds) && size(this.selectedDepartmentIds) === size(this.departments))
-    },
-    notificationRecipients() {
-      let recipients = []
-      each(this.departments, d => {
-        if (this.isSelected(d)) {
-          const departmentRecipients = _filter(d.contacts, 'canReceiveCommunications')
-          if (departmentRecipients.length) {
-            recipients.push({
-              'deptId': d.id,
-              'deptName': d.deptName,
-              'recipients': _filter(d.contacts, 'canReceiveCommunications')
-            })
-          }
-        }
-      })
-      return recipients
-    },
-    someDepartmentsSelected() {
-      return !!(size(this.selectedDepartmentIds) && size(this.selectedDepartmentIds) < size(this.departments))
-    }
-  },
-  created() {
-    useContextStore().loadingStart()
-    alertScreenReader(`Loading ${useContextStore().selectedTermName}`)
-    this.departments = []
-    getDepartmentsEnrolled(true, false, true, useContextStore().selectedTermId).then(data => {
-      this.departments = data
-      this.loadBlockers().then(() => {
-        useContextStore().loadingComplete(`Evaluation Status Dashboard for ${useContextStore().selectedTermName}`)
-        putFocusNextTick('page-title')
-      })
-    })
-  },
-  methods: {
-    afterSendNotification() {
-      this.selectedDepartmentIds = []
-      this.isCreatingNotification = false
-      alertScreenReader('Notification sent.')
-      putFocusNextTick('open-notification-form-btn')
-    },
-    cancelSendNotification() {
-      this.isCreatingNotification = false
-      alertScreenReader('Notification canceled.')
-      putFocusNextTick('open-notification-form-btn')
-    },
-    get,
-    getCatalogListings,
-    isEmpty,
-    isSelected(department) {
-      return includes(this.selectedDepartmentIds, department.id)
-    },
-    kebabCase,
-    loadBlockers() {
-      return new Promise(resolve => {
-        this.blockers = {}
-        each(this.departments, d => {
-          if (d.totalBlockers) {
-            this.blockers[d.deptName] = d.totalBlockers
-          }
+const contextStore = useContextStore()
+const blockers = ref({})
+const departments = ref([])
+const departmentHeaders = [
+  {class: 'text-start text-nowrap px-4', text: 'Select', value: 'select', width: '30px'},
+  {class: 'text-nowrap pt-12 pb-3', text: 'Department', value: 'deptName', width: '50%'},
+  {class: 'text-nowrap pt-12 pb-3', text: 'Last Updated', value: 'lastUpdated', width: '20%'},
+  {class: 'text-nowrap pt-12 pb-3', text: 'Errors', value: 'totalInError', width: '10%'},
+  {class: 'text-nowrap pt-12 pb-3', text: 'Confirmed', value: 'totalConfirmed', width: '10%'},
+  {class: 'text-nowrap pt-12 pb-3', text: 'Notes', value: 'note.note', width: '30%'}
+]
+const isCreatingNotification = ref(false)
+const selectedDepartmentIds = ref([])
+const sortBy = ref(null)
+const sortDesc = ref(false)
+
+const allDepartmentsSelected = computed(() => {
+  return !!(size(selectedDepartmentIds.value) && size(selectedDepartmentIds.value) === size(departments.value))
+})
+const notificationRecipients = computed(() => {
+  let recipients = []
+  each(departments.value, d => {
+    if (isSelected(d)) {
+      const departmentRecipients = _filter(d.contacts, 'canReceiveCommunications')
+      if (departmentRecipients.length) {
+        recipients.push({
+          'deptId': d.id,
+          'deptName': d.deptName,
+          'recipients': _filter(d.contacts, 'canReceiveCommunications')
         })
-        resolve()
-      })
-    },
-    size,
-    sort(sortBy, sortDesc) {
-      this.sortBy = sortBy
-      this.sortDesc = sortDesc
-    },
-    toggleSelect(department) {
-      const index = indexOf(this.selectedDepartmentIds, department.id)
-      const isSelecting = index === -1
-      if (isSelecting) {
-        this.selectedDepartmentIds.push(department.id)
-      } else {
-        this.selectedDepartmentIds.splice(index, 1)
       }
-      alertScreenReader(`${department.name} ${isSelecting ? '' : 'un'}selected`)
-    },
-    toggleSelectAll() {
-      this.selectedDepartmentIds = this.allDepartmentsSelected ? [] : map(this.departments, 'id')
-      alertScreenReader(`All departments ${this.allDepartmentsSelected ? '' : 'un'}selected.`)
-    },
-    toLocaleFromISO
+    }
+  })
+  return recipients
+})
+const someDepartmentsSelected = computed(() => {
+  return !!(size(selectedDepartmentIds.value) && size(selectedDepartmentIds.value) < size(departments.value))
+})
+
+onMounted(() => {
+  useContextStore().loadingStart()
+  alertScreenReader(`Loading ${useContextStore().selectedTermName}`)
+  departments.value = []
+  getDepartmentsEnrolled(true, false, true, useContextStore().selectedTermId).then(data => {
+    departments.value = data
+    loadBlockers().then(() => {
+      useContextStore().loadingComplete(`Evaluation Status Dashboard for ${useContextStore().selectedTermName}`)
+      putFocusNextTick('page-title')
+    })
+  })
+})
+
+const afterSendNotification = () => {
+  selectedDepartmentIds.value = []
+  isCreatingNotification.value = false
+  alertScreenReader('Notification sent.')
+  putFocusNextTick('open-notification-form-btn')
+}
+
+const cancelSendNotification = () => {
+  isCreatingNotification.value = false
+  alertScreenReader('Notification canceled.')
+  putFocusNextTick('open-notification-form-btn')
+}
+
+const isSelected = department => {
+  return includes(selectedDepartmentIds.value, department.id)
+}
+
+const loadBlockers = () => {
+  return new Promise(resolve => {
+    blockers.value = {}
+    each(departments.value, d => {
+      if (d.totalBlockers) {
+        blockers.value[d.deptName] = d.totalBlockers
+      }
+    })
+    resolve()
+  })
+}
+
+const sort = (sortBy, sortDesc) => {
+  sortBy.value = sortBy
+  sortDesc.value = sortDesc
+}
+
+const toggleSelect = department => {
+  const index = indexOf(selectedDepartmentIds.value, department.id)
+  const isSelecting = index === -1
+  if (isSelecting) {
+    selectedDepartmentIds.value.push(department.id)
+  } else {
+    selectedDepartmentIds.value.splice(index, 1)
   }
+  alertScreenReader(`${department.name} ${isSelecting ? '' : 'un'}selected`)
+}
+
+const toggleSelectAll = () => {
+  selectedDepartmentIds.value = allDepartmentsSelected.value ? [] : map(departments.value, 'id')
+  alertScreenReader(`All departments ${allDepartmentsSelected.value ? '' : 'un'}selected.`)
 }
 </script>
 
