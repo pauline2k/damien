@@ -64,16 +64,16 @@
       color="primary"
       dark
     >
-      <div class="display-1 mr-4 text-no-wrap">
+      <div class="text-h4 ml-3 text-no-wrap">
         Course Evaluations
       </div>
-      <div class="ml-auto">
+      <div class="ml-auto pr-4">
         <v-menu offset-y rounded="lg">
           <template #activator="{props: menuProps}">
             <v-btn
               id="btn-main-menu"
               color="secondary"
-              dark
+              variant="flat"
               v-bind="menuProps"
             >
               <span class="sr-only">User profile for </span>{{ currentUser.firstName }}
