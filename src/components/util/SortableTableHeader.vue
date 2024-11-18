@@ -1,108 +1,80 @@
 <template>
-  <thead class="v-data-table-header">
-    <tr>
-      <th
-        v-for="(item, index) in headers"
-        :key="index"
-        :aria-sort="sortBy && item.value === sortBy ? (sortDesc ? 'descending' : 'ascending') : 'none'"
-        class="sortable px-0"
-        :class="columnHeaderClass(item)"
-        scope="col"
-        :style="`width: ${item.width}; min-width: ${item.width};`"
+  <tr>
+    <th
+      v-for="column in columns"
+      :key="column.key"
+      :aria-label="column.title"
+      :aria-sort="isSorted(column) ? (sortDesc ? 'descending' : 'ascending') : 'none'"
+      :class="column.class"
+      scope="col"
+      :style="column.headerProps"
+    >
+      <v-btn
+        :id="`sort-col-${id}${column.value}-btn`"
+        :aria-label="`Sort by ${column.title} ${isSorted(column) && !sortDesc ? 'descending' : 'ascending'}`"
+        :append-icon="sortIcon(column)"
+        class="sort-col-btn font-weight-bold text-no-wrap px-1 v-table-sort-btn-override"
+        :class="{'icon-visible': isSorted(column)}"
+        density="compact"
+        size="small"
+        variant="plain"
+        @click="() => onSort(column)"
       >
-        <template v-if="item.value === 'select'">
-          <slot name="select">
-            <v-btn
-              :id="`sort-col-${id}${item.value}-btn`"
-              :aria-label="`${item.text}: ${item.value === sortBy ? (sortDesc ? 'Sorted descending' : 'Sorted ascending') : 'Not sorted'}. Activate to sort ${item.value === sortBy && !sortDesc ? 'descending' : 'ascending'}.`"
-              class="sort-col-btn font-weight-bold px-1 text-capitalize text-nowrap"
-              size="small"
-              @click="onColumnHeaderClick(item.value)"
-            >
-              {{ item.text }}
-              <v-icon
-                class="v-data-table-header__icon"
-                :icon="mdiArrowUp"
-                size="small"
-              />
-            </v-btn>
-          </slot>
-        </template>
-        <template v-else>
-          <v-btn
-            :id="`sort-col-${id}${item.value}-btn`"
-            :aria-label="`${item.text}: ${item.value === sortBy ? (sortDesc ? 'Sorted descending' : 'Sorted ascending') : 'Not sorted'}. Activate to sort ${item.value === sortBy && !sortDesc ? 'descending' : 'ascending'}.`"
-            class="sort-col-btn font-weight-bold text-capitalize text-nowrap px-1"
-            size="small"
-            @click="onColumnHeaderClick(item.value)"
-          >
-            {{ item.text }}
-            <v-icon
-              class="v-data-table-header__icon"
-              :icon="mdiArrowUp"
-              size="small"
-            />
-          </v-btn>
-        </template>
-      </th>
-    </tr>
-  </thead>
+        {{ column.title }}
+      </v-btn>
+    </th>
+  </tr>
 </template>
 
 <script setup>
 import {mdiArrowUp} from '@mdi/js'
-import {ref} from 'vue'
 
-const props = defineProps({
-  headers: {
-    type: Array,
-    required: true
+defineProps({
+  columns: {
+    required: true,
+    type: Array
   },
   id: {
     default: '',
-    type: String,
-    required: false
+    required: false,
+    type: String
+  },
+  isSorted: {
+    required: true,
+    type: Function
   },
   onSort: {
     default: () => {},
-    type: Function,
-    required: false
+    required: false,
+    type: Function
+  },
+  sortDesc: {
+    required: false,
+    type: Boolean
+  },
+  sortIcon: {
+    default: () => mdiArrowUp,
+    required: false,
+    type: Function
   }
 })
-
-const sortBy = ref(null)
-const sortDesc = ref(false)
-
-const columnHeaderClass = item => {
-  let klass = item.class
-  if (item.value === sortBy.value) {
-    klass += ` active ${sortDesc.value ? 'desc' : 'asc'}`
-  }
-  return klass
-}
-
-const onColumnHeaderClick = value => {
-  if (value === sortBy.value) {
-    if (sortDesc.value) {
-      sortBy.value = null
-      sortDesc.value = false
-    } else {
-      sortDesc.value = true
-    }
-  } else {
-    sortDesc.value = false
-    sortBy.value = value
-  }
-  props.onSort(sortBy.value, sortDesc.value)
-}
 </script>
 
 <style scoped>
 .sort-col-btn {
-  color: inherit !important;
+  height: unset !important;
   letter-spacing: normal !important;
+  min-width: 0px !important;
 }
-.sort-col-btn:focus .v-data-table-header__icon {
+</style>
+<style>
+.v-table-sort-btn-override .v-btn__append .v-icon {
+  opacity: 0;
+}
+.v-table-sort-btn-override:active .v-btn__append .v-icon,
+.v-table-sort-btn-override:hover .v-btn__append .v-icon,
+.v-table-sort-btn-override:focus .v-btn__append .v-icon,
+.v-table-sort-btn-override.icon-visible .v-btn__append .v-icon {
   opacity: 1;
 }
 </style>

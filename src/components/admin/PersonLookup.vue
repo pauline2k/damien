@@ -44,7 +44,7 @@
         @update:list-index="onHighlight"
       >
         <template #selection="data">
-          <span class="text-nowrap">{{ toLabel(data.item) }}</span>
+          <span class="text-no-wrap">{{ toLabel(data.item) }}</span>
         </template>
         <template #item="data">
           <v-list-item

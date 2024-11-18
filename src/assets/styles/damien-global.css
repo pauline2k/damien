@@ -110,9 +110,6 @@
 .text-condensed {
   line-height: 1.2 !important;
 }
-.text-nowrap {
-  white-space: nowrap;
-}
 .text-wrap {
   white-space: break-spaces;
 }
@@ -149,6 +146,9 @@ input.vs__search:enabled {
   outline-style: auto !important;
   outline-width: 1px !important;
 }
+.v-table-hidden-row-override table tbody tr[style="height: 0px; border: 0px;"] {
+  display: none;
+}
 .v-text-field--placeholder input::placeholder {
   color: #999999 !important;
 }
@@ -160,6 +160,12 @@ a {
 }
 svg {
   fill: currentColor;
+}
+table thead th {
+  color: rgba(var(--v-theme-on-surface),var(--v-high-emphasis-opacity));
+  font-size: 12px;
+  font-weight: 700 !important;
+  min-width: unset !important;
 }
 ul {
   list-style: none;

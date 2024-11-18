@@ -24,7 +24,7 @@
           </div>
         </h1>
       </div>
-      <div class="text-nowrap">
+      <div class="text-no-wrap">
         <TermSelect :after-select="refresh" :term-ids="get(department, 'enrolledTerms')" />
       </div>
     </div>
@@ -124,9 +124,7 @@
       </v-row>
     </v-container>
     <v-container v-if="!contextStore.loading" class="mx-0 px-0 pb-6" fluid>
-      <v-card outlined class="elevation-1">
-        <EvaluationTable />
-      </v-card>
+      <EvaluationTable />
     </v-container>
     <v-overlay :value="showTheOmenPoster" z-index="300">
       <v-card>

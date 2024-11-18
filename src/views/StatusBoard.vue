@@ -14,121 +14,122 @@
         <TermSelect />
       </v-col>
     </v-row>
-    <v-card outlined class="elevation-1">
+    <v-card v-if="!contextStore.loading" outlined class="elevation-1">
       <v-data-table
         id="department-table"
-        disable-pagination
+        density="compact"
         :disable-sort="contextStore.loading"
         :headers="departmentHeaders"
         hide-default-footer
-        hide-default-header
         :items="departments"
         :loading="contextStore.loading || !contextStore.selectedTermId"
-        :sort-by.sync="sortBy"
-        :sort-desc.sync="sortDesc"
+        must-sort
+        :sort-by="sortBy"
       >
-        <template #header="{props: {headers}}">
-          <SortableTableHeader :headers="headers" :on-sort="sort">
-            <template #select>
-              <div class="d-flex flex-row notify-all py-2">
-                <label class="sr-only" for="checkbox-select-dept-all">Select all department rows</label>
+        <template #top>
+          <div class="align-center d-flex flex-row pl-4 py-2">
+            <label class="sr-only" for="checkbox-select-dept-all">Select all department rows</label>
+            <v-checkbox
+              id="checkbox-select-dept-all"
+              aria-controls="open-notification-form-btn"
+              aria-describedby="checkbox-select-dept-all-desc"
+              color="tertiary"
+              :disabled="contextStore.loading"
+              hide-details
+              :indeterminate="someDepartmentsSelected"
+              :model-value="allDepartmentsSelected"
+              @update:model-value="toggleSelectAll"
+            />
+            <div id="checkbox-select-dept-all-desc">Send notification</div>
+            <v-btn
+              v-if="!isCreatingNotification"
+              id="open-notification-form-btn"
+              class="mx-2 text-capitalize"
+              color="secondary"
+              density="comfortable"
+              :disabled="isEmpty(selectedDepartmentIds) || contextStore.loading"
+              text="Apply"
+              @click="() => isCreatingNotification = true"
+            />
+          </div>
+        </template>
+        <template #headers="{columns, isSorted, toggleSort, getSortIcon, sortBy: _sortBy}">
+          <SortableTableHeader
+            :columns="columns"
+            :is-sorted="isSorted"
+            :on-sort="toggleSort"
+            :sort-desc="get(_sortBy, 'order') === 'desc'"
+            :sort-icon="getSortIcon"
+          />
+        </template>
+        <template #body="{items}">
+          <template v-for="(department, index) in items" :key="department.name">
+            <tr :id="`department-${index}`">
+              <td>
+                <label class="sr-only" :for="`checkbox-select-dept-${kebabCase(department.deptName)}`">
+                  {{ department.deptName }}
+                </label>
                 <v-checkbox
-                  id="checkbox-select-dept-all"
+                  :id="`checkbox-select-dept-${kebabCase(department.deptName)}`"
                   class="align-center mt-0 pt-0"
                   color="tertiary"
                   :disabled="contextStore.loading"
                   hide-details
-                  :indeterminate="someDepartmentsSelected"
-                  :ripple="false"
-                  :value="allDepartmentsSelected"
-                  @change="toggleSelectAll"
+                  :model-value="isSelected(department)"
+                  @update:model-value="toggleSelect(department)"
                 />
-                <div class="d-flex align-center">Send notification</div>
-                <v-btn
-                  v-if="!isCreatingNotification"
-                  id="open-notification-form-btn"
-                  class="ma-2 secondary text-capitalize"
-                  color="secondary"
-                  :disabled="isEmpty(selectedDepartmentIds) || contextStore.loading"
-                  small
-                  text="Apply"
-                  @click="() => isCreatingNotification = true"
-                />
-              </div>
-            </template>
-          </SortableTableHeader>
-        </template>
-        <template #body="{items}">
-          <tbody class="h-100vh">
-            <template v-for="(department, index) in items" :key="department.name">
-              <tr :id="`department-${index}`">
-                <td>
-                  <label class="sr-only" :for="`checkbox-select-dept-${kebabCase(department.deptName)}`">
+              </td>
+              <td class="department-name">
+                <div class="d-flex align-top">
+                  <router-link :id="`link-to-dept-${kebabCase(department.deptName)}`" :to="`/department/${department.id}`">
                     {{ department.deptName }}
-                  </label>
-                  <v-checkbox
-                    :id="`checkbox-select-dept-${kebabCase(department.deptName)}`"
-                    class="align-center mt-0 pt-0"
-                    color="tertiary"
-                    :disabled="contextStore.loading"
-                    hide-details
-                    :ripple="false"
-                    :value="isSelected(department)"
-                    @change="toggleSelect(department)"
-                  />
-                </td>
-                <td class="department-name">
-                  <div class="d-flex align-top">
-                    <router-link :id="`link-to-dept-${kebabCase(department.deptName)}`" :to="`/department/${department.id}`">
-                      {{ department.deptName }}
-                      <span v-if="size(getCatalogListings(department))">({{ getCatalogListings(department).join(', ') }})</span>
-                    </router-link>
-                  </div>
-                </td>
-                <td :id="`last-updated-dept-${department.id}`" class="department-lastUpdated">
-                  <span v-if="department.lastUpdated">
-                    {{ toLocaleFromISO(department.lastUpdated) }}
-                  </span>
-                </td>
-                <td class="department-errors">
-                  <v-chip
-                    v-if="department.totalInError"
-                    :id="`errors-count-dept-${department.id}`"
-                    class="error error--text error-count"
-                    outlined
-                    small
-                  >
-                    {{ department.totalInError }} <span class="sr-only">errors</span>
-                  </v-chip>
-                  <v-icon
-                    v-if="!department.totalInError"
-                    aria-hidden="false"
-                    aria-label="no errors"
-                    class="success--text"
-                    :icon="mdiCheckCircle"
-                    role="img"
-                  />
-                </td>
-                <td class="department-confirmed">
-                  <v-icon
-                    v-if="department.totalConfirmed > 0 && department.totalConfirmed === department.totalEvaluations"
-                    aria-hidden="false"
-                    aria-label="all confirmed"
-                    class="success--text"
-                    :icon="mdiCheckCircle"
-                    role="img"
-                  />
-                  <span v-if="department.totalConfirmed === 0 || department.totalConfirmed < department.totalEvaluations">
-                    <span aria-hidden="true">{{ department.totalConfirmed }} / {{ department.totalEvaluations }}</span>
-                    <span class="sr-only">{{ department.totalConfirmed }} of {{ department.totalEvaluations }} confirmed</span>
-                  </span>
-                </td>
-                <td class="department-note">
-                  <pre class="body-2 text-condensed truncate-with-ellipsis">{{ get(department, 'note.note') }}</pre>
-                </td>
-              </tr>
-            </template>
-          </tbody>
+                    <span v-if="size(getCatalogListings(department))">({{ getCatalogListings(department).join(', ') }})</span>
+                  </router-link>
+                </div>
+              </td>
+              <td :id="`last-updated-dept-${department.id}`" class="department-lastUpdated">
+                <span v-if="department.lastUpdated">
+                  {{ toLocaleFromISO(department.lastUpdated) }}
+                </span>
+              </td>
+              <td class="department-errors">
+                <v-chip
+                  v-if="department.totalInError"
+                  :id="`errors-count-dept-${department.id}`"
+                  class="error error--text error-count"
+                  outlined
+                  small
+                >
+                  {{ department.totalInError }} <span class="sr-only">errors</span>
+                </v-chip>
+                <v-icon
+                  v-if="!department.totalInError"
+                  aria-hidden="false"
+                  aria-label="no errors"
+                  class="success--text"
+                  :icon="mdiCheckCircle"
+                  role="img"
+                />
+              </td>
+              <td class="department-confirmed">
+                <v-icon
+                  v-if="department.totalConfirmed > 0 && department.totalConfirmed === department.totalEvaluations"
+                  aria-hidden="false"
+                  aria-label="all confirmed"
+                  class="success--text"
+                  :icon="mdiCheckCircle"
+                  role="img"
+                />
+                <span v-if="department.totalConfirmed === 0 || department.totalConfirmed < department.totalEvaluations">
+                  <span aria-hidden="true">{{ department.totalConfirmed }} / {{ department.totalEvaluations }}</span>
+                  <span class="sr-only">{{ department.totalConfirmed }} of {{ department.totalEvaluations }} confirmed</span>
+                </span>
+              </td>
+              <td class="department-note">
+                <pre class="text-condensed truncate-with-ellipsis">{{ get(department, 'note.note') }}</pre>
+              </td>
+            </tr>
+          </template>
         </template>
       </v-data-table>
     </v-card>
@@ -162,17 +163,16 @@ const contextStore = useContextStore()
 const blockers = ref({})
 const departments = ref([])
 const departmentHeaders = [
-  {class: 'text-start text-nowrap px-4', text: 'Select', value: 'select', width: '30px'},
-  {class: 'text-nowrap pt-12 pb-3', text: 'Department', value: 'deptName', width: '50%'},
-  {class: 'text-nowrap pt-12 pb-3', text: 'Last Updated', value: 'lastUpdated', width: '20%'},
-  {class: 'text-nowrap pt-12 pb-3', text: 'Errors', value: 'totalInError', width: '10%'},
-  {class: 'text-nowrap pt-12 pb-3', text: 'Confirmed', value: 'totalConfirmed', width: '10%'},
-  {class: 'text-nowrap pt-12 pb-3', text: 'Notes', value: 'note.note', width: '30%'}
+  {key: 'select', class: 'text-start px-4', headerProps: {width: '30px'}, sortable: true, title: 'Select', value: 'select'},
+  {key: 'deptName', class: 'px-3', headerProps: {width: '50%'}, sortable: true, title: 'Department', value: 'deptName'},
+  {key: 'lastUpdated', class: 'px-3', headerProps: {width: '20%'}, sortable: true, title: 'Last Updated', value: 'lastUpdated'},
+  {key: 'totalInError', class: 'px-3', headerProps: {width: '10%'}, sortable: true, title: 'Errors', value: 'totalInError'},
+  {key: 'totalConfirmed', class: 'px-3', headerProps: {width: '10%'}, sortable: true, title: 'Confirmed', value: 'totalConfirmed'},
+  {key: 'note', class: 'px-3', headerProps: {width: '30%'}, sortable: true, title: 'Notes', value: 'note.note'}
 ]
 const isCreatingNotification = ref(false)
 const selectedDepartmentIds = ref([])
-const sortBy = ref(null)
-const sortDesc = ref(false)
+const sortBy = ref([{key: 'deptName', order: 'asc'}])
 
 const allDepartmentsSelected = computed(() => {
   return !!(size(selectedDepartmentIds.value) && size(selectedDepartmentIds.value) === size(departments.value))
@@ -198,13 +198,13 @@ const someDepartmentsSelected = computed(() => {
 })
 
 onMounted(() => {
-  useContextStore().loadingStart()
-  alertScreenReader(`Loading ${useContextStore().selectedTermName}`)
+  contextStore.loadingStart()
+  alertScreenReader(`Loading ${contextStore.selectedTermName}`)
   departments.value = []
-  getDepartmentsEnrolled(true, false, true, useContextStore().selectedTermId).then(data => {
+  getDepartmentsEnrolled(true, false, true, contextStore.selectedTermId).then(data => {
     departments.value = data
     loadBlockers().then(() => {
-      useContextStore().loadingComplete(`Evaluation Status Dashboard for ${useContextStore().selectedTermName}`)
+      contextStore.loadingComplete(`Evaluation Status Dashboard for ${contextStore.selectedTermName}`)
       putFocusNextTick('page-title')
     })
   })
@@ -237,11 +237,6 @@ const loadBlockers = () => {
     })
     resolve()
   })
-}
-
-const sort = (sortBy, sortDesc) => {
-  sortBy.value = sortBy
-  sortDesc.value = sortDesc
 }
 
 const toggleSelect = department => {
@@ -281,9 +276,5 @@ const toggleSelectAll = () => {
   border-width: 2px;
   font-weight: bold;
   padding: 0 7px;
-}
-.notify-all {
-  position: absolute;
-  top: 0;
 }
 </style>

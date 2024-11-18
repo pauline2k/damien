@@ -48,7 +48,7 @@
                 <template #label>
                   <span
                     v-if="!(someEvaluationsSelected || allEvaluationsSelected)"
-                    class="text-nowrap pl-1 py-2"
+                    class="text-no-wrap pl-1 py-2"
                     :class="{'sr-only': someEvaluationsSelected || allEvaluationsSelected}"
                   >
                     {{ someEvaluationsSelected || allEvaluationsSelected ? 'Unselect' : 'Select' }} all
@@ -65,7 +65,7 @@
             v-model="selectedFilterTypes"
             aria-controls="evaluation-table"
             borderless
-            dense
+            density="compact"
             multiple
             rounded
           >
@@ -121,24 +121,29 @@
     </div>
     <v-data-table
       id="evaluation-table"
+      v-model:sort-by="sortBy"
       aria-label="Evaluations"
-      class="mt-3"
-      disable-pagination
-      :headers="evaluationHeaders"
-      :search="searchFilter"
+      class="v-table-hidden-row-override mt-3"
       :custom-filter="customFilter"
+      density="compact"
+      :headers="evaluationHeaders"
       hide-default-footer
-      hide-default-header
       :items="evaluations"
       :loading="contextStore.loading"
-      :sort-by.sync="sortBy"
-      :sort-desc.sync="sortDesc"
-      @current-items="onChangeSearchFilter"
+      must-sort
+      :search="searchFilter"
+      :sort-by="sortBy"
+      @update:current-items="onChangeSearchFilter"
       @update:sort-by="onSort"
-      @update:sort-desc="onSort"
     >
-      <template #header="{props: {headers}}">
-        <SortableTableHeader :headers="headers" :on-sort="sort" />
+      <template #headers="{columns, isSorted, toggleSort, getSortIcon, sortBy: _sortBy}">
+        <SortableTableHeader
+          :columns="columns"
+          :is-sorted="isSorted"
+          :on-sort="toggleSort"
+          :sort-desc="get(_sortBy, 'order') === 'desc'"
+          :sort-icon="getSortIcon"
+        />
       </template>
       <template #body="{items}">
         <TransitionGroup
@@ -158,7 +163,7 @@
                     {{ get(evaluation.department, 'name') }}
                   </router-link>
                 </td>
-                <td v-if="!readonly && allowEdits && !(allowEdits && isEditing(evaluation))" class="align-middle text-center pr-1">
+                <td v-if="!readonly && allowEdits && !(allowEdits && isEditing(evaluation))" :id="`evaluation-${rowIndex}-select`" class="align-middle text-center pr-1">
                   <v-checkbox
                     v-if="!isEditing(evaluation)"
                     :id="`evaluation-${rowIndex}-checkbox`"
@@ -580,16 +585,7 @@ const filterTypes = {
   ignore: {label: 'Ignore', enabled: false}
 }
 const focusedEditButtonEvaluationId = ref(undefined)
-let evaluationHeaders = [
-  {class: 'text-center text-nowrap', text: 'Status', value: 'status', width: '115px'},
-  {class: 'text-start text-nowrap', text: 'Last Updated', value: 'lastUpdated', width: '5%'},
-  {class: 'text-start text-nowrap', text: 'Course Number', value: 'sortableCourseNumber', width: '5%'},
-  {class: 'text-start course-name', text: 'Course Name', value: 'sortableCourseName', width: '20%'},
-  {class: 'text-start text-nowrap', text: 'Instructor', value: 'sortableInstructor', width: '20%'},
-  {class: 'text-start', text: 'Department Form', value: 'departmentForm.name', width: '20%'},
-  {class: 'text-start', text: 'Evaluation Type', value: 'evaluationType.name', width: '20%'},
-  {class: 'text-start text-nowrap', text: 'Evaluation Period', value: 'startDate', width: '10%'}
-]
+const evaluationHeaders = ref([])
 const isConfirmingCancelEdit = ref(false)
 const isConfirmingNonSisInstructor = ref(false)
 const markAsDoneWarning = ref(undefined)
@@ -605,8 +601,7 @@ const selectedDepartmentForm = ref(undefined)
 const selectedEvaluationStatus = ref(undefined)
 const selectedEvaluationType = ref(undefined)
 const selectedStartDate = ref(undefined)
-const sortBy = ref(undefined)
-const sortDesc = ref(false)
+const sortBy = ref([{key: 'sortableCourseName', order: 'asc'}])
 
 const selectedFilterTypes = defineModel({
   get() {
@@ -637,12 +632,21 @@ const someEvaluationsSelected = computed(() => {
 })
 
 onMounted(() => {
+  evaluationHeaders.value = [
+    {key: 'status', class: 'text-center text-no-wrap', headerProps: {minWidth: '115px', width: '10%'}, sortable: true, title: 'Status', value: 'status'},
+    {key: 'lastUpdated', class: 'text-start text-no-wrap', headerProps: {width: '5%'}, sortable: true, title: 'Last Updated', value: 'lastUpdated'},
+    {key: 'courseNumber', class: 'text-start text-no-wrap', headerProps: {width: '5%'}, sortable: true, title: 'Course Number', value: 'sortableCourseNumber'},
+    {key: 'courseName', class: 'text-start course-name', headerProps: {width: '15%'}, sortable: true, title: 'Course Name', value: 'sortableCourseName'},
+    {key: 'instructor', class: 'text-start text-no-wrap', headerProps: {width: '15%'}, sortable: true, title: 'Instructor', value: 'sortableInstructor'},
+    {key: 'departmentForm', class: 'text-start', headerProps: {width: '20%'}, sortable: true, title: 'Department Form', value: 'departmentForm.name'},
+    {key: 'evaluationType', class: 'text-start', headerProps: {width: '20%'}, sortable: true, title: 'Evaluation Type', value: 'evaluationType.name'},
+    {key: 'startDate', class: 'text-start text-no-wrap', headerProps: {width: '10%'}, sortable: true, title: 'Evaluation Period', value: 'startDate'}
+  ]
   if (props.readonly) {
-    evaluationHeaders = [{class: 'text-start text-nowrap pl-3', text: 'Department', value: 'department.id'}].concat(evaluationHeaders)
+    evaluationHeaders.value.unshift({key: 'departmentId', class: 'text-start text-no-wrap pl-3', sortable: true, title: 'Department', value: 'department.id'})
   } else if (allowEdits.value) {
-    evaluationHeaders = [{class: 'text-start text-nowrap pl-1', text: 'Select', value: 'isSelected', width: '30px'}].concat(evaluationHeaders)
+    evaluationHeaders.value.unshift({key: 'select', class: 'text-start text-no-wrap pl-1', headerProps: {maxWidth: '0px', minWidth: '0px', width: '0px'}, sortable: true, title: 'Select', value: 'isSelected'})
   }
-
   departmentForms.value = [{id: null, name: 'Revert'}].concat(useDepartmentStore().activeDepartmentForms)
   evaluationTypes.value = [{id: null, name: 'Revert'}].concat(useContextStore().config.evaluationTypes)
 
@@ -849,11 +853,6 @@ const selectInstructor = instructor => {
   pendingInstructor.value = instructor
 }
 
-const sort = (sortBy, sortDesc) => {
-  sortBy.value = sortBy
-  sortDesc.value = sortDesc
-}
-
 const statusFilterEnabled = evaluation => {
   const status = evaluation.status || 'unmarked'
   return filterTypes[status].enabled
@@ -1040,7 +1039,6 @@ tr.border-top-none td {
 }
 .sticky {
   position: sticky;
-  top: 56px;
   z-index: 10;
 }
 .sticky-dark {
