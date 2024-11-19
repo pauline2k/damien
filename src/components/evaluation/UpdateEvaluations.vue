@@ -22,7 +22,7 @@
             input-class="bulk-action-form-input"
             :instructor-lookup="true"
             label="Instructor: "
-            label-class="v-label d-flex text-nowrap align-center"
+            label-class="v-label d-flex text-no-wrap align-center"
             :on-select-result="selectInstructor"
             placeholder="Name or UID"
             :required="isInstructorRequired"
@@ -34,7 +34,7 @@
             <v-col cols="8">
               <v-checkbox
                 v-model="midtermFormEnabled"
-                class="bulk-action-form-input text-nowrap my-1"
+                class="bulk-action-form-input text-no-wrap my-1"
                 color="tertiary"
                 :disabled="disableControls"
                 hide-details
@@ -49,7 +49,7 @@
               <label
                 id="update-evaluations-select-type-label"
                 for="update-evaluations-select-type"
-                class="v-label d-block text-nowrap py-1"
+                class="v-label d-block text-no-wrap py-1"
               >
                 Evaluation Type:
               </label>
@@ -69,7 +69,7 @@
             <v-col cols="4">
               <label
                 for="update-evaluations-start-date"
-                class="v-label text-nowrap"
+                class="v-label text-no-wrap"
                 :class="theme.global.current.value.dark ? 'theme--dark' : 'theme--light'"
               >
                 Evaluation Start Date:
@@ -377,7 +377,7 @@ onMounted(() => {
 watch(midtermFormEnabled, v => {
   isInstructorRequired.value = !v
 })
-watch(props.isUpdating, v => {
+watch(() => props.isUpdating, v => {
   model.value = v
 })
 watch(model, () => {

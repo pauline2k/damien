@@ -6,7 +6,7 @@
           <v-btn
             :id="`apply-course-action-btn-${key}`"
             :key="key"
-            class="text-capitalize text-nowrap mx-0 px-2"
+            class="text-capitalize text-no-wrap mx-0 px-2"
             :color="theme.current.dark ? 'tertiary' : 'secondary'"
             :disabled="disableControls || !allowEdits || !selectedEvaluationIds.length || isLoading || isInvalidAction(action)"
             @click.stop="action.apply(key)"

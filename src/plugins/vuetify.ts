@@ -13,7 +13,7 @@ import {VCheckbox} from 'vuetify/components/VCheckbox'
 import {VChip} from 'vuetify/components/VChip'
 import {VCol, VContainer, VSpacer, VRow} from 'vuetify/components/VGrid'
 import {VCombobox} from 'vuetify/components/VCombobox'
-import {VDataTable} from 'vuetify/components/VDataTable'
+import {VDataTable, VDataTableVirtual} from 'vuetify/components/VDataTable'
 import {VDialog} from 'vuetify/components/VDialog'
 import {VDivider} from 'vuetify/components/VDivider'
 import {VExpansionPanel, VExpansionPanels} from 'vuetify/components/VExpansionPanel'
@@ -53,6 +53,7 @@ export default createVuetify({
     VCombobox,
     VContainer,
     VDataTable,
+    VDataTableVirtual,
     VDialog,
     VDivider,
     VExpansionPanel,

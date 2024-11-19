@@ -54,7 +54,7 @@
                 v-model="newItemName"
                 class="mt-1"
                 color="tertiary"
-                dense
+                density="compact"
                 :disabled="isSaving"
                 outlined
                 required
@@ -85,18 +85,23 @@
             <div class="nannys-list overflow-y-auto">
               <v-data-table
                 id="dept-forms-table"
-                dense
+                density="compact"
                 disable-pagination
-                :headers="[{class: 'pl-3', text: 'Form Name', value: 'name'}]"
+                :headers="[{key: 'name', class: 'pl-3', sortable: true, title: 'Form Name', value: 'name'}]"
                 hide-default-footer
-                hide-default-header
                 :items="departmentForms"
                 item-key="name"
-                :sort-by.sync="sortBy.departmentForms"
-                :sort-desc.sync="sortDesc.departmentForms"
+                :sort-by="sortBy.departmentForms"
               >
-                <template #header="{props: {headers}}">
-                  <SortableTableHeader :id="'form-'" :headers="headers" :on-sort="sortDepartmentForms" />
+                <template #headers="{columns, isSorted, toggleSort, getSortIcon, sortBy: _sortBy}">
+                  <SortableTableHeader
+                    :id="'form-'"
+                    :columns="columns"
+                    :is-sorted="isSorted"
+                    :on-sort="toggleSort"
+                    :sort-desc="get(_sortBy, 'order') === 'desc'"
+                    :sort-icon="getSortIcon"
+                  />
                 </template>
                 <template #item.name="{item}">
                   <div class="d-flex justify-space-between">
@@ -154,7 +159,7 @@
                 v-model="newItemName"
                 class="mt-1"
                 color="tertiary"
-                dense
+                density="compact"
                 :disabled="isSaving"
                 outlined
                 required
@@ -185,18 +190,23 @@
             <div class="nannys-list overflow-y-auto">
               <v-data-table
                 id="evaluation-types-table"
-                dense
+                density="compact"
                 disable-pagination
-                :headers="[{class: 'pl-3', text: 'Type Name', value: 'name'}]"
+                :headers="[{key: 'name', class: 'pl-3', sortable: true, title: 'Type Name', value: 'name'}]"
                 hide-default-footer
-                hide-default-header
                 :items="evaluationTypes"
                 item-key="name"
-                :sort-by.sync="sortBy.evaluationTypes"
-                :sort-desc.sync="sortDesc.evaluationTypes"
+                :sort-by="sortBy.evaluationTypes"
               >
-                <template #header="{props: {headers}}">
-                  <SortableTableHeader :id="'eval-'" :headers="headers" :on-sort="sortEvaluationTypes" />
+                <template #headers="{columns, isSorted, toggleSort, getSortIcon, sortBy: _sortBy}">
+                  <SortableTableHeader
+                    :id="'eval-'"
+                    :columns="columns"
+                    :is-sorted="isSorted"
+                    :on-sort="toggleSort"
+                    :sort-desc="get(_sortBy, 'order') === 'desc'"
+                    :sort-icon="getSortIcon"
+                  />
                 </template>
                 <template #item.name="{item}">
                   <div class="d-flex justify-space-between">
@@ -257,7 +267,7 @@
                 v-model="newInstructor.uid"
                 class="mt-1"
                 color="tertiary"
-                dense
+                density="compact"
                 :disabled="isSaving"
                 outlined
                 required
@@ -271,7 +281,7 @@
                 v-model="newInstructor.csid"
                 class="mt-1"
                 color="tertiary"
-                dense
+                density="compact"
                 :disabled="isSaving"
                 outlined
                 :rules="rules.numeric"
@@ -284,7 +294,7 @@
                 v-model="newInstructor.firstName"
                 class="mt-1"
                 color="tertiary"
-                dense
+                density="compact"
                 :disabled="isSaving"
                 outlined
               />
@@ -296,7 +306,7 @@
                 v-model="newInstructor.lastName"
                 class="mt-1"
                 color="tertiary"
-                dense
+                density="compact"
                 :disabled="isSaving"
                 outlined
                 required
@@ -309,7 +319,7 @@
                 v-model="newInstructor.emailAddress"
                 class="mt-1"
                 color="tertiary"
-                dense
+                density="compact"
                 :disabled="isSaving"
                 outlined
                 required
@@ -340,17 +350,22 @@
             <div class="nannys-list overflow-y-auto">
               <v-data-table
                 id="instructors-table"
-                dense
+                density="compact"
                 disable-pagination
                 :headers="instructorHeaders"
                 hide-default-footer
-                hide-default-header
                 :items="instructors"
-                :sort-by.sync="sortBy.instructors"
-                :sort-desc.sync="sortDesc.instructors"
+                :sort-by="sortBy.instructors"
               >
-                <template #header="{props: {headers}}">
-                  <SortableTableHeader :id="'instructor-'" :headers="headers" :on-sort="sortInstructors" />
+                <template #headers="{columns, isSorted, toggleSort, getSortIcon, sortBy: _sortBy}">
+                  <SortableTableHeader
+                    :id="'instructor-'"
+                    :columns="columns"
+                    :is-sorted="isSorted"
+                    :on-sort="toggleSort"
+                    :sort-desc="get(_sortBy, 'order') === 'desc'"
+                    :sort-icon="getSortIcon"
+                  />
                 </template>
                 <template #item.delete="{ item }">
                   <v-btn
@@ -425,13 +440,16 @@ import {get} from 'lodash'
 import {getAutoPublishStatus, setAutoPublishStatus} from '@/api/config'
 import {mdiPlusThick} from '@mdi/js'
 import {onMounted, ref} from 'vue'
+import {storeToRefs} from 'pinia'
 import {useContextStore} from '@/stores/context'
 import {useTheme} from 'vuetify'
 import {useListManagementStore} from '@/stores/list-management-session'
 
 const contextStore = useContextStore()
+const listStore = useListManagementStore()
 
 const autoPublishEnabled = ref(undefined)
+const {departmentForms, disableControls, evaluationTypes, instructors, isAddingDepartmentForm, isAddingEvaluationType, isAddingInstructor, isConfirming} = storeToRefs(listStore)
 const instructorValid = ref(true)
 const rules = {
   email: [
@@ -441,32 +459,27 @@ const rules = {
   numeric: [v => !/[^\d]/.test(v) || 'Invalid number.']
 }
 const instructorHeaders = [
-  {class: 'pl-3', text: 'UID', value: 'uid'},
-  {class: 'pl-3', text: 'SID', value: 'csid'},
-  {class: 'pl-3', text: 'First Name', value: 'firstName'},
-  {class: 'pl-3', text: 'Last Name', value: 'lastName'},
-  {class: 'pl-3', text: 'Email', value: 'email'},
-  {class: 'pl-3', text: '', value: 'delete', sortable: false}
+  {key: 'uid', class: 'pl-3', sortable: true, title: 'UID', value: 'uid'},
+  {key: 'csid', class: 'pl-3', sortable: true, title: 'SID', value: 'csid'},
+  {key: 'firstName', class: 'pl-3', sortable: true, title: 'First Name', value: 'firstName'},
+  {key: 'lastName', class: 'pl-3', sortable: true, title: 'Last Name', value: 'lastName'},
+  {key: 'email', class: 'pl-3', sortable: true, title: 'Email', value: 'email'},
+  {key: 'delete', class: 'pl-3', sortable: false, title: '', value: 'delete'}
 ]
 const newInstructor = ref(null)
 const newItemName = ref(null)
 const sortBy = ref({
-  departmentForms: null,
-  evaluationTypes: null,
-  instructors: null
-})
-const sortDesc = ref({
-  departmentForms: null,
-  evaluationTypes: null,
-  instructors: null
+  departmentForms: [{key: 'name', order: 'asc'}],
+  evaluationTypes: [{key: 'name', order: 'asc'}],
+  instructors: [{key: 'uid', order: 'asc'}]
 })
 const theme = useTheme()
 
 onMounted(() => {
-  useContextStore().loadingStart()
+  contextStore.loadingStart()
   resetNewInstructor()
-  useListManagementStore().init().then(() => {
-    useContextStore().loadingComplete('List Management')
+  listStore.init().then(() => {
+    contextStore.loadingComplete('List Management')
     putFocusNextTick('page-title')
   })
   getAutoPublishStatus().then(data => {
@@ -475,45 +488,45 @@ onMounted(() => {
 })
 
 const afterDelete = deletedItem => {
-  useListManagementStore().setDisableControls(false)
+  listStore.setDisableControls(false)
   alertScreenReader(`Deleted ${deletedItem.description} ${deletedItem.name}.`)
 }
 
 const cancelAdd = elementId => {
   newItemName.value = ''
   resetNewInstructor()
-  useListManagementStore().reset()
+  listStore.reset()
   alertScreenReader('Canceled. Nothing saved.')
   putFocusNextTick(elementId)
 }
 
 const cancelDelete = () => {
   putFocusNextTick(this.itemToDelete.elementId)
-  useListManagementStore().reset()
+  listStore.reset()
   alertScreenReader('Canceled. Nothing deleted.')
 }
 
 const confirmDelete = () => {
-  useListManagementStore().setDisableControls(true)
-  useListManagementStore().onDelete().then(afterDelete)
+  listStore.setDisableControls(true)
+  listStore.onDelete().then(afterDelete)
 }
 
 const onClickAddDepartmentForm = () => {
-  useListManagementStore().setAddingDepartmentForm().then(() => {
+  listStore.setAddingDepartmentForm().then(() => {
     newItemName.value = ''
     putFocusNextTick('input-dept-form-name')
   })
 }
 
 const onClickAddEvaluationType = () => {
-  useListManagementStore().setAddingEvaluationType().then(() => {
+  listStore.setAddingEvaluationType().then(() => {
     newItemName.value = ''
     putFocusNextTick('input-eval-type-name')
   })
 }
 
 const onClickAddInstructor = () => {
-  useListManagementStore().setAddingInstructor().then(() => {
+  listStore.setAddingInstructor().then(() => {
     resetNewInstructor()
     putFocusNextTick('input-instructor-uid')
   })
@@ -521,7 +534,7 @@ const onClickAddInstructor = () => {
 
 const onSubmitAddDepartmentForm = () => {
   if (newItemName.value) {
-    useListManagementStore().addDepartmentForm(newItemName.value).then(() => {
+    listStore.addDepartmentForm(newItemName.value).then(() => {
       alertScreenReader(`Created department form ${newItemName.value}.`)
       newItemName.value = ''
       putFocusNextTick('add-dept-form-btn')
@@ -531,7 +544,7 @@ const onSubmitAddDepartmentForm = () => {
 
 const onSubmitAddInstructor = () => {
   if (newInstructor.value) {
-    useListManagementStore().addInstructor(newInstructor.value).then(() => {
+    listStore.addInstructor(newInstructor.value).then(() => {
       alertScreenReader(`Added instructor with UID ${newInstructor.value.uid}.`)
       resetNewInstructor()
       putFocusNextTick('add-instructor-btn')
@@ -541,7 +554,7 @@ const onSubmitAddInstructor = () => {
 
 const onSubmitAddEvaluationType = () => {
   if (newItemName.value) {
-    useListManagementStore().addEvaluationType(newItemName.value).then(() => {
+    listStore.addEvaluationType(newItemName.value).then(() => {
       alertScreenReader(`Created evaluation type ${newItemName.value}.`)
       newItemName.value = ''
       putFocusNextTick('add-eval-type-btn')
@@ -557,21 +570,6 @@ const resetNewInstructor = () => {
     'lastName': null,
     'uid': null
   }
-}
-
-const sortDepartmentForms = (sortBy, sortDesc) => {
-  sortBy.value.departmentForms = sortBy
-  sortDesc.value.departmentForms = sortDesc
-}
-
-const sortEvaluationTypes = (sortBy, sortDesc) => {
-  sortBy.value.evaluationTypes = sortBy
-  sortDesc.value.evaluationTypes = sortDesc
-}
-
-const sortInstructors = (sortBy, sortDesc) => {
-  sortBy.value.instructors = sortBy
-  sortDesc.value.instructors = sortDesc
 }
 
 const toggleAutoPublishEnabled = enabled => {

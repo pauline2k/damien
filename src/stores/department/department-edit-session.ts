@@ -312,7 +312,7 @@ export const useDepartmentStore = defineStore('department', {
         })
       })
     },
-    updateNote(note: string, termId: string) {
+    updateNote({note, termId}) {
       this.disableControls = true
       return new Promise<void>(resolve => {
         const departmentId = get(this.department, 'id', NaN)

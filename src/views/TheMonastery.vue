@@ -131,13 +131,13 @@ const contextStore = useContextStore()
 const {config} = storeToRefs(contextStore)
 const departments = ref([])
 const headers = [
-  {class: 'text-nowrap', text: 'Department', value: 'deptName'},
-  {class: 'text-nowrap', sortable: false, text: 'Courses'},
-  {class: 'text-nowrap', sortable: false, text: 'Contacts'},
-  {class: 'text-nowrap', sortable: false, text: 'UID'},
-  {class: 'text-nowrap', sortable: false, text: 'Email Address'},
+  {class: 'text-no-wrap', text: 'Department', value: 'deptName'},
+  {class: 'text-no-wrap', sortable: false, text: 'Courses'},
+  {class: 'text-no-wrap', sortable: false, text: 'Contacts'},
+  {class: 'text-no-wrap', sortable: false, text: 'UID'},
+  {class: 'text-no-wrap', sortable: false, text: 'Email Address'},
   {sortable: false, text: 'Receives Notifications'},
-  {class: 'text-nowrap', sortable: false, text: 'Blue Access'},
+  {class: 'text-no-wrap', sortable: false, text: 'Blue Access'},
 ]
 const hoveredDept = ref(undefined)
 const theme = useTheme()
