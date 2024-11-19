@@ -6,16 +6,10 @@ phases:
       nodejs: 20
       python: 3.11
     commands:
-      - echo -e '@neverendingsupport:registry=https://registry.nes.herodevs.com/npm/pkg/\n//registry.nes.herodevs.com/npm/pkg/:_authToken="'${NES_AUTH_TOKEN}'"' > .npmrc
       - npm install
-
-  pre_build:
-    commands:
-      - echo "pre_build phase"
 
   build:
     commands:
-      - npm install -g @vue/cli
       - npm run build-vue
 
   post_build:
