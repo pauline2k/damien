@@ -5,14 +5,14 @@
         id="dev-auth-uid"
         v-model="uid"
         autocomplete="off"
+        bg-color="surface"
         density="comfortable"
         flat
         hide-details
         light
-        outlined
-        solo
         placeholder="UID"
         :rules="[v => !!v || 'Required']"
+        variant="outlined"
         @keyup.enter="logIn"
       />
     </div>
@@ -21,14 +21,15 @@
         id="dev-auth-password"
         v-model="password"
         autocomplete="off"
+        bg-color="surface"
         density="comfortable"
+        flat
         hide-details
         light
-        outlined
-        solo
         placeholder="Password"
         :rules="[v => !!v || 'Required']"
         type="password"
+        variant="outlined"
         @keyup.enter="logIn"
       />
     </div>

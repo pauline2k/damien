@@ -6,7 +6,7 @@
         class="text-title"
         tabindex="-1"
       >
-        List Management
+        Settings
       </h1>
       <v-spacer class="d-flex justify-center"></v-spacer>
       <v-banner

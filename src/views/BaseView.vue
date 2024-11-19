@@ -1,16 +1,15 @@
 <template>
-  <v-app :style="{background: theme.global.current.value.dark ? theme.themes.value.dark.colors.background : theme.themes.value.light.colors.background}">
-    <a
-      id="skip-to-content-link"
-      href="#content"
-      class="sr-only"
-      tabindex="0"
-    >
-      Skip to main content
-    </a>
+  <a
+    id="skip-to-content-link"
+    href="#content"
+    class="sr-only"
+    tabindex="0"
+  >
+    Skip to main content
+  </a>
+  <v-layout ref="layout">
     <v-app-bar
       app
-      class="align-center nav"
       clipped-left
       color="primary"
       dark
@@ -39,46 +38,65 @@
       </div>
     </v-app-bar>
     <v-navigation-drawer
+      aria-labelledby="nav-header"
+      class="font-size-14 pt-2"
       color="secondary"
-      :mobile="false"
-      :rail="rail"
-      @mouseenter="() => rail = false"
-      @mouseleave="() => rail = true"
+      permanent
+      :rail="isSidebarCollapsed"
+      rail-width="50"
+      role="navigation"
+      :scrim="false"
+      tag="nav"
+      width="150"
     >
+      <template #prepend>
+        <h2 id="nav-header" class="sr-only" tabindex="-1">Main Menu</h2>
+      </template>
+      <template #append>
+        <div class="d-flex justify-end pa-2">
+          <v-btn
+            id="sidebar-toggle-btn"
+            aria-hidden
+            class="px-0"
+            color="primary-contrast"
+            variant="tonal"
+            min-width="34"
+            @click="() => isSidebarCollapsed = !isSidebarCollapsed"
+          >
+            <v-icon :icon="isSidebarCollapsed ? mdiArrowExpandRight : mdiArrowCollapseLeft" />
+          </v-btn>
+        </div>
+      </template>
       <v-list-item
         v-for="(item, index) in navItems"
         :id="`sidebar-link-${index}`"
         :key="index"
-        class="sidebar-link"
+        class="text-primary-contrast py-4 px-3"
         link
         role="link"
         @click="toRoute(item.path)"
       >
         <div class="align-center d-flex">
           <v-icon :icon="item.icon" />
-          <v-slide-x-transition>
-            <div v-show="!rail" class="ml-2 text-no-wrap">
-              {{ item.title }}
-            </div>
-          </v-slide-x-transition>
+          <div class="ml-3 text-no-wrap" role="link">
+            {{ item.title }}
+          </div>
         </div>
       </v-list-item>
       <v-list-item
         :id="`sidebar-link-${size(navItems)}`"
-        class="mt-auto pr-1 sidebar-link text-primary-contrast"
+        class="text-primary-contrast py-4 px-3"
         @click="toggleColorScheme"
       >
         <div class="align-center d-flex">
           <v-icon aria-label="Lightbulb icon" :icon="mdiLightbulb" />
-          <v-slide-x-transition>
-            <div v-show="!rail" class="ml-2 text-no-wrap">
-              {{ theme.global.current.value.dark ? 'Light' : 'Dark' }} mode
-            </div>
-          </v-slide-x-transition>
+          <div class="ml-3 text-no-wrap" role="button">
+            {{ theme.global.current.value.dark ? 'Light' : 'Dark' }} mode
+          </div>
         </div>
       </v-list-item>
     </v-navigation-drawer>
-    <v-main id="content" class="ma-0">
+    <v-main id="content" class="ma-0" :style="`--v-layout-bottom: ${footerHeight}px;`">
       <Snackbar />
       <Spinner v-if="contextStore.loading" />
       <div
@@ -99,7 +117,7 @@
       <router-view :key="stripAnchorRef(route.fullPath)" class="px-4"></router-view>
     </v-main>
     <DamienFooter />
-  </v-app>
+  </v-layout>
 </template>
 
 <script setup>
@@ -107,30 +125,44 @@ import DamienFooter from '@/components/util/DamienFooter'
 import Snackbar from '@/components/util/Snackbar'
 import Spinner from '@/components/util/Spinner'
 import {alertScreenReader, stripAnchorRef} from '@/lib/utils'
+import {computed, onMounted, ref} from 'vue'
+import {get, map, size} from 'lodash'
 import {getCasLogoutUrl} from '@/api/auth'
-import {map, size} from 'lodash'
-import {mdiAccountGroup, mdiAlertCircle, mdiLightbulb, mdiListStatus, mdiPlaylistEdit} from '@mdi/js'
-import {onMounted, ref} from 'vue'
+import {
+  mdiAccountGroup,
+  mdiAlertCircle,
+  mdiArrowCollapseLeft,
+  mdiArrowExpandRight,
+  mdiLightbulb,
+  mdiListStatus,
+  mdiPlaylistEdit
+} from '@mdi/js'
 import {useContextStore} from '@/stores/context'
 import {useTheme} from 'vuetify'
 import {useRoute, useRouter} from 'vue-router'
 
 const contextStore = useContextStore()
 const currentUser = contextStore.currentUser
+const isSidebarCollapsed = ref(false)
+const layout = ref()
 const navItems = ref(undefined)
-const rail = ref(true)
 const route = useRoute()
 const router = useRouter()
 const theme = useTheme()
+
+const footerHeight = computed(() => {
+  const footer = layout.value ? layout.value.getLayoutItem('footer') : null
+  return get(footer, 'size', 60)
+})
 
 onMounted(() => {
   prefersColorScheme()
   if (currentUser.isAdmin) {
     navItems.value = [
-      {title: 'Status Board', icon: mdiListStatus, path: '/status'},
+      {title: 'Status', icon: mdiListStatus, path: '/status'},
       {title: 'Publish', icon: mdiAlertCircle, path: '/publish'},
-      {title: 'Group Management', icon: mdiAccountGroup, path: '/departments'},
-      {title: 'List Management', icon: mdiPlaylistEdit, path: '/lists'}
+      {title: 'Departments', icon: mdiAccountGroup, path: '/departments'},
+      {title: 'Settings', icon: mdiPlaylistEdit, path: '/lists'}
     ]
   } else if (size(currentUser.departments)) {
     navItems.value = map(currentUser.departments, department => {
@@ -169,9 +201,6 @@ const toRoute = path => router.push({path})
 </script>
 
 <style scoped>
-.nav {
-  z-index: 204 !important;
-}
 .service-announcement {
   background-color: #f0ad4e;
   color: #000;
@@ -181,14 +210,6 @@ const toRoute = path => router.push({path})
   top: 56px;
   width: 100%;
   z-index: 2;
-}
-.sidebar-link {
-  height: 60px;
-  max-height: 60px;
-}
-.sidebar-link-content {
-  height: 56px;
-  overflow: hidden;
 }
 pre {
   white-space: pre-line;

@@ -1,7 +1,7 @@
 <template>
   <div class="pt-2">
     <div class="pb-2 d-flex">
-      <h1 id="page-title" class="text-title">Group Management</h1>
+      <h1 id="page-title" class="text-title">Departments</h1>
       <v-spacer class="d-flex justify-center"></v-spacer>
       <v-banner
         v-if="config.isVueAppDebugMode && config.easterEggMonastery && theme.current.dark"

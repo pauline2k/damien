@@ -1,33 +1,34 @@
 <template>
-  <footer id="footer" class="bg-secondary-darken-2 footer">
-    <v-container fluid>
-      <v-row no-gutters>
-        <v-col aria-label="Feedback" class="text-left">
-          Problem? Question?
-          <a
-            id="damien-support-mailto"
-            class="text-decoration-none text-white"
-            :href="`mailto:${emailSupport}`"
-            target="_blank"
-          >
-            Email us at {{ emailSupport }}
-            <span class="sr-only"> (opens a new window)</span>
-          </a>
-        </v-col>
-        <v-col>
-          <div class="float-right">
-            <span v-if="contextStore.config.isVueAppDebugMode && screenReaderAlert.message">
-              {{ screenReaderAlert.message }}
-            </span>
-            <span v-if="!contextStore.config.isVueAppDebugMode || !screenReaderAlert.message">
-              <v-icon :icon="mdiCopyright" size="small" /> {{ new Date().getFullYear() }}
-              The Regents of the University of California
-            </span>
-          </div>
-        </v-col>
-      </v-row>
-    </v-container>
-  </footer>
+  <v-footer
+    id="footer"
+    app
+    class="footer font-size-14 bg-primary px-0"
+    name="footer"
+  >
+    <div class="d-flex justify-space-between w-100">
+      <div aria-label="Feedback" class="px-3">
+        Problem? Question?
+        <a
+          id="damien-support-mailto"
+          class="text-decoration-none text-white"
+          :href="`mailto:${emailSupport}`"
+          target="_blank"
+        >
+          Email us at {{ emailSupport }}
+          <span class="sr-only"> (opens a new window)</span>
+        </a>
+      </div>
+      <div class="ml-auto px-3">
+        <span v-if="contextStore.config.isVueAppDebugMode && screenReaderAlert.message">
+          {{ screenReaderAlert.message }}
+        </span>
+        <span v-if="!contextStore.config.isVueAppDebugMode || !screenReaderAlert.message">
+          <v-icon :icon="mdiCopyright" size="small" /><span class="sr-only">Copyright:</span> {{ new Date().getFullYear() }}
+          The Regents of the University of California
+        </span>
+      </div>
+    </div>
+  </v-footer>
 </template>
 
 <script setup>
@@ -42,9 +43,8 @@ const screenReaderAlert = contextStore.screenReaderAlert
 <style scoped>
 .footer {
   position: fixed;
-  left: 0;
   bottom: 0;
-  width: 100%;
+  width: calc(100% - 150px);
   z-index: 1100;
 }
 </style>
