@@ -3,9 +3,10 @@
     <v-btn
       v-if="!isAddingSection"
       id="add-course-section-btn"
-      class="text-capitalize pl-2 mr-3 mt-1"
+      class="text-capitalize pl-1 mr-3"
       color="tertiary"
       :disabled="!allowEdits"
+      variant="text"
       @click="() => isAddingSection = true"
     >
       <v-icon :icon="mdiPlusThick" />

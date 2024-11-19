@@ -1,53 +1,48 @@
 <template>
-  <div>
+  <div class="border-sm px-5 py-3 h-100">
     <h2
       id="notes-title"
-      class="pb-1 px-2"
       tabindex="-1"
     >
       Notes
     </h2>
-    <v-card
-      class="my-1 pa-2"
-      :flat="!isEditing"
-      :outlined="isEditing"
-    >
+    <v-card elevation="0" :flat="!isEditing">
       <div
         v-if="item && !isEditing"
         id="dept-note"
-        class="text-condensed pb-2 pl-4"
+        class="text-condensed pl-4"
       >
         <pre class="body-2 text-condensed text-prewrap">{{ item }} </pre>
       </div>
-      <v-form v-if="isEditing" class="pa-3">
+      <v-form v-if="isEditing" class="pt-2">
         <v-textarea
           id="dept-note-textarea"
           v-model="item"
           auto-grow
           color="tertiary"
           :disabled="disableControls || !isEditable"
-          flat
           hide-details="auto"
           outlined
+          rows="3"
+          variant="outlined"
           @keydown.esc="onCancelSave"
         />
       </v-form>
       <v-toolbar
         v-if="!isEditing"
         id="dept-note-actions"
+        color="transparent"
+        density="compact"
         flat
-        height="unset"
         tag="div"
       >
         <v-btn
           id="edit-dept-note-btn"
-          class="text-capitalize pa-0"
+          class="text-capitalize"
           color="tertiary"
+          slim
           :disabled="disableControls || !isEditable"
-          dark
-          height="unset"
-          min-width="unset"
-          text
+          variant="text"
           @click="onEdit"
         >
           {{ item ? 'Edit ' : 'Create ' }}<span class="sr-only">Note</span>
@@ -66,7 +61,6 @@
           :disabled="disableControls || !isEditable"
           height="unset"
           min-width="unset"
-          text
           @click.stop="() => isConfirming = true"
         >
           Delete <span class="sr-only">Note</span>
@@ -81,7 +75,7 @@
           :title="'Delete note?'"
         />
       </v-toolbar>
-      <div v-if="isEditing" class="pa-2">
+      <div v-if="isEditing" class="py-2">
         <v-btn
           id="save-dept-note-btn"
           class="text-capitalize mr-2"
@@ -98,7 +92,6 @@
           :disabled="disableControls || !isEditable"
           elevation="2"
           outlined
-          text
           @click="onCancelSave"
         >
           Cancel <span class="sr-only">{{ item ? 'Edit' : 'Create' }} Note</span>

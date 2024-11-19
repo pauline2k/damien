@@ -27,7 +27,7 @@
         </option>
       </select>
     </div>
-    <div class="flex-md-shrink-0">
+    <div class="flex-md-shrink-0 mr-3">
       <label for="toggle-term-locked" class="sr-only">
         Evaluation term is {{ contextStore.isSelectedTermLocked ? 'locked' : 'unlocked' }}.
         Evaluation term is {{ contextStore.isSelectedTermLocked ? 'locked' : 'unlocked' }}.

@@ -2,11 +2,7 @@
   <div class="pt-2">
     <v-row no-gutters>
       <v-col cols="9" class="d-flex align-center">
-        <h1
-          id="page-title"
-          class="py-2 text-title"
-          tabindex="-1"
-        >
+        <h1 id="page-title" tabindex="-1">
           Evaluation Status Dashboard - {{ contextStore.selectedTermName }}
         </h1>
       </v-col>
@@ -14,7 +10,7 @@
         <TermSelect />
       </v-col>
     </v-row>
-    <v-card v-if="!contextStore.loading" outlined class="elevation-1">
+    <v-card v-if="!contextStore.loading" outlined class="elevation-1 mt-4">
       <v-data-table
         id="department-table"
         density="compact"
