@@ -18,12 +18,6 @@ import {useContextStore} from '@/stores/context'
 const screenReaderAlert = useContextStore().screenReaderAlert
 </script>
 
-<script>
-export default {
-  name: 'App'
-}
-</script>
-
 <style>
   @import './assets/styles/damien-global.css';
 </style>

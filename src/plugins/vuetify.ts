@@ -16,7 +16,7 @@ import {VCombobox} from 'vuetify/components/VCombobox'
 import {VDataTable, VDataTableVirtual} from 'vuetify/components/VDataTable'
 import {VDialog} from 'vuetify/components/VDialog'
 import {VDivider} from 'vuetify/components/VDivider'
-import {VExpansionPanel, VExpansionPanels} from 'vuetify/components/VExpansionPanel'
+import {VExpansionPanel, VExpansionPanels, VExpansionPanelText, VExpansionPanelTitle} from 'vuetify/components/VExpansionPanel'
 import {VFooter} from 'vuetify/components/VFooter'
 import {VHover} from 'vuetify/components'
 import {VIcon} from 'vuetify/components/VIcon'
@@ -58,6 +58,8 @@ export default createVuetify({
     VDivider,
     VExpansionPanel,
     VExpansionPanels,
+    VExpansionPanelText,
+    VExpansionPanelTitle,
     VFooter,
     VHover,
     VIcon,

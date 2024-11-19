@@ -4,7 +4,7 @@
       <v-col cols="9" class="d-flex align-center">
         <h1
           id="page-title"
-          class="py-2 text-title"
+          class="py-2 text-primary"
           tabindex="-1"
         >
           Evaluation Status Dashboard - {{ contextStore.selectedTermName }}

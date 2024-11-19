@@ -6,7 +6,7 @@
       x-large
     />
     <div>
-      <h2 class="text-title">Error</h2>
+      <h1 class="text-primary">Error</h1>
       <div
         id="error-message"
         class="pt-4"
