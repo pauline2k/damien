@@ -5,7 +5,6 @@
         <h1
           v-if="get(department, 'deptName')"
           id="page-title"
-          class="text-primary"
           tabindex="-1"
         >
           {{ department.deptName }}&MediumSpace;

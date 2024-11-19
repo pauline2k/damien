@@ -6,7 +6,7 @@
       x-large
     />
     <div>
-      <h1 class="text-primary">Error</h1>
+      <h1 id="page-title" tabindex="-1">Error</h1>
       <div
         id="error-message"
         class="pt-4"

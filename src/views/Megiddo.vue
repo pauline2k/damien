@@ -2,7 +2,7 @@
   <div class="pt-2">
     <v-row no-gutters>
       <v-col cols="9" class="d-flex align-center">
-        <h1 id="page-title" class="text-primary">
+        <h1 id="page-title" tabindex="-1">
           Publish<span v-if="contextStore.selectedTermName"> - {{ contextStore.selectedTermName }}</span>
         </h1>
       </v-col>
