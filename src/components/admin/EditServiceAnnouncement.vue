@@ -21,38 +21,31 @@
       id="service-announcement-save"
       color="secondary"
       :disabled="!trim(text)"
+      text="Save"
       @click="save"
-    >
-      Save
-    </v-btn>
+    />
   </div>
 </template>
 
-<script>
+<script setup>
 import {getServiceAnnouncement, updateServiceAnnouncement} from '@/api/config'
+import {onMounted, ref} from 'vue'
 import {trim} from 'lodash'
 
-export default {
-  name: 'EditServiceAnnouncement',
-  data: () => ({
-    isPublished: undefined,
-    isSaving: false,
-    text: undefined,
-  }),
-  created() {
-    getServiceAnnouncement().then(data => {
-      this.text = data.text
-      this.isPublished = data.isLive
-    })
-  },
-  methods: {
-    save() {
-      updateServiceAnnouncement(this.text, this.isPublished).then(data => {
-        this.text = data.text
-        this.isPublished = data.isLive
-      })
-    },
-    trim
-  }
+const isPublished = ref(undefined)
+const text = ref(undefined)
+
+onMounted(() => {
+  getServiceAnnouncement().then(data => {
+    text.value = data.text
+    isPublished.value = data.isLive
+  })
+})
+
+const save = () => {
+  updateServiceAnnouncement(text.value, isPublished.value).then(data => {
+    text.value = data.text
+    isPublished.value = data.isLive
+  })
 }
 </script>

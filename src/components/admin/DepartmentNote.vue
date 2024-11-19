@@ -109,65 +109,63 @@
 </template>
 
 <script setup>
+import ConfirmDialog from '@/components/util/ConfirmDialog'
+import {alertScreenReader, putFocusNextTick} from '@/lib/utils'
+import {onMounted, ref} from 'vue'
 import {storeToRefs} from 'pinia'
 import {useContextStore} from '@/stores/context'
 import {useDepartmentStore} from '@/stores/department/department-edit-session'
 
 const contextStore = useContextStore()
-const {disableControls} = storeToRefs(useDepartmentStore())
-</script>
+const departmentStore = useDepartmentStore()
 
-<script>
-import {alertScreenReader, putFocusNextTick} from '@/lib/utils'
-import ConfirmDialog from '@/components/util/ConfirmDialog'
+const {disableControls} = storeToRefs(departmentStore)
+const isConfirming = ref(false)
+const isEditable = ref(false)
+const isEditing = ref(false)
+const item = ref(undefined)
 
-export default {
-  name: 'DepartmentNote',
-  components: {ConfirmDialog},
-  data: () => ({
-    isConfirming: false,
-    isEditable: false,
-    isEditing: false,
-    item: undefined
-  }),
-  created() {
-    this.reset()
-  },
-  methods: {
-    onCancelDelete() {
-      alertScreenReader('Canceled. Nothing deleted.')
-      putFocusNextTick('delete-dept-note-btn')
-      this.reset()
-    },
-    onCancelSave() {
-      alertScreenReader('Canceled. Nothing saved.')
-      putFocusNextTick('edit-dept-note-btn')
-      this.reset()
-    },
-    onDelete() {
-      useDepartmentStore().updateNote({note: null, termId: useContextStore().selectedTermId}).then(() => {
-        alertScreenReader('Note deleted.')
-        putFocusNextTick('notes-title')
-        this.reset()
-      })
-    },
-    onEdit() {
-      this.isEditing = true
-      putFocusNextTick('dept-note-textarea')
-    },
-    onSave() {
-      useDepartmentStore().updateNote({note: this.item, termId: useContextStore().selectedTermId}).then(() => {
-        alertScreenReader('Note saved.')
-        putFocusNextTick('edit-dept-note-btn')
-        this.reset()
-      })
-    },
-    reset() {
-      this.isConfirming = false
-      this.isEditable = useContextStore().selectedTermId === useContextStore().config.currentTermId
-      this.isEditing = false
-      this.item = useDepartmentStore().note
-    }
-  }
+onMounted(() => {
+  reset()
+})
+
+const onCancelDelete = () => {
+  alertScreenReader('Canceled. Nothing deleted.')
+  putFocusNextTick('delete-dept-note-btn')
+  reset()
+}
+
+const onCancelSave = () => {
+  alertScreenReader('Canceled. Nothing saved.')
+  putFocusNextTick('edit-dept-note-btn')
+  reset()
+}
+
+const onDelete = () => {
+  departmentStore.updateNote(null, contextStore.selectedTermId).then(() => {
+    alertScreenReader('Note deleted.')
+    putFocusNextTick('notes-title')
+    reset()
+  })
+}
+
+const onEdit = () => {
+  isEditing.value = true
+  putFocusNextTick('dept-note-textarea')
+}
+
+const onSave = () => {
+  departmentStore.updateNote(item.value, contextStore.selectedTermId).then(() => {
+    alertScreenReader('Note saved.')
+    putFocusNextTick('edit-dept-note-btn')
+    reset()
+  })
+}
+
+const reset = () => {
+  isConfirming.value = false
+  isEditable.value = contextStore.selectedTermId === contextStore.config.currentTermId
+  isEditing.value = false
+  item.value = departmentStore.note
 }
 </script>

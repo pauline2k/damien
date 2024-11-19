@@ -192,7 +192,7 @@ const afterSaveContact = () => {
 
 const afterSendNotification = () => {
   isCreatingNotification.value = false
-  useContextStore().snackbarOpen('Notification sent.')
+  contextStore.snackbarOpen('Notification sent.')
   putFocusNextTick('open-notification-form-btn')
 }
 
@@ -216,11 +216,11 @@ const onCancelAddContact = () => {
 }
 
 const refresh = () => {
-  useContextStore().loadingStart()
-  alertScreenReader(`Loading ${useContextStore().selectedTermName}`)
+  contextStore.loadingStart()
+  alertScreenReader(`Loading ${contextStore.selectedTermName}`)
   const departmentId = get(route, 'params.departmentId')
-  departmentStore.init(departmentId).then(() => {
-    useContextStore().loadingComplete(`${department.deptName} ${useContextStore().selectedTermName}`)
+  departmentStore.init(departmentId).then(department => {
+    contextStore.loadingComplete(`${department.deptName} ${contextStore.selectedTermName}`)
   })
 }
 </script>

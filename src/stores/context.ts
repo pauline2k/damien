@@ -45,7 +45,7 @@ export const useContextStore = defineStore('context', {
     snackbarShow: false
   }),
   actions: {
-    loadingComplete(pageTitle: string, alert: string) {
+    loadingComplete(pageTitle: string, alert?: string) {
       document.title = `${pageTitle || 'UC Berkeley'} | Course Evaluations`
       this.loading = false
       if (alert) {
