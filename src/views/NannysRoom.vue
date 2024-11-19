@@ -382,7 +382,7 @@
                   </v-btn>
                 </template>
                 <template #no-data>
-                  <div class="muted--text my-5">
+                  <div class="text-muted my-5">
                     No manually added instructors
                   </div>
                 </template>

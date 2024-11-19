@@ -119,6 +119,7 @@ export default createVuetify({
           primary: '#125074',
           'primary-contrast': '#DAF0FD',
           secondary: '#307AAB',
+          'secondary-darken-2': '#006190',
           success: '#00C853',
           tertiary: '#307AAB',
           title: '#125074'
@@ -142,6 +143,7 @@ export default createVuetify({
           primary: '#0C354D',
           'primary-contrast': '#94A8B3',
           secondary: '#1C4F72',
+          'secondary-darken-2': '#003859',
           success: '#00953E',
           tertiary: '#80BAE0',
           title: '#1E71A4'

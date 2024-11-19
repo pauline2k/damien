@@ -1,5 +1,5 @@
 <template>
-  <div :class="`evaluation-error ${color}--text text--${shade} d-flex my-1`">
+  <div :class="`evaluation-error text-${color} text-${shade} d-flex my-1`">
     <v-icon
       small
       class="align-self-start mr-1"

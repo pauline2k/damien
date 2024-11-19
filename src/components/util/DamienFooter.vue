@@ -1,18 +1,12 @@
 <template>
-  <v-footer
-    id="footer"
-    app
-    class="footer"
-    color="secondary darken-1"
-    dark
-  >
-    <v-container fluid class="pa-1">
-      <v-row no-gutters justify="space-between">
-        <v-col aria-label="Feedback">
+  <footer id="footer" class="bg-secondary-darken-2 footer">
+    <v-container fluid>
+      <v-row no-gutters>
+        <v-col aria-label="Feedback" class="text-left">
           Problem? Question?
           <a
             id="damien-support-mailto"
-            class="white--text"
+            class="text-decoration-none text-white"
             :href="`mailto:${emailSupport}`"
             target="_blank"
           >
@@ -33,7 +27,7 @@
         </v-col>
       </v-row>
     </v-container>
-  </v-footer>
+  </footer>
 </template>
 
 <script setup>
@@ -47,6 +41,10 @@ const screenReaderAlert = contextStore.screenReaderAlert
 
 <style scoped>
 .footer {
-  z-index: 205;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  z-index: 1100;
 }
 </style>

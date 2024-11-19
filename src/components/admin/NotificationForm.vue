@@ -10,7 +10,7 @@
         color="secondary"
       />
     </div>
-    <v-card-title class="pa-3" :class="isSending ? 'muted--text' : ''">
+    <v-card-title class="pa-3" :class="isSending ? 'text-muted' : ''">
       <h3
         id="send-notification-section-header"
         tabindex="-1"
@@ -58,7 +58,7 @@
     <v-card-text class="notification-container py-0">
       <v-form
         class="pa-3"
-        :class="isSending ? 'muted--text' : ''"
+        :class="isSending ? 'text-muted' : ''"
         :disabled="isSending"
       >
         <label for="input-notification-subject" class="form-label">

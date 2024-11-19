@@ -50,7 +50,7 @@
           <v-list-item
             v-bind="data.attrs"
             :aria-selected="data.item === highlightedItem"
-            class="tertiary--text"
+            class="text-tertiary"
             v-on="data.on"
           >
             <v-list-item-title>
@@ -64,7 +64,7 @@
       <div
         v-if="required && !suppressValidation && errors && errors[0]"
         :id="`${id}-error`"
-        class="v-messages error--text px-3 mt-1"
+        class="v-messages text-error px-3 mt-1"
         :class="theme.global.current.value.dark ? 'text--lighten-2' : ''"
         role="alert"
       >
