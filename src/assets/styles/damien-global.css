@@ -159,6 +159,7 @@ input.vs__search:enabled {
   width: 75%;
 }
 a {
+  color: rgb(var(--v-theme-anchor));
   text-decoration: none !important;
 }
 h1 {

@@ -2,7 +2,7 @@
   <div class="pt-2">
     <div class="d-flex">
       <h1 id="page-title" tabindex="-1">
-        List Management
+        Settings
       </h1>
       <v-spacer class="d-flex justify-center"></v-spacer>
       <v-banner
