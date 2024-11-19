@@ -19,7 +19,7 @@
           <v-col class="" cols="1">
             <v-icon
               class="pb-1"
-              :class="contact.canReceiveCommunications ? 'success--text' : 'muted--text'"
+              :class="contact.canReceiveCommunications ? 'text-success' : 'text-muted'"
               :icon="contact.canReceiveCommunications ? mdiCheckCircle : mdiMinusCircle"
               size="small"
             />
@@ -31,7 +31,7 @@
         <v-row :id="`dept-contact-${contact.id}-permissions`" class="mt-1">
           <v-col cols="1">
             <v-icon
-              :class="contact.canViewReports ? 'success--text' : 'muted--text'"
+              :class="contact.canViewReports ? 'text-success' : 'text-muted'"
               :icon="contact.canViewReports ? mdiCheckCircle : mdiMinusCircle"
               size="small"
             />

@@ -8,55 +8,6 @@
     >
       Skip to main content
     </a>
-    <v-navigation-drawer
-      app
-      permanent
-      class="nav"
-      color="secondary"
-      :expand-on-hover="true"
-      :mini-variant="true"
-      mini-variant-width="56"
-      clipped
-      :right="false"
-      dark
-    >
-      <v-list
-        aria-label="Main"
-        nav
-        role="navigation"
-      >
-        <v-list-item
-          v-for="(item, index) in navItems"
-          :id="`sidebar-link-${index}`"
-          :key="index"
-          class="primary-contrast--text sidebar-link pr-1"
-          link
-          role="link"
-          @click="toRoute(item.path)"
-        >
-          <v-list-item-title class="py-2">
-            <div>
-              <img alt="Lightbulb icon" :src="`@/${item.icon}`" />
-            </div>
-            <v-list-item-title class="d-flex text-wrap sidebar-link-content">
-              <span class="align-self-center">{{ item.title }}</span>
-            </v-list-item-title>
-          </v-list-item-title>
-        </v-list-item>
-        <v-list-item
-          :id="`sidebar-link-${size(navItems)}`"
-          class="primary-contrast--text sidebar-link pr-1"
-          @click="toggleColorScheme"
-        >
-          <v-icon>
-            <img alt="Lightbulb icon" src="@/assets/lightbulb-outline.svg" />
-          </v-icon>
-          <div>
-            <v-list-item-title>{{ theme.global.current.value.dark ? 'Light' : 'Dark' }} mode</v-list-item-title>
-          </div>
-        </v-list-item>
-      </v-list>
-    </v-navigation-drawer>
     <v-app-bar
       app
       class="align-center nav"
@@ -87,6 +38,46 @@
         </v-menu>
       </div>
     </v-app-bar>
+    <v-navigation-drawer
+      color="secondary"
+      :mobile="false"
+      :rail="rail"
+      @mouseenter="() => rail = false"
+      @mouseleave="() => rail = true"
+    >
+      <v-list-item
+        v-for="(item, index) in navItems"
+        :id="`sidebar-link-${index}`"
+        :key="index"
+        class="sidebar-link"
+        link
+        role="link"
+        @click="toRoute(item.path)"
+      >
+        <div class="align-center d-flex">
+          <v-icon :icon="item.icon" />
+          <v-slide-x-transition>
+            <div v-show="!rail" class="ml-2 text-no-wrap">
+              {{ item.title }}
+            </div>
+          </v-slide-x-transition>
+        </div>
+      </v-list-item>
+      <v-list-item
+        :id="`sidebar-link-${size(navItems)}`"
+        class="mt-auto pr-1 sidebar-link text-primary-contrast"
+        @click="toggleColorScheme"
+      >
+        <div class="align-center d-flex">
+          <v-icon aria-label="Lightbulb icon" :icon="mdiLightbulb" />
+          <v-slide-x-transition>
+            <div v-show="!rail" class="ml-2 text-no-wrap">
+              {{ theme.global.current.value.dark ? 'Light' : 'Dark' }} mode
+            </div>
+          </v-slide-x-transition>
+        </div>
+      </v-list-item>
+    </v-navigation-drawer>
     <v-main id="content" class="ma-0">
       <Snackbar />
       <Spinner v-if="contextStore.loading" />
@@ -117,16 +108,17 @@ import Snackbar from '@/components/util/Snackbar'
 import Spinner from '@/components/util/Spinner'
 import {alertScreenReader, stripAnchorRef} from '@/lib/utils'
 import {getCasLogoutUrl} from '@/api/auth'
-import {map, noop, size} from 'lodash'
+import {map, size} from 'lodash'
+import {mdiAccountGroup, mdiAlertCircle, mdiLightbulb, mdiListStatus, mdiPlaylistEdit} from '@mdi/js'
 import {onMounted, ref} from 'vue'
-import {storeToRefs} from 'pinia'
 import {useContextStore} from '@/stores/context'
 import {useTheme} from 'vuetify'
 import {useRoute, useRouter} from 'vue-router'
 
 const contextStore = useContextStore()
-const {currentUser} = storeToRefs(contextStore)
+const currentUser = contextStore.currentUser
 const navItems = ref(undefined)
+const rail = ref(true)
 const route = useRoute()
 const router = useRouter()
 const theme = useTheme()
@@ -135,10 +127,10 @@ onMounted(() => {
   prefersColorScheme()
   if (currentUser.isAdmin) {
     navItems.value = [
-      {title: 'Status Board', icon: 'assets/list-status.svg', path: '/status'},
-      {title: 'Publish', icon: 'assets/exclamation-circle-solid.svg', path: '/publish'},
-      {title: 'Group Management', icon: 'assets/account-group.svg', path: '/departments'},
-      {title: 'List Management', icon: 'assets/playlist-edit.svg', path: '/lists'}
+      {title: 'Status Board', icon: mdiListStatus, path: '/status'},
+      {title: 'Publish', icon: mdiAlertCircle, path: '/publish'},
+      {title: 'Group Management', icon: mdiAccountGroup, path: '/departments'},
+      {title: 'List Management', icon: mdiPlaylistEdit, path: '/lists'}
     ]
   } else if (size(currentUser.departments)) {
     navItems.value = map(currentUser.departments, department => {
@@ -173,7 +165,7 @@ const toggleColorScheme = () => {
   window.localStorage.setItem('prefersDarkMode', `${getDark}`)
 }
 
-const toRoute = path => router.push({path}, noop)
+const toRoute = path => router.push({path})
 </script>
 
 <style scoped>
@@ -197,9 +189,6 @@ const toRoute = path => router.push({path}, noop)
 .sidebar-link-content {
   height: 56px;
   overflow: hidden;
-}
-.sr-debug {
-  width: fit-content;
 }
 pre {
   white-space: pre-line;

@@ -81,7 +81,11 @@
               </td>
               <td class="department-name">
                 <div class="d-flex align-top">
-                  <router-link :id="`link-to-dept-${kebabCase(department.deptName)}`" :to="`/department/${department.id}`">
+                  <router-link
+                    :id="`link-to-dept-${kebabCase(department.deptName)}`"
+                    class="text-accent"
+                    :to="`/department/${department.id}`"
+                  >
                     {{ department.deptName }}
                     <span v-if="size(getCatalogListings(department))">({{ getCatalogListings(department).join(', ') }})</span>
                   </router-link>
@@ -96,7 +100,7 @@
                 <v-chip
                   v-if="department.totalInError"
                   :id="`errors-count-dept-${department.id}`"
-                  class="error error--text error-count"
+                  class="error text-error error-count"
                   outlined
                   small
                 >
@@ -106,7 +110,7 @@
                   v-if="!department.totalInError"
                   aria-hidden="false"
                   aria-label="no errors"
-                  class="success--text"
+                  class="text-success"
                   :icon="mdiCheckCircle"
                   role="img"
                 />
@@ -116,7 +120,7 @@
                   v-if="department.totalConfirmed > 0 && department.totalConfirmed === department.totalEvaluations"
                   aria-hidden="false"
                   aria-label="all confirmed"
-                  class="success--text"
+                  class="text-success"
                   :icon="mdiCheckCircle"
                   role="img"
                 />

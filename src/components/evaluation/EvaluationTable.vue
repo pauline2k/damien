@@ -92,11 +92,11 @@
                     size="small"
                   />
                 </div>
-                <div :class="filterTypes[status].enabled ? 'white--text' : 'grey--text darken-2'">
+                <div :class="filterTypes[status].enabled ? 'text-white' : 'text-grey darken-2'">
                   <span class="sr-only">{{ filterTypes[status].enabled ? 'Hide' : 'Show' }} evaluations of marked with</span>
                   {{ filterTypes[status].label }}
                 </div>
-                <div :class="filterTypes[status].enabled ? 'white--text' : 'grey--text darken-2'">
+                <div :class="filterTypes[status].enabled ? 'text-white' : 'text-grey darken-2'">
                   <v-chip
                     class="ml-2 px-1"
                     :class="{'font-weight-bold': filterTypes[status].enabled}"
@@ -195,15 +195,15 @@
                   >
                     <v-btn
                       :id="`edit-evaluation-${evaluation.id}-btn`"
-                      class="primary-contrast primary--text"
+                      class="primary-contrast text-primary"
                       :class="{'sr-only': !isHovering && evaluation.id !== focusedEditButtonEvaluationId, 'focus-btn': evaluation.id === focusedEditButtonEvaluationId}"
                       block
                       :disabled="!allowEdits"
                       :ripple="false"
                       text="Edit"
-                      @click.stop="onEditEvaluation(evaluation)"
-                      @blur.native="() => focusedEditButtonEvaluationId = null"
-                      @focus.native="() => focusedEditButtonEvaluationId = evaluation.id"
+                      @blur="() => focusedEditButtonEvaluationId = null"
+                      @click="() => onEditEvaluation(evaluation)"
+                      @focus="() => focusedEditButtonEvaluationId = evaluation.id"
                     />
                   </div>
                   <div v-if="allowEdits && isEditing(evaluation)" class="mt-1 pl-2 py-2 select-evaluation-status">
@@ -426,7 +426,7 @@
                 </td>
               </tr>
             </v-hover>
-            <tr v-if="isEditing(evaluation)" :key="`${evaluation.id}-edit`" class="secondary white--text border-top-none">
+            <tr v-if="isEditing(evaluation)" :key="`${evaluation.id}-edit`" class="secondary text-white border-top-none">
               <td></td>
               <td colspan="8" class="pb-2 px-2">
                 <div class="d-flex justify-end">
@@ -525,7 +525,7 @@
   <v-container v-else class="no-eligible-sections py-8">
     <v-row>
       <v-col align="center">
-        <div class="d-flex flex-column muted--text">
+        <div class="d-flex flex-column text-muted">
           <span>No eligible sections to load.</span>
           <span v-if="!readonly && allowEdits">You may still add a section manually.</span>
         </div>
@@ -720,11 +720,11 @@ const displayStatus = evaluation => {
 const evaluationClass = (evaluation, isHovering) => {
   return {
     'evaluation-row-confirmed': evaluation.id !== editRowId.value && evaluation.status === 'confirmed',
-    'evaluation-row-ignore muted--text': !isHovering && evaluation.id !== editRowId.value && evaluation.status === 'ignore',
-    'secondary white--text border-bottom-none': evaluation.id === editRowId.value,
+    'evaluation-row-ignore text-muted': !isHovering && evaluation.id !== editRowId.value && evaluation.status === 'ignore',
+    'secondary text-white border-bottom-none': evaluation.id === editRowId.value,
     'evaluation-row-review': evaluation.id !== editRowId.value && evaluation.status === 'review',
     'evaluation-row-xlisting': evaluation.id !== editRowId.value && !evaluation.status && (evaluation.crossListedWith || evaluation.roomSharedWith),
-    'primary-contrast primary--text': (isHovering || evaluation.id === focusedEditButtonEvaluationId.value) && !isEditing(evaluation)
+    'primary-contrast text-primary': (isHovering || evaluation.id === focusedEditButtonEvaluationId.value) && !isEditing(evaluation)
   }
 }
 

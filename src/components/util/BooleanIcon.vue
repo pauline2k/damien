@@ -1,7 +1,7 @@
 <template>
   <v-icon
     class="pb-1"
-    :class="model ? 'success--text' : 'muted--text'"
+    :class="model ? 'text-success' : 'text-muted'"
     :icon="model ? mdiCheckCircle : mdiMinusCircle"
     size="small"
   />

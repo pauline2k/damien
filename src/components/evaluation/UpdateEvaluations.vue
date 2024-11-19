@@ -118,7 +118,7 @@
               <template v-for="(evaluation, index) in selectedEvaluations" :key="index">
                 <tr>
                   <td :id="`preview-${index}-status`" class="bulk-action-status-col pr-1">
-                    <div v-if="evaluation.status" :class="{'text-decoration-line-through accent--text': action === 'Edit' && showSelectedStatus(evaluation)}">
+                    <div v-if="evaluation.status" :class="{'text-decoration-line-through text-accent': action === 'Edit' && showSelectedStatus(evaluation)}">
                       {{ getStatusText(evaluation.status) }}
                     </div>
                     <div v-if="action === 'Edit' && showSelectedStatus(evaluation)">
@@ -131,7 +131,7 @@
                     <div>{{ evaluation.instructionFormat }} {{ evaluation.sectionNumber }}</div>
                   </td>
                   <td :id="`preview-${index}-instructor`" class="bulk-action-instructor-col px-1">
-                    <div v-if="get(evaluation, 'instructor.uid')" :class="{'text-decoration-line-through accent--text': action === 'Edit' && showSelectedInstructor(evaluation)}">
+                    <div v-if="get(evaluation, 'instructor.uid')" :class="{'text-decoration-line-through text-accent': action === 'Edit' && showSelectedInstructor(evaluation)}">
                       {{ evaluation.instructor.firstName }} {{ evaluation.instructor.lastName }}
                       ({{ evaluation.instructor.uid }})
                     </div>
@@ -141,7 +141,7 @@
                     </div>
                   </td>
                   <td :id="`preview-${index}-departmentForm`" class="bulk-action-departmentForm-col px-1">
-                    <div v-if="evaluation.departmentForm" :class="{'text-decoration-line-through accent--text': action === 'Edit' && showSelectedDepartmentForm(evaluation)}">
+                    <div v-if="evaluation.departmentForm" :class="{'text-decoration-line-through text-accent': action === 'Edit' && showSelectedDepartmentForm(evaluation)}">
                       {{ evaluation.departmentForm.name }}
                     </div>
                     <div v-if="action === 'Edit' && showSelectedDepartmentForm(evaluation)">
@@ -149,7 +149,7 @@
                     </div>
                   </td>
                   <td :id="`preview-${index}-evaluationType`" class="bulk-action-evaluationType-col px-1">
-                    <div v-if="evaluation.evaluationType" :class="{'text-decoration-line-through accent--text accent--text': action === 'Edit' && showSelectedEvaluationType(evaluation)}">
+                    <div v-if="evaluation.evaluationType" :class="{'text-decoration-line-through text-accent text-accent': action === 'Edit' && showSelectedEvaluationType(evaluation)}">
                       {{ evaluation.evaluationType.name }}
                     </div>
                     <div v-if="action === 'Edit' && showSelectedEvaluationType(evaluation)">
@@ -157,7 +157,7 @@
                     </div>
                   </td>
                   <td :id="`preview-${index}-startDate`" class="bulk-action-startDate-col px-1">
-                    <div v-if="evaluation.startDate" :class="{'text-decoration-line-through accent--text': action === 'Edit' && showSelectedStartDate(evaluation)}">
+                    <div v-if="evaluation.startDate" :class="{'text-decoration-line-through text-accent': action === 'Edit' && showSelectedStartDate(evaluation)}">
                       {{ toLocaleFromISO(evaluation.startDate, 'LL/dd/yyyy') }}
                     </div>
                     <div v-if="action === 'Edit' && showSelectedStartDate(evaluation)">
