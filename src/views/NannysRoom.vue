@@ -19,7 +19,6 @@
         <v-col cols="12" md="6" lg="3">
           <v-card
             class="mr-4"
-            elevation="2"
             height="100%"
             min-width="fit-content"
           >
@@ -61,7 +60,7 @@
                 class="text-capitalize mr-2"
                 color="secondary"
                 :disabled="!newItemName || isSaving"
-                elevation="2"
+
                 @click="onSubmitAddDepartmentForm"
               >
                 Save
@@ -70,7 +69,7 @@
                 :id="'cancel-save-dept-form-btn'"
                 class="text-capitalize ml-1"
                 :disabled="isSaving"
-                elevation="2"
+
                 outlined
                 text
                 @click="cancelAdd('add-dept-form-btn')"
@@ -123,7 +122,7 @@
         <v-col cols="12" md="6" lg="3">
           <v-card
             class="mr-4"
-            elevation="2"
+
             height="100%"
             min-width="fit-content"
           >
@@ -166,7 +165,7 @@
                 class="text-capitalize mr-2"
                 color="secondary"
                 :disabled="!newItemName || isSaving"
-                elevation="2"
+
                 @click="onSubmitAddEvaluationType"
               >
                 Save
@@ -175,7 +174,7 @@
                 :id="'cancel-save-eval-type-btn'"
                 class="text-capitalize ml-1"
                 :disabled="isSaving"
-                elevation="2"
+
                 outlined
                 text
                 @click="cancelAdd('add-eval-type-btn')"
@@ -228,7 +227,7 @@
         <v-col cols="12" lg="6">
           <v-card
             class="mr-4"
-            elevation="2"
+
             min-width="fit-content"
           >
             <v-card-title
@@ -326,7 +325,7 @@
                 class="text-capitalize mr-2"
                 color="secondary"
                 :disabled="!newInstructor.uid || !newInstructor.lastName || !newInstructor.emailAddress || isSaving"
-                elevation="2"
+
                 @click="onSubmitAddInstructor"
               >
                 Save
@@ -335,7 +334,7 @@
                 id="cancel-save-instructor-btn"
                 class="text-capitalize ml-1"
                 :disabled="!instructorValid || isSaving"
-                elevation="2"
+
                 outlined
                 text
                 @click="cancelAdd('add-instructor-btn')"
@@ -385,11 +384,11 @@
               </v-data-table>
             </div>
           </v-card>
-          <v-card elevation="2" class="mr-4 mt-4">
+          <v-card class="mr-4 mt-4">
             <v-card-title>Service Announcement</v-card-title>
             <EditServiceAnnouncement />
           </v-card>
-          <v-card elevation="2" class="mr-4 mt-4">
+          <v-card class="mr-4 mt-4">
             <v-card-title>Automatically Publish</v-card-title>
             <v-card-text>
               <span v-if="contextStore.config.scheduleLochRefresh">

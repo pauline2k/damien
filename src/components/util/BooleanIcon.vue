@@ -3,7 +3,6 @@
     class="pb-1"
     :class="model ? 'text-success' : 'text-muted'"
     :icon="model ? mdiCheckCircle : mdiMinusCircle"
-    size="small"
   />
 </template>
 
