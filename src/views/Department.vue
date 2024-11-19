@@ -5,23 +5,15 @@
         <h1
           v-if="get(department, 'deptName')"
           id="page-title"
-          class="text-title"
+          class="text-primary"
           tabindex="-1"
         >
-          <div class="d-flex flex-wrap">
-            <div>
-              <span>
-                {{ department.deptName }}&MediumSpace;
-                <span v-if="size(getCatalogListings(department))">
-                  ({{ getCatalogListings(department).join(', ') }})&MediumSpace;
-                </span>
-              </span>
-              <span v-if="contextStore.selectedTermName" class="mr-2">&mdash;&nbsp;</span>
-            </div>
-            <div v-if="contextStore.selectedTermName">
-              {{ contextStore.selectedTermName }}
-            </div>
-          </div>
+          {{ department.deptName }}&MediumSpace;
+          <span v-if="size(getCatalogListings(department))">
+            ({{ getCatalogListings(department).join(', ') }})&MediumSpace;
+          </span>
+          <span v-if="contextStore.selectedTermName" class="mr-2">&mdash;&nbsp;</span>
+          {{ contextStore.selectedTermName }}
         </h1>
       </div>
       <div class="text-no-wrap">
@@ -30,37 +22,34 @@
     </div>
     <v-container v-if="!contextStore.loading" class="mx-0 px-0 pb-2" fluid>
       <v-row justify="start">
-        <v-col cols="12" md="5">
-          <div class="contacts-container">
+        <v-col cols="12" md="5" class="pr-1">
+          <div class="border-sm contacts-container pa-3">
             <v-expansion-panels v-model="contactsPanel" disable-icon-rotate flat>
               <v-expansion-panel class="panel-override">
                 <template #default>
-                  <div class="align-center d-flex flex-wrap justify-space-between">
-                    <h2 class="pb-1 px-2">Department Contacts</h2>
-                    <div class="align-center d-flex height-unset justify-space-between">
-                      <v-expansion-panel-title
-                        class="w-fit-content ml-auto mr-3"
-                        hide-actions
-                        text
-                        @click="collapseAllContacts"
-                      >
-                        <template #default="{open}">
-                          <span v-if="!open">
-                            Expand
-                            <v-icon
-                              class="rotate-180 ml-1"
-                              :icon="mdiPlusBoxMultipleOutline"
-                            />
-                          </span>
-                          <span v-if="open">
-                            Collapse All
-                            <v-icon class="rotate-180 ml-1" :icon="mdiMinusBoxMultipleOutline" />
-                          </span>
-                        </template>
-                      </v-expansion-panel-title>
-                    </div>
+                  <div class="d-flex flex-wrap justify-space-between">
+                    <h2 class="ml-2">Department Contacts</h2>
+                    <v-expansion-panel-title
+                      class="px-1 py-0 w-fit-content"
+                      hide-actions
+                      @click="collapseAllContacts"
+                    >
+                      <template #default="{open}">
+                        <span v-if="!open">
+                          Expand
+                          <v-icon
+                            class="rotate-180"
+                            :icon="mdiPlusBoxMultipleOutline"
+                          />
+                        </span>
+                        <span v-if="open">
+                          Collapse All
+                          <v-icon class="rotate-180 ml-1" :icon="mdiMinusBoxMultipleOutline" />
+                        </span>
+                      </template>
+                    </v-expansion-panel-title>
                   </div>
-                  <v-expansion-panel-text class="panel-content-override">
+                  <v-expansion-panel-text>
                     <v-expansion-panels
                       v-model="contactDetailsPanel"
                       flat
@@ -82,12 +71,12 @@
                     <v-btn
                       v-if="!isCreatingNotification"
                       id="open-notification-form-btn"
-                      class="ma-2 secondary text-capitalize"
+                      class="secondary text-capitalize"
+                      color="primary"
                       :disabled="disableControls || isEmpty(contacts)"
+                      text="Send notification"
                       @click="() => isCreatingNotification = true"
-                    >
-                      Send notification
-                    </v-btn>
+                    />
                     <NotificationForm
                       v-if="isCreatingNotification"
                       :after-send="afterSendNotification"
@@ -98,16 +87,17 @@
                 </template>
               </v-expansion-panel>
             </v-expansion-panels>
-            <div v-if="contextStore.currentUser.isAdmin" class="pl-4">
+            <div v-if="contextStore.currentUser.isAdmin">
               <v-btn
                 v-if="!isAddingContact"
                 id="add-dept-contact-btn"
-                class="text-capitalize pl-2 my-1 mx-2"
-                color="tertiary"
+                class="mt-1"
+                color="primary"
+                variant="text"
                 @click="() => isAddingContact = true"
               >
                 <v-icon :icon="mdiPlusThick" />
-                Add Contact
+                <span class="font-weight-medium text-capitalize">Add Contact</span>
               </v-btn>
               <EditDepartmentContact
                 v-if="isAddingContact"
@@ -131,7 +121,7 @@
         <v-toolbar dark color="secondary" dense>
           <v-icon
             class="font-weight-bold pb-1 pl-0"
-            :icon="mdiClose()"
+            :icon="mdiClose"
             @click="() => departmentStore.setShowTheOmenPoster(false)"
           />
         </v-toolbar>

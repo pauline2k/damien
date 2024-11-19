@@ -1,42 +1,40 @@
 <template>
   <v-expansion-panel
     :id="`department-contact-${index}`"
-    class="text-condensed my-1"
     :class="{
       'theme--light v-sheet--outlined': isEditing && !theme.global.current.value.dark,
       'theme--dark v-sheet--outlined': isEditing && theme.global.current.value.dark
     }"
   >
-    <v-expansion-panel-title class="py-1 rounded-b-0 height-unset">
+    <v-expansion-panel-title class="pa-2 rounded-b-0 height-unset">
       <strong :id="`dept-contact-${contact.id}-name`">{{ fullName }}</strong>
     </v-expansion-panel-title>
     <v-expansion-panel-text class="edit-contact-container">
       <v-container v-if="!isEditing" class="pb-0 px-0" fluid>
         <v-row :id="`dept-contact-${contact.id}-email`">
-          <v-col cols="12">{{ contact.email }}</v-col>
+          <v-col class="px-2 pt-1" cols="12">{{ contact.email }}</v-col>
         </v-row>
-        <v-row :id="`dept-contact-${contact.id}-notifications`" class="mt-1">
-          <v-col class="" cols="1">
+        <v-row :id="`dept-contact-${contact.id}-notifications`" class="mt-0">
+          <v-col class="text-right px-1" cols="1">
             <v-icon
-              class="pb-1"
               :class="contact.canReceiveCommunications ? 'text-success' : 'text-muted'"
               :icon="contact.canReceiveCommunications ? mdiCheckCircle : mdiMinusCircle"
               size="small"
             />
           </v-col>
-          <v-col class="font-italic pl-0" cols="11">
+          <v-col align-self="center" class="font-italic font-size-14 pl-0" cols="11">
             {{ `${contact.canReceiveCommunications ? 'Does' : 'Does not'} receive notifications` }}
           </v-col>
         </v-row>
-        <v-row :id="`dept-contact-${contact.id}-permissions`" class="mt-1">
-          <v-col cols="1">
+        <v-row :id="`dept-contact-${contact.id}-permissions`" class="mt-0">
+          <v-col class="text-right px-1" cols="1">
             <v-icon
               :class="contact.canViewReports ? 'text-success' : 'text-muted'"
               :icon="contact.canViewReports ? mdiCheckCircle : mdiMinusCircle"
               size="small"
             />
           </v-col>
-          <v-col class="font-italic pl-0" cols="11">
+          <v-col align-self="center" class="font-italic font-size-14 pl-0" cols="11">
             <span v-if="!contact.canViewReports">Does not have access to Blue</span>
             <span v-if="contact.canViewReports">
               {{ `Can view reports ${contact.canViewResponseRates ? 'and response rates ' : ''}in Blue` }}
@@ -50,7 +48,7 @@
               :id="`dept-contact-${contact.id}-form-${formIndex}`"
               :key="form.id"
               class="px-4 mr-1"
-              disabled
+              color="green"
               :ripple="false"
               :text="form.name"
             />
@@ -62,6 +60,7 @@
               v-if="currentUser.isAdmin"
               :id="`dept-contact-${contact.id}-actions`"
               class="pl-0"
+              color="transparent"
               dense
               flat
               height="unset"
@@ -70,26 +69,30 @@
               <v-btn
                 :id="`edit-dept-contact-${contact.id}-btn`"
                 class="text-capitalize pa-0"
-                color="tertiary"
+                color="primary"
                 :disabled="disableControls"
                 height="unset"
                 min-width="unset"
                 text="Edit"
+                variant="text"
                 @click="() => isEditing = true"
               />
               <v-divider
-                class="separator mx-2"
+                class="mx-2"
+                color="black"
                 role="presentation"
+                thickness="2"
                 vertical
               />
               <v-btn
                 :id="`delete-dept-contact-${contact.id}-btn`"
                 class="text-capitalize pa-0"
-                color="tertiary"
+                color="primary"
                 :disabled="disableControls"
                 height="unset"
                 min-width="unset"
                 text="Delete"
+                variant="text"
                 @click.stop="() => isConfirming = true"
               />
               <ConfirmDialog

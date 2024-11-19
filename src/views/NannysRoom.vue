@@ -3,7 +3,7 @@
     <div class="d-flex">
       <h1
         id="page-title"
-        class="text-title"
+        class="text-primary"
         tabindex="-1"
       >
         List Management
