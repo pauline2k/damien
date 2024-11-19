@@ -6,14 +6,6 @@ import {fileURLToPath, URL} from 'node:url'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  css: {
-    preprocessorOptions: {
-      scss: {
-        api: 'modern'
-      }
-    }
-  },
-  define: {'process.env': {}},
   plugins: [
     viteCompression(),
     vue({
@@ -37,6 +29,13 @@ export default defineConfig({
       '.tsx',
       '.vue'
     ]
+  },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        api: 'modern'
+      }
+    }
   },
   server: {
     port: 8080
