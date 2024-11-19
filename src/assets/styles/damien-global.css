@@ -162,6 +162,7 @@ a {
   text-decoration: none !important;
 }
 h1 {
+  color: rgb(var(--v-theme-title));
   font-size: 2em;
   font-weight: 700;
 }

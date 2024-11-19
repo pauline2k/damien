@@ -6,7 +6,7 @@
         <v-slide-y-transition>
           <v-card v-show="showCard" class="accent-border frosted mx-auto pb-9 pt-6 px-10" outlined>
             <v-card-text class="text-center">
-              <h1 id="text-primary" class="text-accent">
+              <h1 id="page-title" class="text-accent">
                 <strong>Welcome to Course Evaluations</strong>
                 {{ config.currentTermName }}
               </h1>
