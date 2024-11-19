@@ -29,9 +29,9 @@
         required
         :rules="emailRules"
       />
-      <legend :for="`checkbox-communications-${contactId}`" class="form-label">
+      <label :for="`checkbox-communications-${contactId}`" class="form-label">
         Communications
-      </legend>
+      </label>
       <div class="d-flex my-2">
         <v-checkbox
           :id="`checkbox-communications-${contactId}`"
@@ -54,9 +54,9 @@
           Receive notifications
         </label>
       </div>
-      <legend :for="`checkbox-communications-${contactId}`" class="form-label">
+      <label :for="`checkbox-communications-${contactId}`" class="form-label">
         Blue Access
-      </legend>
+      </label>
       <v-radio-group
         v-model="permissions"
         class="mt-1"
@@ -90,9 +90,9 @@
           value="response_rates"
         />
       </v-radio-group>
-      <legend :for="`select-deptForms-${contactId}`" class="form-label">
+      <label :for="`select-deptForms-${contactId}`" class="form-label">
         Department Forms
-      </legend>
+      </label>
       <v-combobox
         v-model="contactDepartmentForms"
         aria-label="Department Forms"
@@ -126,10 +126,9 @@
             color="secondary"
             :disabled="disableControls"
             :ripple="false"
+            :text="data.item.name"
             @click:close="remove(data.item)"
-          >
-            {{ data.item.name }}
-          </v-chip>
+          />
         </template>
       </v-combobox>
     </div>
@@ -139,201 +138,183 @@
       color="secondary"
       :disabled="disableControls || !valid || !uid"
       elevation="2"
+      text="Save"
       @click.prevent="onSave"
-    >
-      Save
-    </v-btn>
+    />
     <v-btn
       :id="`cancel-dept-contact-${contactId}-btn`"
       class="text-capitalize ml-1"
       :disabled="disableControls"
       elevation="2"
       outlined
-      text
+      text="Cancel"
       @click.prevent="onCancel"
-    >
-      Cancel
-    </v-btn>
+    />
   </v-form>
 </template>
 
 <script setup>
-import {storeToRefs} from 'pinia'
-import {useDepartmentStore} from '@/stores/department/department-edit-session'
-
-const {contacts, disableControls} = storeToRefs(useDepartmentStore())
-</script>
-
-<script>
 import PersonLookup from '@/components/admin/PersonLookup'
 import {alertScreenReader, oxfordJoin, putFocusNextTick} from '@/lib/utils'
-import {
-  cloneDeep,
-  differenceBy,
-  findIndex,
-  get,
-  isNil,
-  last,
-  map,
-  sortBy
-} from 'lodash'
+import {cloneDeep, differenceBy, find, findIndex, get, isNil, map, sortBy} from 'lodash'
+import {computed, onMounted, ref, watch} from 'vue'
 import {getUserDepartmentForms} from '@/api/user'
+import {storeToRefs} from 'pinia'
+import {useDepartmentStore} from '@/stores/department/department-edit-session'
 import {useTheme} from 'vuetify'
 
-export default {
-  name: 'EditDepartmentContact',
-  components: {PersonLookup},
-  props: {
-    afterSave: {
-      required: true,
-      type: Function
-    },
-    contact: {
-      default: () => {},
-      required: false,
-      type: Object
-    },
-    onCancel: {
-      required: true,
-      type: Function
-    }
+const props = defineProps({
+  afterSave: {
+    required: true,
+    type: Function
   },
-  data: () => ({
-    canReceiveCommunications: true,
-    csid: undefined,
-    contactDepartmentForms: undefined,
-    email: undefined,
-    emailRules: [
-      v => !!v || 'E-mail is required',
-      v => /.+@.+\..+/.test(v) || 'E-mail must be valid',
-    ],
-    firstName: undefined,
-    lastName: undefined,
-    permissions: undefined,
-    theme: useTheme(),
-    uid: undefined,
-    userId: undefined,
-    valid: true
-  }),
-  computed: {
-    availableDepartmentForms() {
-      return differenceBy(useDepartmentStore().allDepartmentForms, this.contactDepartmentForms, item => item.name)
-    },
-    contactId() {
-      return get(this.contact, 'uid', 'add-contact')
-    },
-    fullName() {
-      return this.firstName && this.lastName ? `${this.firstName} ${this.lastName}`.trim() : ''
-    }
+  contact: {
+    default: () => {},
+    required: false,
+    type: Object
   },
-  watch: {
-    canReceiveCommunications(value) {
-      this.srAlert('receive notifications', value)
-    },
-    contactDepartmentForms(val, prev) {
-      if (!val || !prev || val.length === prev.length) return
-      this.contactDepartmentForms = val.map(item => {
-        if (typeof item === 'string') {
-          return find(this.availableDepartmentForms, {'name': item})
-        } else {
-          return item
-        }
-      }).filter(v => v)
-    },
-    permissions(value) {
-      if (isNil(value)) {
-        this.srAlert('have access to Blue', false)
-      } else if (value === 'reports_only') {
-        this.srAlert('be able to view reports', true)
-      } else if (value === 'response_rates') {
-        this.srAlert('be able to view reports and response rates', true)
-      }
+  onCancel: {
+    required: true,
+    type: Function
+  }
+})
+
+const departmentStore = useDepartmentStore()
+
+const {contacts, disableControls} = storeToRefs(departmentStore)
+const canReceiveCommunications = ref(true)
+const csid = ref(undefined)
+const contactDepartmentForms = ref([])
+const email = ref(undefined)
+const emailRules = [
+  v => !!v || 'E-mail is required',
+  v => /.+@.+\..+/.test(v) || 'E-mail must be valid'
+]
+const firstName = ref(undefined)
+const lastName = ref(undefined)
+const permissions = ref(undefined)
+const theme = useTheme()
+const uid = ref(undefined)
+const userId = ref(undefined)
+const valid = ref(true)
+
+const availableDepartmentForms = computed(() => {
+  return differenceBy(departmentStore.allDepartmentForms, contactDepartmentForms.value, item => item.name)
+})
+const contactId = computed(() => {
+  return get(props.contact, 'uid', 'add-contact')
+})
+const fullName = computed(() => {
+  return firstName.value && lastName.value ? `${firstName.value} ${lastName.value}`.trim() : ''
+})
+
+watch(canReceiveCommunications, value => {
+  srAlert('receive notifications', value)
+})
+
+watch(contactDepartmentForms, (val, prev) => {
+  if (!val || !prev || val.length === prev.length) return
+  contactDepartmentForms.value = val.map(item => {
+    if (typeof item === 'string') {
+      return find(availableDepartmentForms.value, {'name': item})
+    } else {
+      return item
     }
-  },
-  created() {
-    this.populateForm(this.contact)
-    putFocusNextTick('add-contact-sub-header')
-    alertScreenReader(`${this.contact ? 'Edit' : 'Add'} department contact form is ready`)
-  },
-  methods: {
-    isNil,
-    afterSelectDepartmentForm(departmentForms) {
-      const selected = last(departmentForms)
-      alertScreenReader(`Added ${selected.name}.`)
-      putFocusNextTick(`input-deptForms-${this.contactId}`)
-    },
-    fetchUserDepartmentForms(uid) {
-      getUserDepartmentForms(uid).then(data => {
-        this.contactDepartmentForms = data
-      })
-    },
-    onChangeContactDepartmentForms(selectedValues) {
-      const names = map(selectedValues, 'name')
-      if (names.length) {
-        alertScreenReader(`Selected department form${names.length === 1 ? 's are' : 'is'} ${oxfordJoin(names)}.`)
-      } else {
-        alertScreenReader('No department forms selected.')
-      }
-    },
-    onSave() {
-      alertScreenReader('Saving')
-      useDepartmentStore().updateContact({
-        'canReceiveCommunications': this.canReceiveCommunications,
-        'canViewReports': this.permissions === 'reports_only',
-        'canViewResponseRates': this.permissions === 'response_rates',
-        'csid': this.csid,
-        'departmentForms': this.contactDepartmentForms,
-        'email': this.email,
-        'firstName': this.firstName,
-        'lastName': this.lastName,
-        'uid': this.uid,
-        'userId': this.userId
-      }).then(this.afterSave)
-    },
-    onSelectSearchResult(user) {
-      this.populateForm(user)
-    },
-    populateForm(contact) {
-      if (contact) {
-        this.fetchUserDepartmentForms(contact.uid)
-        this.csid = contact.csid
-        this.contactDepartmentForms = cloneDeep(sortBy(contact.departmentForms, 'name'))
-        this.email = contact.email
-        this.firstName = contact.firstName
-        this.lastName = contact.lastName
-        this.uid = contact.uid
-        this.userId = contact.userId
-        if (contact.canReceiveCommunications !== undefined) {
-          this.canReceiveCommunications = contact.canReceiveCommunications
-        }
-        if (contact.canViewReports) {
-          this.permissions = contact.canViewResponseRates ? 'response_rates' : 'reports_only'
-        }
-        putFocusNextTick('input-person-lookup-autocomplete')
-      } else {
-        this.csid = null
-        this.canReceiveCommunications = true
-        this.contactDepartmentForms = null
-        this.email = null
-        this.firstName = null
-        this.lastName = null
-        this.permissions = null
-        this.uid = null
-        this.userId = null
-      }
-    },
-    remove(departmentForm) {
-      const formName = departmentForm.name
-      const indexOf = findIndex(this.contactDepartmentForms, {'name': formName})
-      this.contactDepartmentForms.splice(indexOf, 1)
-      alertScreenReader(`Removed ${formName} from ${this.fullName} department forms.`)
-      putFocusNextTick(`input-deptForms-${this.contactId}`)
-    },
-    srAlert(label, isSelected) {
-      if (this.firstName || this.lastName) {
-        alertScreenReader(`${this.firstName} ${this.lastName} will ${isSelected ? '' : 'not '} ${label}.`)
-      }
+  }).filter(v => v)
+})
+
+watch(permissions, value => {
+  if (isNil(value)) {
+    srAlert('have access to Blue', false)
+  } else if (value === 'reports_only') {
+    srAlert('be able to view reports', true)
+  } else if (value === 'response_rates') {
+    srAlert('be able to view reports and response rates', true)
+  }
+})
+
+onMounted(() => {
+  populateForm(props.contact)
+  putFocusNextTick('add-contact-sub-header')
+  alertScreenReader(`${props.contact ? 'Edit' : 'Add'} department contact form is ready`)
+})
+
+const fetchUserDepartmentForms = uid => {
+  getUserDepartmentForms(uid).then(data => {
+    contactDepartmentForms.value = data
+  })
+}
+
+const onChangeContactDepartmentForms = selectedValues => {
+  const names = map(selectedValues, 'name')
+  if (names.length) {
+    alertScreenReader(`Selected department form${names.length === 1 ? 's are' : 'is'} ${oxfordJoin(names)}.`)
+  } else {
+    alertScreenReader('No department forms selected.')
+  }
+}
+
+const onSave = () => {
+  alertScreenReader('Saving')
+  departmentStore.updateContact({
+    canReceiveCommunications: canReceiveCommunications.value,
+    canViewReports: permissions.value === 'reports_only',
+    canViewResponseRates: permissions.value === 'response_rates',
+    csid: csid.value,
+    departmentForms: contactDepartmentForms.value,
+    email: email.value,
+    firstName: firstName.value,
+    lastName: lastName.value,
+    uid: uid.value,
+    userId: userId.value
+  }).then(props.afterSave)
+}
+
+const onSelectSearchResult = user => {
+  populateForm(user)
+}
+
+const populateForm = contact => {
+  if (contact) {
+    fetchUserDepartmentForms(contact.uid)
+    csid.value = contact.csid
+    contactDepartmentForms.value = cloneDeep(sortBy(contact.departmentForms, 'name'))
+    email.value = contact.email
+    firstName.value = contact.firstName
+    lastName.value = contact.lastName
+    uid.value = contact.uid
+    userId.value = contact.userId
+    if (contact.canReceiveCommunications !== undefined) {
+      canReceiveCommunications.value = contact.canReceiveCommunications
     }
+    if (contact.canViewReports) {
+      permissions.value = contact.canViewResponseRates.value ? 'response_rates' : 'reports_only'
+    }
+    putFocusNextTick('input-person-lookup-autocomplete')
+  } else {
+    csid.value = null
+    canReceiveCommunications.value = true
+    contactDepartmentForms.value = null
+    email.value = null
+    firstName.value = null
+    lastName.value = null
+    permissions.value = null
+    uid.value = null
+    userId.value = null
+  }
+}
+
+const remove = departmentForm => {
+  const formName = departmentForm.name
+  const indexOf = findIndex(contactDepartmentForms.value, {'name': formName})
+  contactDepartmentForms.value.splice(indexOf, 1)
+  alertScreenReader(`Removed ${formName} from ${fullName.value} department forms.`)
+  putFocusNextTick(`input-deptForms-${contactId.value}`)
+}
+
+const srAlert = (label, isSelected) => {
+  if (firstName.value || lastName.value) {
+    alertScreenReader(`${firstName.value} ${lastName.value} will ${isSelected ? '' : 'not '} ${label}.`)
   }
 }
 </script>

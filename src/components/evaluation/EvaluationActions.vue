@@ -23,7 +23,7 @@
           </v-btn>
         </div>
         <div v-if="key === 'ignore'" class="align-self-center pt-1 px-1">
-          <span class="font-size-18 text--secondary">|</span>
+          <span class="font-size-18 text-secondary">|</span>
         </div>
       </div>
     </div>

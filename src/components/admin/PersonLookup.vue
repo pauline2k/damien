@@ -76,9 +76,9 @@
 
 <script setup>
 import {debounce, delay, join, noop, size, split, trim} from 'lodash'
+import {onMounted, ref, watch} from 'vue'
 import {searchInstructors} from '@/api/instructor'
 import {searchUsers} from '@/api/user'
-import {onMounted, ref, watch} from 'vue'
 import {useTheme} from 'vuetify'
 
 const props = defineProps({
