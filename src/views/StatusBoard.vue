@@ -23,7 +23,7 @@
         :sort-by="sortBy"
       >
         <template #top>
-          <div class="align-center d-flex flex-row pl-4 py-2">
+          <div class="align-center d-flex pl-3 py-2">
             <label class="sr-only" for="checkbox-select-dept-all">Select all department rows</label>
             <v-checkbox
               id="checkbox-select-dept-all"
@@ -164,11 +164,11 @@ const blockers = ref({})
 const departments = ref([])
 const departmentHeaders = [
   {key: 'select', class: 'text-start px-4', headerProps: {width: '30px'}, sortable: true, title: 'Select', value: 'select'},
-  {key: 'deptName', class: 'px-3', headerProps: {width: '50%'}, sortable: true, title: 'Department', value: 'deptName'},
-  {key: 'lastUpdated', class: 'px-3', headerProps: {width: '20%'}, sortable: true, title: 'Last Updated', value: 'lastUpdated'},
-  {key: 'totalInError', class: 'px-3', headerProps: {width: '10%'}, sortable: true, title: 'Errors', value: 'totalInError'},
-  {key: 'totalConfirmed', class: 'px-3', headerProps: {width: '10%'}, sortable: true, title: 'Confirmed', value: 'totalConfirmed'},
-  {key: 'note', class: 'px-3', headerProps: {width: '30%'}, sortable: true, title: 'Notes', value: 'note.note'}
+  {key: 'deptName', class: 'px-2', headerProps: {width: '50%'}, sortable: true, title: 'Department', value: 'deptName'},
+  {key: 'lastUpdated', class: 'px-2', headerProps: {width: '20%'}, sortable: true, title: 'Last Updated', value: 'lastUpdated'},
+  {key: 'totalInError', class: 'px-2', headerProps: {width: '10%'}, sortable: true, title: 'Errors', value: 'totalInError'},
+  {key: 'totalConfirmed', class: 'px-2', headerProps: {width: '10%'}, sortable: true, title: 'Confirmed', value: 'totalConfirmed'},
+  {key: 'note', class: 'px-2', headerProps: {width: '30%'}, sortable: true, title: 'Notes', value: 'note.note'}
 ]
 const isCreatingNotification = ref(false)
 const selectedDepartmentIds = ref([])
