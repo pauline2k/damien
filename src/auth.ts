@@ -3,7 +3,7 @@ import {useContextStore} from '@/stores/context'
 
 const $_goToLogin = (to: any, next: any) => {
   next({
-    path: '/login',
+    path: '/start',
     query: {
       error: to.query.error,
       redirect: to.name === 'home' ? undefined : to.fullPath

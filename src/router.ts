@@ -132,7 +132,7 @@ const routes:RouteRecordRaw[] = [
         }
       },
       {
-        path: '*',
+        path: '/:pathMatch(.*)*',
         redirect: '/404'
       }
     ]

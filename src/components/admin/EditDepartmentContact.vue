@@ -1,7 +1,6 @@
 <template>
   <v-form
     v-model="valid"
-    class="pa-3"
     lazy-validation
   >
     <div v-if="!contact">
@@ -25,131 +24,131 @@
         color="tertiary"
         dense
         :disabled="disableControls"
+        hide-details
         outlined
         required
         :rules="emailRules"
       />
-      <label :for="`checkbox-communications-${contactId}`" class="form-label">
-        Communications
-      </label>
-      <div class="d-flex my-2">
-        <v-checkbox
-          :id="`checkbox-communications-${contactId}`"
-          :aria-checked="canReceiveCommunications"
-          aria-label="Receive notifications"
-          class="checkbox-override rounded-sm"
-          color="tertiary"
-          :disabled="disableControls"
-          :ripple="false"
-          role="checkbox"
-          tabindex="0"
-          :value="canReceiveCommunications"
-          @input="() => canReceiveCommunications = !canReceiveCommunications"
-        />
-        <label
-          class="v-label d-flex align-center"
-          :class="theme.global.current.value.dark ? 'theme--dark' : 'theme--light'"
-          :for="`checkbox-communications-${contactId}`"
-        >
-          Receive notifications
+      <div class="mt-2">
+        <label :for="`checkbox-communications-${contactId}`" class="form-label">
+          Communications
         </label>
-      </div>
-      <label :for="`checkbox-communications-${contactId}`" class="form-label">
-        Blue Access
-      </label>
-      <v-radio-group
-        v-model="permissions"
-        class="mt-1"
-        column
-        dense
-        :disabled="disableControls"
-        mandatory
-      >
-        <v-radio
-          :id="`radio-no-blue-${contactId}`"
-          :aria-checked="isNil(permissions)"
-          class="mb-1"
-          color="tertiary"
-          label="No access to Blue"
-          :value="null"
-        />
-        <v-radio
-          :id="`radio-reports-only-${contactId}`"
-          :aria-checked="permissions === 'reports_only'"
-          class="mb-1"
-          color="tertiary"
-          label="View reports"
-          value="reports_only"
-        />
-        <v-radio
-          :id="`radio-response-rates-${contactId}`"
-          :aria-checked="permissions === 'response_rates'"
-          class="mb-1"
-          color="tertiary"
-          label="View reports and response rates"
-          value="response_rates"
-        />
-      </v-radio-group>
-      <label :for="`select-deptForms-${contactId}`" class="form-label">
-        Department Forms
-      </label>
-      <v-combobox
-        v-model="contactDepartmentForms"
-        aria-label="Department Forms"
-        auto-select-first
-        chips
-        class="mb-4 mt-2"
-        color="tertiary"
-        deletable-chips
-        dense
-        :disabled="disableControls"
-        hide-details
-        hide-selected
-        item-color="secondary"
-        item-text="name"
-        :items="availableDepartmentForms"
-        :menu-props="{closeOnClick: true, closeOnContentClick: true}"
-        multiple
-        outlined
-        return-object
-        @change="onChangeContactDepartmentForms"
-      >
-        <template #selection="data">
-          <v-chip
-            :id="`selected-deptForm-${data.item.id}-${contactId}`"
-            :key="data.item.id"
-            v-bind="data.attrs"
-            :aria-label="`Remove ${data.item.name} from ${fullName}'s department forms`"
-            class="px-4 ma-1"
-            close
-            :close-label="`Remove ${data.item.name} from ${fullName}'s department forms`"
-            color="secondary"
+        <div class="align-center d-flex">
+          <v-checkbox
+            :id="`checkbox-communications-${contactId}`"
+            :aria-checked="canReceiveCommunications"
+            aria-label="Receive notifications"
+            class="checkbox-override rounded-sm"
+            color="tertiary"
+            density="compact"
             :disabled="disableControls"
+            hide-details
             :ripple="false"
-            :text="data.item.name"
-            @click:close="remove(data.item)"
+            role="checkbox"
+            tabindex="0"
+            :value="canReceiveCommunications"
+            @input="() => canReceiveCommunications = !canReceiveCommunications"
           />
-        </template>
-      </v-combobox>
+          <label
+            class="v-label ml-1"
+            :class="theme.global.current.value.dark ? 'theme--dark' : 'theme--light'"
+            :for="`checkbox-communications-${contactId}`"
+          >
+            Receive notifications
+          </label>
+        </div>
+      </div>
+      <div class="mt-2">
+        <label :for="`checkbox-communications-${contactId}`" class="form-label">
+          Blue Access
+        </label>
+        <v-radio-group
+          v-model="permissions"
+          class="mt-1"
+          column
+          density="comfortable"
+          :disabled="disableControls"
+          hide-details
+          mandatory
+        >
+          <v-radio
+            :id="`radio-no-blue-${contactId}`"
+            :aria-checked="isNil(permissions)"
+            label="No access to Blue"
+            :value="null"
+          />
+          <v-radio
+            :id="`radio-reports-only-${contactId}`"
+            :aria-checked="permissions === 'reports_only'"
+            label="View reports"
+            value="reports_only"
+          />
+          <v-radio
+            :id="`radio-response-rates-${contactId}`"
+            :aria-checked="permissions === 'response_rates'"
+            label="View reports and response rates"
+            value="response_rates"
+          />
+        </v-radio-group>
+      </div>
+      <div class="mt-2">
+        <label :for="`select-deptForms-${contactId}`" class="form-label">
+          Department Forms
+        </label>
+        <v-combobox
+          v-model="contactDepartmentForms"
+          aria-label="Department Forms"
+          auto-select-first
+          chips
+          closable-chips
+          color="primary"
+          density="comfortable"
+          :disabled="disableControls"
+          hide-details
+          hide-selected
+          item-title="name"
+          item-value="id"
+          :items="availableDepartmentForms"
+          :menu-props="{closeOnClick: true, closeOnContentClick: true}"
+          multiple
+          return-object
+          variant="outlined"
+          @change="onChangeContactDepartmentForms"
+        >
+          <template #chip="{item}">
+            <v-chip
+              :id="`selected-deptForm-${item.id}-${contactId}`"
+              :key="item.id"
+              :aria-label="`Remove ${item.name} from ${fullName}'s department forms`"
+              :close-label="`Remove ${item.name} from ${fullName}'s department forms`"
+              color="primary"
+              :text="item.name"
+              @click:close="remove(item)"
+            />
+          </template>
+        </v-combobox>
+      </div>
     </div>
-    <v-btn
-      :id="`save-dept-contact-${contactId}-btn`"
-      class="text-capitalize mr-2"
-      color="secondary"
-      :disabled="disableControls || !valid || !uid"
-      elevation="2"
-      text="Save"
-      @click.prevent="onSave"
-    />
-    <v-btn
-      :id="`cancel-dept-contact-${contactId}-btn`"
-      class="text-capitalize ml-1"
-      :disabled="disableControls"
-      elevation="2"
-      outlined
-      text="Cancel"
-      @click.prevent="onCancel"
-    />
+    <div class="mt-4">
+      <v-btn
+        :id="`save-dept-contact-${contactId}-btn`"
+        class="text-capitalize mr-2"
+        color="primary"
+        :disabled="disableControls || !valid || !uid"
+        elevation="2"
+        text="Save"
+        @click.prevent="onSave"
+      />
+      <v-btn
+        :id="`cancel-dept-contact-${contactId}-btn`"
+        class="text-capitalize"
+        color="primary"
+        :disabled="disableControls"
+        variant="outlined"
+        text="Cancel"
+        @click.prevent="onCancel"
+      />
+    </div>
   </v-form>
 </template>
 

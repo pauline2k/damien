@@ -22,7 +22,7 @@
     <v-container v-if="!contextStore.loading" class="mx-0 px-0 pb-2" fluid>
       <v-row justify="start">
         <v-col cols="12" md="5" class="pr-1">
-          <div class="border-sm contacts-container pa-3">
+          <div class="border-sm contacts-container h-100 pa-3">
             <v-expansion-panels v-model="contactsPanel" disable-icon-rotate flat>
               <v-expansion-panel class="panel-override">
                 <template #default>
@@ -33,15 +33,15 @@
                       hide-actions
                       @click="collapseAllContacts"
                     >
-                      <template #default="{open}">
-                        <span v-if="!open">
+                      <template #default="{expanded}">
+                        <span v-if="!expanded">
                           Expand
                           <v-icon
                             class="rotate-180"
                             :icon="mdiPlusBoxMultipleOutline"
                           />
                         </span>
-                        <span v-if="open">
+                        <span v-if="expanded">
                           Collapse All
                           <v-icon class="rotate-180 ml-1" :icon="mdiMinusBoxMultipleOutline" />
                         </span>
@@ -66,7 +66,7 @@
                       />
                     </v-expansion-panels>
                   </v-expansion-panel-text>
-                  <div v-if="contextStore.currentUser.isAdmin" class="pl-4">
+                  <div v-if="contextStore.currentUser.isAdmin" class="pl-2">
                     <v-btn
                       v-if="!isCreatingNotification"
                       id="open-notification-form-btn"
@@ -108,13 +108,15 @@
           </div>
         </v-col>
         <v-col cols="12" md="7">
-          <DepartmentNote />
+          <div class="border-sm px-5 py-3">
+            <DepartmentNote />
+          </div>
         </v-col>
       </v-row>
     </v-container>
-    <v-container v-if="!contextStore.loading" class="mx-0 px-0 pb-6" fluid>
+    <div v-if="!contextStore.loading" class="border-sm mt-3 py-5">
       <EvaluationTable />
-    </v-container>
+    </div>
     <v-overlay :value="showTheOmenPoster" z-index="300">
       <v-card>
         <v-toolbar dark color="secondary" dense>
@@ -164,9 +166,9 @@ const route = useRoute()
 
 const notificationRecipients = computed(() => {
   return {
-    deptName: department.deptName,
-    deptId: department.id,
-    recipients: _filter(this.contacts, 'canReceiveCommunications')
+    deptName: department.value.deptName,
+    deptId: department.value.id,
+    recipients: _filter(contacts.value, 'canReceiveCommunications')
   }
 })
 

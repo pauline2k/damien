@@ -31,7 +31,7 @@ export function axiosErrorHandler(error, vm: any, info?: string) {
     }
   } else {
     router.push({
-      path: '/login',
+      path: '/start',
       query: {
         m: 'Your session has expired'
       }
