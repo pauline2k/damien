@@ -86,18 +86,17 @@
                 </template>
               </v-expansion-panel>
             </v-expansion-panels>
-            <div v-if="contextStore.currentUser.isAdmin">
+            <div v-if="currentUser.isAdmin" class="pl-2 pt-3">
               <v-btn
                 v-if="!isAddingContact"
                 id="add-dept-contact-btn"
-                class="mt-1"
                 color="primary"
+                :disabled="disableControls"
+                :prepend-icon="mdiPlusThick"
+                text="Add Contact"
                 variant="text"
                 @click="() => isAddingContact = true"
-              >
-                <v-icon :icon="mdiPlusThick" />
-                <span class="font-weight-medium text-capitalize">Add Contact</span>
-              </v-btn>
+              />
               <EditDepartmentContact
                 v-if="isAddingContact"
                 :id="`add-department-contact`"
@@ -147,7 +146,7 @@ import NotificationForm from '@/components/admin/NotificationForm'
 import TermSelect from '@/components/util/TermSelect'
 import {NUMBER_OF_THE_BEAST, useDepartmentStore} from '@/stores/department/department-edit-session'
 import {alertScreenReader, getCatalogListings, putFocusNextTick, scrollToTop} from '@/lib/utils'
-import {computed, onMounted, ref} from 'vue'
+import {computed, onMounted, ref, watch} from 'vue'
 import {filter as _filter, get, includes, isEmpty, size} from 'lodash'
 import {mdiClose, mdiMinusBoxMultipleOutline, mdiPlusBoxMultipleOutline, mdiPlusThick} from '@mdi/js'
 import {storeToRefs} from 'pinia'
@@ -155,6 +154,7 @@ import {useContextStore} from '@/stores/context'
 import {useRoute} from 'vue-router'
 
 const contextStore = useContextStore()
+const currentUser = contextStore.currentUser
 const departmentStore = useDepartmentStore()
 const {contacts, department, disableControls, showTheOmenPoster} = storeToRefs(departmentStore)
 
@@ -170,6 +170,14 @@ const notificationRecipients = computed(() => {
     deptId: department.value.id,
     recipients: _filter(contacts.value, 'canReceiveCommunications')
   }
+})
+
+watch(isAddingContact, () => {
+  departmentStore.setDisableControls(isAddingContact.value)
+})
+
+watch(isCreatingNotification, () => {
+  departmentStore.setDisableControls(isCreatingNotification.value)
 })
 
 onMounted(() => departmentStore.setShowTheOmenPoster(route.query.n === NUMBER_OF_THE_BEAST))

@@ -1,5 +1,5 @@
 <template>
-  <v-card class="my-1 pa-2" outlined>
+  <v-card class="border-sm my-1" elevation="0">
     <div v-if="isSending">
       <v-progress-circular
         class="spinner"
@@ -10,7 +10,7 @@
         color="secondary"
       />
     </div>
-    <v-card-title class="pa-3" :class="isSending ? 'text-muted' : ''">
+    <v-card-title :class="isSending ? 'text-muted' : ''">
       <h3
         id="send-notification-section-header"
         tabindex="-1"
@@ -18,8 +18,8 @@
         Send Notification
       </h3>
     </v-card-title>
-    <v-card-subtitle v-if="selectedRecipients" class="pr-0">
-      <div class="mt-2 mb-1">Message will be sent to:</div>
+    <v-card-subtitle v-if="selectedRecipients">
+      <div class="mb-1">Message will be sent to:</div>
       <v-expansion-panels
         class="recipients-container"
         :disabled="isSending"
@@ -35,21 +35,22 @@
             <h4 :id="`dept-head-${deptIndex}`">{{ department.deptName }}</h4>
           </v-expansion-panel-title>
           <v-expansion-panel-text>
-            <v-chip
-              v-for="(recipient, index) in department.recipients"
-              :key="index"
-              class="recipient my-1 mr-1 py-1"
-              :ripple="false"
-            >
-              {{ recipientLabel(recipient) }}
-              <v-btn
-                :aria-label="`Remove ${recipientLabel(recipient)} from recipients`"
-                :disabled="isSending"
-                :icon="mdiCloseCircle"
-                size="small"
-                @click.stop="removeRecipient(department, recipient, index)"
-              />
-            </v-chip>
+            <div v-for="(recipient, index) in department.recipients" :key="index" class="d-flex flex-wrap w-66">
+              <div class="align-center bg-green-accent-1 border-sm d-flex mb-1 rounded-xl">
+                <div class="px-4 py-2 recipient">
+                  {{ recipientLabel(recipient) }}
+                </div>
+                <v-btn
+                  :aria-label="`Remove ${recipientLabel(recipient)} from recipients`"
+                  color="transparent"
+                  :disabled="isSending"
+                  :icon="mdiCloseCircle"
+                  size="small"
+                  variant="flat"
+                  @click.stop="removeRecipient(department, recipient, index)"
+                />
+              </div>
+            </div>
           </v-expansion-panel-text>
         </v-expansion-panel>
       </v-expansion-panels>
@@ -189,7 +190,6 @@ const sendNotification = () => {
   min-height: 260px;
 }
 .recipient {
-  height: fit-content;
   white-space: break-spaces;
 }
 .recipients-container {
