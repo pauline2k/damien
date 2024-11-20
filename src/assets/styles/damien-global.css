@@ -149,6 +149,9 @@ input.vs__search:enabled {
   outline-style: auto !important;
   outline-width: 1px !important;
 }
+.v-navigation-drawer__content {
+  scrollbar-width: none;
+}
 .v-table.v-table--density-compact > .v-table__wrapper > table > tbody > tr > td,
 .v-table.v-table--density-compact > .v-table__wrapper > table > tbody > tr > th,
 .v-table.v-table--density-compact > .v-table__wrapper > table > thead > tr > td,
