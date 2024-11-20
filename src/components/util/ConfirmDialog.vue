@@ -7,41 +7,36 @@
   >
     <v-card>
       <v-card-title id="confirm-dialog-title" tabindex="-1">
-        <div class="align-center d-flex">
+        <div class="align-center d-flex pt-3 px-2">
           <div v-if="icon" class="pb-1 pr-2">
             <v-icon aria-label="Error icon" color="error">{{ icon }}</v-icon>
           </div>
-          <div>
+          <h3>
             {{ title }}
-          </div>
+          </h3>
         </div>
       </v-card-title>
       <v-card-text class="pt-3">{{ text }}</v-card-text>
-      <v-divider />
       <v-card-actions>
-        <v-spacer />
-        <div class="d-flex pa-2">
-          <div class="mr-2">
-            <v-btn
-              id="confirm-dialog-btn"
-              class="text-capitalize"
-              color="primary"
-              :disabled="disabled"
-              @click="onClickConfirm"
-            >
-              {{ confirmButtonLabel }} <span class="sr-only">{{ buttonContext }}</span>
-            </v-btn>
-          </div>
-          <div>
-            <v-btn
-              id="cancel-dialog-btn"
-              class="text-capitalize"
-              :disabled="disabled"
-              @click="cancel"
-            >
-              Cancel <span class="sr-only">{{ buttonContext }}</span>
-            </v-btn>
-          </div>
+        <div class="align-center d-flex pb-3 pr-4">
+          <v-btn
+            id="confirm-dialog-btn"
+            class="mr-2"
+            color="primary"
+            :disabled="disabled"
+            variant="flat"
+            @click="onClickConfirm"
+          >
+            {{ confirmButtonLabel }} <span class="sr-only">{{ buttonContext }}</span>
+          </v-btn>
+          <v-btn
+            id="cancel-dialog-btn"
+            :disabled="disabled"
+            variant="outlined"
+            @click="cancel"
+          >
+            Cancel <span class="sr-only">{{ buttonContext }}</span>
+          </v-btn>
         </div>
       </v-card-actions>
     </v-card>

@@ -14,47 +14,44 @@
       <v-autocomplete
         :id="id"
         v-model="selected"
-        :allow-overflow="false"
-        :append-icon="null"
         :aria-disabled="disabled"
         :aria-labelledby="`${id}-label`"
         auto-select-first
-        background-color="white"
-        class="person-lookup"
+        autocomplete="off"
+        class="bg-white person-lookup"
         :class="inputClass"
-        dense
+        density="compact"
         :disabled="disabled"
         :error="required && !suppressValidation && !!size(errors)"
         :error-messages="required && !suppressValidation ? errors : []"
-        hide-details
+        hide-details="auto"
         :hide-no-data="isSearching || !search"
         :items="suggestions"
-        light
         :loading="isSearching ? 'tertiary' : false"
-        :menu-props="menuProps"
+        :menu-props="{
+          contentClass: 'autocomplete-menu'
+        }"
         no-data-text="No results found."
         no-filter
-        outlined
         :placeholder="placeholder"
         return-object
         :search="search"
         single-line
-        @blur="onBlur"
+        variant="outlined"
+        @update:model-value="onBlur"
         @change="suppressValidation = false"
         @update:list-index="onHighlight"
       >
-        <template #selection="data">
-          <span class="text-no-wrap">{{ toLabel(data.item) }}</span>
+        <template #selection="{item}">
+          <span class="text-no-wrap">{{ toLabel(item) }}</span>
         </template>
-        <template #item="data">
+        <template #item="{item}">
           <v-list-item
-            v-bind="data.attrs"
-            :aria-selected="data.item === highlightedItem"
+            :aria-selected="item === highlightedItem"
             class="text-tertiary"
-            v-on="data.on"
           >
             <v-list-item-title>
-              <span v-html="suggest(data.item)" />
+              <span v-html="suggest(item)" />
             </v-list-item-title>
           </v-list-item>
         </template>
@@ -139,9 +136,6 @@ const debouncedSearch = ref(noop)
 const errors = ref([])
 const highlightedItem = ref(undefined)
 const isSearching = ref(false)
-const menuProps = ref({
-  contentClass: 'v-sheet--outlined autocomplete-menu'
-})
 const search = ref(undefined)
 const searchTokenMatcher = ref(undefined)
 const selected = ref(undefined)

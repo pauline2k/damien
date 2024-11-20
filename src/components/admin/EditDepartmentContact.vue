@@ -4,7 +4,7 @@
     lazy-validation
   >
     <div v-if="!contact">
-      <h3 id="add-contact-sub-header" class="form-title my-2" tabindex="-1">
+      <h3 id="add-contact-sub-header" class="form-title" tabindex="-1">
         Add Contact
       </h3>
       <PersonLookup
@@ -23,7 +23,6 @@
         class="mt-1"
         color="tertiary"
         dense
-        :disabled="disableControls"
         hide-details
         outlined
         required
@@ -36,18 +35,15 @@
         <div class="align-center d-flex">
           <v-checkbox
             :id="`checkbox-communications-${contactId}`"
-            :aria-checked="canReceiveCommunications"
+            v-model="canReceiveCommunications"
             aria-label="Receive notifications"
             class="checkbox-override rounded-sm"
             color="tertiary"
             density="compact"
-            :disabled="disableControls"
             hide-details
             :ripple="false"
             role="checkbox"
             tabindex="0"
-            :value="canReceiveCommunications"
-            @input="() => canReceiveCommunications = !canReceiveCommunications"
           />
           <label
             class="v-label ml-1"
@@ -67,7 +63,6 @@
           class="mt-1"
           column
           density="comfortable"
-          :disabled="disableControls"
           hide-details
           mandatory
         >
@@ -99,11 +94,11 @@
           v-model="contactDepartmentForms"
           aria-label="Department Forms"
           auto-select-first
+          autocomplete="off"
           chips
           closable-chips
           color="primary"
           density="comfortable"
-          :disabled="disableControls"
           hide-details
           hide-selected
           item-title="name"
@@ -134,7 +129,7 @@
         :id="`save-dept-contact-${contactId}-btn`"
         class="text-capitalize mr-2"
         color="primary"
-        :disabled="disableControls || !valid || !uid"
+        :disabled="!valid || !uid"
         elevation="2"
         text="Save"
         @click.prevent="onSave"
@@ -143,7 +138,6 @@
         :id="`cancel-dept-contact-${contactId}-btn`"
         class="text-capitalize"
         color="primary"
-        :disabled="disableControls"
         variant="outlined"
         text="Cancel"
         @click.prevent="onCancel"
@@ -180,7 +174,7 @@ const props = defineProps({
 
 const departmentStore = useDepartmentStore()
 
-const {contacts, disableControls} = storeToRefs(departmentStore)
+const {contacts} = storeToRefs(departmentStore)
 const canReceiveCommunications = ref(true)
 const csid = ref(undefined)
 const contactDepartmentForms = ref([])
@@ -319,9 +313,6 @@ const srAlert = (label, isSelected) => {
 </script>
 
 <style>
-.department-contact-form {
-  z-index: 10;
-}
 .form-title {
   font-size: 18px;
   font-weight: 700;
@@ -333,10 +324,8 @@ const srAlert = (label, isSelected) => {
 </style>
 
 <style scoped>
-.checkbox-override.v-simple-checkbox {
-  left: -2px;
-  margin-right: 4px;
-  padding: 4px;
+.department-contact-form {
+  z-index: 10;
 }
 .checkbox-override.v-simple-checkbox div {
   height: 20px;

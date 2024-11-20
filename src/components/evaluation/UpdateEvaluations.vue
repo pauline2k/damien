@@ -81,7 +81,6 @@
                 class="bulk-action-form-input"
                 :min-date="get(validStartDates, 'min')"
                 :max-date="get(validStartDates, 'max')"
-                :popover="{positionFixed: true}"
                 title-position="left"
               >
                 <template #default="{ inputValue, inputEvents }">

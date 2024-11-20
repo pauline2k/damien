@@ -7,19 +7,19 @@
       Notes
     </h2>
     <div
-      v-if="item && !isEditing"
+      v-if="note && !isEditing"
       id="dept-note"
       class="text-condensed pt-2"
     >
-      <pre class="body-2 text-condensed text-prewrap">{{ item }}</pre>
+      <pre class="body-2 text-condensed text-prewrap">{{ note }}</pre>
     </div>
     <v-form v-if="isEditing" class="pt-2">
       <v-textarea
         id="dept-note-textarea"
-        v-model="item"
+        v-model="note"
         auto-grow
         color="tertiary"
-        :disabled="disableControls || !isEditable"
+        :disabled="!isEditable"
         hide-details="auto"
         outlined
         rows="3"
@@ -37,11 +37,11 @@
         variant="text"
         @click="onEdit"
       >
-        {{ item ? 'Edit ' : 'Create ' }}<span class="sr-only">Note</span>
+        {{ note ? 'Edit ' : 'Create ' }}<span class="sr-only">Note</span>
       </v-btn>
       <div role="presentation">|</div>
       <v-btn
-        v-if="item"
+        v-if="note"
         id="delete-dept-note-btn"
         color="primary"
         :disabled="disableControls || !isEditable"
@@ -54,7 +54,6 @@
       <ConfirmDialog
         v-if="isConfirming"
         :button-context="'Delete Note'"
-        :disabled="disableControls"
         :on-click-cancel="onCancelDelete"
         :on-click-confirm="onDelete"
         :text="`Are you sure you want to delete the ${contextStore.selectedTermName || ''} note?`"
@@ -64,22 +63,20 @@
     <div v-if="isEditing" class="py-2">
       <v-btn
         id="save-dept-note-btn"
-        class="text-capitalize mr-2"
+        class="mr-2"
         color="secondary"
-        :disabled="disableControls || !isEditable"
-        elevation="2"
+        :disabled="!isEditable || !trim(note)"
         text="Save Note"
         @click="onSave"
       />
       <v-btn
         id="cancel-dept-note-btn"
-        class="text-capitalize ml-1"
-        :disabled="disableControls || !isEditable"
-        elevation="2"
-        outlined
+        class="ml-1"
+        :disabled="!isEditable"
+        variant="outlined"
         @click="onCancelSave"
       >
-        Cancel <span class="sr-only">{{ item ? 'Edit' : 'Create' }} Note</span>
+        Cancel <span class="sr-only">{{ note ? 'Edit' : 'Create' }} Note</span>
       </v-btn>
     </div>
   </div>
@@ -88,22 +85,30 @@
 <script setup>
 import ConfirmDialog from '@/components/util/ConfirmDialog'
 import {alertScreenReader, putFocusNextTick} from '@/lib/utils'
-import {onMounted, ref} from 'vue'
+import {onMounted, ref, watch} from 'vue'
 import {storeToRefs} from 'pinia'
+import {trim} from 'lodash'
 import {useContextStore} from '@/stores/context'
 import {useDepartmentStore} from '@/stores/department/department-edit-session'
 
 const contextStore = useContextStore()
 const departmentStore = useDepartmentStore()
-
 const {disableControls} = storeToRefs(departmentStore)
 const isConfirming = ref(false)
 const isEditable = ref(false)
 const isEditing = ref(false)
-const item = ref(undefined)
+const note = ref(undefined)
 
 onMounted(() => {
   reset()
+})
+
+watch(isConfirming, () => {
+  departmentStore.setDisableControls(isConfirming.value)
+})
+
+watch(isEditing, () => {
+  departmentStore.setDisableControls(isEditing.value)
 })
 
 const onCancelDelete = () => {
@@ -132,7 +137,7 @@ const onEdit = () => {
 }
 
 const onSave = () => {
-  departmentStore.updateNote(item.value, contextStore.selectedTermId).then(() => {
+  departmentStore.updateNote(note.value, contextStore.selectedTermId).then(() => {
     alertScreenReader('Note saved.')
     putFocusNextTick('edit-dept-note-btn')
     reset()
@@ -143,7 +148,7 @@ const reset = () => {
   isConfirming.value = false
   isEditable.value = contextStore.selectedTermId === contextStore.config.currentTermId
   isEditing.value = false
-  item.value = departmentStore.note
+  note.value = departmentStore.note
 }
 </script>
 

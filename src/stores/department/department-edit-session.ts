@@ -261,6 +261,9 @@ export const useDepartmentStore = defineStore('department', {
       })
       this.selectedEvaluationIds = selectedEvaluationIds
     },
+    setDisableControls(disableControls: boolean) {
+      this.disableControls = disableControls
+    },
     setEvaluations(evaluations: any[]) {
       each(evaluations, e => $_decorateEvaluation(e, evaluations))
       this.evaluations = evaluations

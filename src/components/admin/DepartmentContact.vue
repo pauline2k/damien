@@ -158,6 +158,14 @@ const isConfirming = ref(false)
 const isEditing = ref(false)
 const theme = useTheme()
 
+watch(isConfirming, () => {
+  departmentStore.setDisableControls(isConfirming.value)
+})
+
+watch(isEditing, () => {
+  departmentStore.setDisableControls(isEditing.value)
+})
+
 watch(() => props.isExpanded, () => {
   if (!props.isExpanded) {
     isEditing.value = false
