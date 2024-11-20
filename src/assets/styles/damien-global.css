@@ -149,6 +149,12 @@ input.vs__search:enabled {
   outline-style: auto !important;
   outline-width: 1px !important;
 }
+.v-table.v-table--density-compact > .v-table__wrapper > table > tbody > tr > td,
+.v-table.v-table--density-compact > .v-table__wrapper > table > tbody > tr > th,
+.v-table.v-table--density-compact > .v-table__wrapper > table > thead > tr > td,
+.v-table.v-table--density-compact > .v-table__wrapper > table > thead > tr > th {
+  padding: 0 12px ;
+}
 .v-table-hidden-row-override table tbody tr[style="height: 0px; border: 0px;"] {
   display: none;
 }
@@ -175,14 +181,17 @@ svg {
   fill: currentColor;
 }
 table thead th {
-  color: rgba(var(--v-theme-on-surface),var(--v-high-emphasis-opacity));
+  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
   font-size: 12px;
   font-weight: 700 !important;
   min-width: unset !important;
+}
+table thead th button {
+  color: rgba(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
 }
 ul {
   list-style: none;
 }
 #service-announcement a {
-  color: #337ab7;
+  color: rgb(var(--v-theme-primary));
 }

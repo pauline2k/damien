@@ -96,7 +96,7 @@
         </div>
       </v-list-item>
     </v-navigation-drawer>
-    <v-main id="content" class="ma-0" :style="`--v-layout-bottom: ${footerHeight}px;`">
+    <v-main id="content" class="mb-4" :style="`--v-layout-bottom: ${footerHeight}px;`">
       <Snackbar />
       <Spinner v-if="contextStore.loading" />
       <div
