@@ -18,7 +18,7 @@
           max-width="600px"
           type="search"
         />
-        <div class="text-left">
+        <div class="text-left add-course-section">
           <AddCourseSection
             v-if="!readonly"
             id="add-course-section"
@@ -35,7 +35,7 @@
               class="select-all-evals align-center mt-0 pt-0"
               color="tertiary"
               density="compact"
-              :disabled="isEmpty(searchFilterResults)"
+              :disabled="searchFilterResultLength === 0"
               :false-value="!someEvaluationsSelected && !allEvaluationsSelected"
               hide-details
               :indeterminate="someEvaluationsSelected"
@@ -55,7 +55,9 @@
               </template>
             </v-checkbox>
           </div>
-          <EvaluationActions v-if="!readonly" />
+          <div class="evaluation-actions">
+            <EvaluationActions v-if="!readonly" />
+          </div>
         </div>
         <div class="align-center d-flex flex-wrap">
           <div class="mr-2">Show statuses:</div>
@@ -71,6 +73,7 @@
               v-for="status in keys(filterTypes)"
               :id="`evaluations-filter-${status}`"
               :key="status"
+              color="primary"
               :aria-selected="filterTypes[status].enabled"
               class="mr-1 pl-3 rounded-pill"
               :class="{
@@ -109,13 +112,16 @@
         </div>
       </div>
     </div>
+    <div class="divider">
+      <v-divider></v-divider>
+    </div>
     <div
       id="evaluation-table-search-results-desc"
       aria-atomic="true"
       aria-live="polite"
       class="sr-only"
     >
-      <span v-if="searchFilter">{{ pluralize('evaluation', size(searchFilterResults)) }} displayed.</span>
+      <span v-if="searchFilter">{{ pluralize('evaluation', size(searchFilterResults.value)) }} displayed.</span>
     </div>
     <v-data-table
       id="evaluation-table"
@@ -555,7 +561,7 @@ import SortableTableHeader from '@/components/util/SortableTableHeader'
 import {EVALUATION_STATUSES, useDepartmentStore} from '@/stores/department/department-edit-session'
 import {addInstructor} from '@/api/instructor'
 import {alertScreenReader, oxfordJoin, pluralize, toFormatFromISO, toFormatFromJsDate, toLocaleFromISO} from '@/lib/utils'
-import {clone, cloneDeep, each, find, get, isEmpty, keys, pickBy, size, some} from 'lodash'
+import {clone, cloneDeep, each, find, get, keys, pickBy, size, some} from 'lodash'
 import {computed, nextTick, onMounted, ref} from 'vue'
 import {putFocusNextTick} from '@/lib/utils'
 import {mdiAlertCircle, mdiCheckCircle, mdiMagnify, mdiPlusCircle} from '@mdi/js'
@@ -599,6 +605,9 @@ const rules = {
 const saving = ref(false)
 const searchFilter = ref('')
 const searchFilterResults = ref([])
+const searchFilterResultLength = computed(() => {
+  return searchFilterResults.value.length
+})
 const selectedDepartmentForm = ref(undefined)
 const selectedEvaluationStatus = ref(undefined)
 const selectedEvaluationType = ref(undefined)
@@ -772,8 +781,8 @@ const onCancelNonSisInstructor = () => {
   pendingInstructor.value = null
 }
 
-const onChangeSearchFilter = searchFilterResults => {
-  searchFilterResults.value = searchFilterResults
+const onChangeSearchFilter = filterResults => {
+  searchFilterResults.value = filterResults
   if (size(useDepartmentStore().selectedEvaluationIds)) {
     useDepartmentStore().filterSelectedEvaluations({
       searchFilterResults: searchFilterResults.value,
@@ -1040,5 +1049,16 @@ tr.border-top-none td {
 }
 .xlisting-note {
   font-size: 0.8em;
+}
+.add-course-section {
+  position: relative;
+  top: -6px;
+}
+.evaluation-actions {
+  position: relative;
+  top: 2px;
+}
+.divider {
+  padding: 16px 0px 5px 0px;
 }
 </style>

@@ -7,7 +7,7 @@
             :id="`apply-course-action-btn-${key}`"
             :key="key"
             class="text-capitalize text-no-wrap mx-0 px-2"
-            :color="theme.current.dark ? 'tertiary' : 'secondary'"
+            variant="plain"
             :disabled="disableControls || !allowEdits || !selectedEvaluationIds.length || isLoading || isInvalidAction(action)"
             @click.stop="action.apply(key)"
           >
@@ -22,7 +22,7 @@
             />
           </v-btn>
         </div>
-        <div v-if="key === 'ignore'" class="align-self-center pt-1 px-1">
+        <div v-if="key === 'ignore'" class="align-self-center pt-0">
           <span class="font-size-18 text-secondary">|</span>
         </div>
       </div>
@@ -120,7 +120,6 @@ import {storeToRefs} from 'pinia'
 import {toFormatFromISO} from '@/lib/utils'
 import {updateEvaluations} from '@/api/departments'
 import {useContextStore} from '@/stores/context'
-import {useTheme} from 'vuetify'
 import {validateConfirmable, validateDuplicable, validateMarkAsDone} from '@/stores/department/utils'
 
 const departmentStore = useDepartmentStore()
@@ -142,7 +141,6 @@ const isEditing = ref(false)
 const isLoading = ref(false)
 const markAsDoneWarning = ref(undefined)
 const midtermFormAvailable = ref(false)
-const theme = useTheme()
 
 const allowEdits = computed(() => {
   const currentUser = useContextStore().currentUser
