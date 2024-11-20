@@ -1,22 +1,21 @@
 <template>
   <div v-if="evaluations.length > 0">
     <div
-      class="elevation-2 sticky"
-      :class="theme.current.dark ? 'sticky-dark' : 'sticky-light'"
+      class="sticky"
+      :class="theme.global.current.value.dark ? 'sticky-dark' : 'sticky-light'"
       role="search"
     >
-      <div class="align-baseline d-flex flex-wrap px-5 pb-3 pt-1 w-75">
+      <div class="align-baseline d-flex flex-wrap px-5 pt-1 w-75">
         <v-text-field
           id="evaluation-search-input"
           v-model="searchFilter"
-          :append-icon="mdiMagnify"
+          :append-inner-icon="mdiMagnify"
           aria-label="Filter evaluations table by search terms."
           class="evaluation-search-input mr-3"
           color="tertiary"
           hide-details
           label="Find"
           max-width="600px"
-          single-line
           type="search"
         />
         <div class="text-left">
@@ -28,36 +27,35 @@
           />
         </div>
       </div>
-      <div class="align-center d-flex flex-wrap justify-space-between px-5 py-3">
-        <div v-if="!readonly && allowEdits">
-          <div class="d-flex">
-            <div>
-              <v-checkbox
-                id="select-all-evals-checkbox"
-                class="select-all-evals align-center mt-0 pt-0"
-                color="tertiary"
-                :disabled="isEmpty(searchFilterResults)"
-                :false-value="!someEvaluationsSelected && !allEvaluationsSelected"
-                hide-details
-                :indeterminate="someEvaluationsSelected"
-                :input-value="someEvaluationsSelected || allEvaluationsSelected"
-                :ripple="false"
-                :value="allEvaluationsSelected"
-                @change="toggleSelectAll"
-              >
-                <template #label>
-                  <span
-                    v-if="!(someEvaluationsSelected || allEvaluationsSelected)"
-                    class="text-no-wrap pl-1 py-2"
-                    :class="{'sr-only': someEvaluationsSelected || allEvaluationsSelected}"
-                  >
-                    {{ someEvaluationsSelected || allEvaluationsSelected ? 'Unselect' : 'Select' }} all
-                  </span>
-                </template>
-              </v-checkbox>
-            </div>
-            <EvaluationActions v-if="!readonly" />
+      <div class="align-center d-flex flex-wrap justify-space-between px-5">
+        <div v-if="!readonly && allowEdits" class="d-flex">
+          <div>
+            <v-checkbox
+              id="select-all-evals-checkbox"
+              class="select-all-evals align-center mt-0 pt-0"
+              color="tertiary"
+              density="compact"
+              :disabled="isEmpty(searchFilterResults)"
+              :false-value="!someEvaluationsSelected && !allEvaluationsSelected"
+              hide-details
+              :indeterminate="someEvaluationsSelected"
+              :input-value="someEvaluationsSelected || allEvaluationsSelected"
+              :ripple="false"
+              :value="allEvaluationsSelected"
+              @change="toggleSelectAll"
+            >
+              <template #label>
+                <span
+                  v-if="!(someEvaluationsSelected || allEvaluationsSelected)"
+                  class="text-no-wrap pl-1 py-2"
+                  :class="{'sr-only': someEvaluationsSelected || allEvaluationsSelected}"
+                >
+                  {{ someEvaluationsSelected || allEvaluationsSelected ? 'Unselect' : 'Select' }} all
+                </span>
+              </template>
+            </v-checkbox>
           </div>
+          <EvaluationActions v-if="!readonly" />
         </div>
         <div class="align-center d-flex flex-wrap">
           <div class="mr-2">Show statuses:</div>
@@ -152,7 +150,7 @@
           tag="tbody"
         >
           <template v-for="(evaluation, rowIndex) in items" :key="evaluation.id">
-            <v-hover v-if="statusFilterEnabled(evaluation)" v-slot="{ isHovering, props: hoverProps }">
+            <v-hover v-if="statusFilterEnabled(evaluation)" v-slot="{isHovering, props: hoverProps}">
               <tr
                 class="evaluation-row"
                 :class="evaluationClass(evaluation, isHovering)"

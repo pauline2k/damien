@@ -7,7 +7,7 @@
     }"
   >
     <v-expansion-panel-title class="pa-2 rounded-b-0 height-unset">
-      <strong :id="`dept-contact-${contact.id}-name`">{{ fullName }}</strong>
+      <div :id="`dept-contact-${contact.id}-name`" class="font-weight-bold">{{ fullName }}</div>
     </v-expansion-panel-title>
     <v-expansion-panel-text class="edit-contact-container">
       <v-container v-if="!isEditing" class="pb-0 px-0" fluid>
@@ -41,20 +41,22 @@
             </span>
           </v-col>
         </v-row>
-        <v-row :id="`dept-contact-${contact.id}-deptForms`" class="my-1">
+        <v-row :id="`dept-contact-${contact.id}-deptForms`" class="mt-0">
           <v-col cols="12">
-            <v-chip
-              v-for="(form, formIndex) in departmentForms"
-              :id="`dept-contact-${contact.id}-form-${formIndex}`"
-              :key="form.id"
-              class="px-4 mr-1"
-              color="green"
-              :ripple="false"
-              :text="form.name"
-            />
+            <div class="d-flex flex-wrap">
+              <div v-for="(form, formIndex) in departmentForms" :key="form.id" class="pb-1 pr-1">
+                <v-chip
+                  :id="`dept-contact-${contact.id}-form-${formIndex}`"
+                  class="border-sm"
+                  color="green"
+                  :ripple="false"
+                  :text="form.name"
+                />
+              </div>
+            </div>
           </v-col>
         </v-row>
-        <v-row class="my-0" no-gutters>
+        <v-row class="mt-2" no-gutters>
           <v-col class="pl-0" cols="12">
             <v-toolbar
               v-if="currentUser.isAdmin"

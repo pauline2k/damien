@@ -107,7 +107,7 @@ export const useContextStore = defineStore('context', {
       this.snackbar.text = undefined
       alertScreenReader('Message closed')
     },
-    snackbarOpen(text: string, color: string) {
+    snackbarOpen(text: string, color?: string) {
       this.snackbar.text = text
       this.snackbar.color = color || 'secondary'
       this.snackbarShow = true
