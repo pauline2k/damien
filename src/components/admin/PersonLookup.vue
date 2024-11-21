@@ -41,7 +41,7 @@
         variant="outlined"
         @change="() => suppressValidation = false"
         @update:focused="onHighlight"
-        @update:search="onUpdateSearch"
+        @update:search="value => search = value"
         @update:model-value="onUpdateModel"
       >
         <template #item="{item, props: itemSlotProps}">
@@ -56,11 +56,14 @@
             @focusout="onFocusOutSuggestion"
             @mouseenter="() => onFocusInSuggestion(item.value)"
             @mouseleave="onFocusOutSuggestion"
-            v-html="suggest(item)"
-          />
+          >
+            <template #title>
+              <span v-html="suggest(item)" />
+            </template>
+          </v-list-item>
         </template>
         <template #selection="{item}">
-          {{ item.title }}
+          {{ getUserLabel(item.value) }}
         </template>
       </v-autocomplete>
     </div>
@@ -79,7 +82,7 @@
 </template>
 
 <script setup>
-import {debounce, delay, each, get, join, size, split, trim} from 'lodash'
+import {debounce, delay, each, get, replace, size, split, trim} from 'lodash'
 import {onMounted, ref, watch} from 'vue'
 import {searchInstructors} from '@/api/instructor'
 import {searchUsers} from '@/api/user'
@@ -143,8 +146,7 @@ const debouncedSearch = ref(v => v)
 const errors = ref([])
 const mouseoverUid = ref(undefined)
 const isSearching = ref(false)
-const search = ref(undefined)
-const searchTokenMatcher = ref(undefined)
+const search = ref('')
 const selected = ref(undefined)
 const suggestions = ref([])
 const suppressValidation = ref(true)
@@ -166,12 +168,14 @@ const executeSearch = snippet => {
   if (snippet) {
     const apiSearch = props.instructorLookup ? searchInstructors : searchUsers
     apiSearch(snippet, props.excludeUids).then(users => {
-      const searchTokens = split(trim(snippet), /\W/g)
-      searchTokenMatcher.value = RegExp(join(searchTokens, '|'), 'gi')
       suggestions.value = []
       each(users, user => {
+        let title = getUserLabel(user)
+        each(split(trim(snippet), /\W/g), token => {
+          title = replace(title, new RegExp(token, 'ig'), match => `<strong>${match}</strong>`)
+        })
         suggestions.value.push({
-          title: `${user.firstName} ${user.lastName} (${user.uid})`,
+          title,
           value: user
         })
       })
@@ -179,11 +183,12 @@ const executeSearch = snippet => {
     })
   } else {
     isSearching.value = false
-    searchTokenMatcher.value = null
     selected.value = null
     suggestions.value = []
   }
 }
+
+const getUserLabel = user => `${user.firstName} ${user.lastName} (${user.uid})`
 
 const onFocusInSuggestion = user => mouseoverUid.value = user.uid
 
@@ -199,19 +204,16 @@ const onUpdateModel = () => {
   suggestions.value = []
 }
 
-const onUpdateSearch = value => {
-  search.value = value
-  if (!isSearching.value && !!search.value && suggestions.value.length && !selected.value) {
-    selected.value = suggestions.value[0]
-  }
-}
-
 const onHighlight = item => {
   mouseoverUid.value = get(item.value, 'uid')
 }
 
 const suggest = item => {
-  return item.title.replace(searchTokenMatcher.value, match => `<strong>${match}</strong>`)
+  let label = item.title
+  each(split(trim(search.value)), token => {
+    label = replace(label, new RegExp(token, 'ig'), match => `<strong>${match}</strong>`)
+  })
+  return item.title
 }
 
 const validate = suggestion => {

@@ -4,7 +4,7 @@
     class="py-2"
     lazy-validation
   >
-    <div v-if="!contact" class="w-75">
+    <div v-if="!contact && !uid" class="w-75">
       <h3 id="add-contact-sub-header" class="form-title" tabindex="-1">
         Add Contact
       </h3>
@@ -14,21 +14,26 @@
         :on-select-result="onSelectSearchResult"
       />
     </div>
-    <div v-if="uid" class="department-contact-form">
-      <label :for="`input-email-${contactId}`" class="form-label">
-        Email Address
-      </label>
-      <v-text-field
-        :id="`input-email-${contactId}`"
-        v-model="email"
-        class="mt-1"
-        color="tertiary"
-        dense
-        hide-details
-        outlined
-        required
-        :rules="emailRules"
-      />
+    <div v-if="uid" class="department-contact-form ml-2 w-75">
+      <h3 id="contact-sub-header" tabindex="-1">
+        <span class="sr-only">Contact: </span>{{ fullName }} ({{ uid }})
+      </h3>
+      <div class="mt-3">
+        <label :for="`input-email-${contactId}`" class="form-label">
+          Email Address
+        </label>
+        <v-text-field
+          :id="`input-email-${contactId}`"
+          v-model="email"
+          class="mt-1"
+          color="tertiary"
+          dense
+          hide-details
+          outlined
+          required
+          :rules="emailRules"
+        />
+      </div>
       <div class="mt-2">
         <label :for="`checkbox-communications-${contactId}`" class="form-label">
           Communications
@@ -124,25 +129,25 @@
           </template>
         </v-combobox>
       </div>
-    </div>
-    <div class="mt-4">
-      <v-btn
-        :id="`save-dept-contact-${contactId}-btn`"
-        class="text-capitalize mr-2"
-        color="primary"
-        :disabled="!valid || !uid"
-        elevation="2"
-        text="Save"
-        @click.prevent="onSave"
-      />
-      <v-btn
-        :id="`cancel-dept-contact-${contactId}-btn`"
-        class="text-capitalize"
-        color="primary"
-        variant="outlined"
-        text="Cancel"
-        @click.prevent="onCancel"
-      />
+      <div class="mt-3">
+        <v-btn
+          :id="`save-dept-contact-${contactId}-btn`"
+          class="text-capitalize mr-2"
+          color="primary"
+          :disabled="!valid || !uid"
+          elevation="2"
+          text="Save"
+          @click.prevent="onSave"
+        />
+        <v-btn
+          :id="`cancel-dept-contact-${contactId}-btn`"
+          class="text-capitalize"
+          color="primary"
+          variant="outlined"
+          text="Cancel"
+          @click.prevent="onCancel"
+        />
+      </div>
     </div>
   </v-form>
 </template>
