@@ -1,14 +1,15 @@
 <template>
   <v-form
     v-model="valid"
+    class="py-2"
     lazy-validation
   >
-    <div v-if="!contact">
+    <div v-if="!contact" class="w-75">
       <h3 id="add-contact-sub-header" class="form-title" tabindex="-1">
         Add Contact
       </h3>
       <PersonLookup
-        class="mt-1 mb-4"
+        class="mt-2 mb-4"
         :exclude-uids="map(contacts, 'uid')"
         :on-select-result="onSelectSearchResult"
       />

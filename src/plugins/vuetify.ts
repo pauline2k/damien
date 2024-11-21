@@ -18,7 +18,6 @@ import {VDialog} from 'vuetify/components/VDialog'
 import {VDivider} from 'vuetify/components/VDivider'
 import {VExpansionPanel, VExpansionPanels, VExpansionPanelText, VExpansionPanelTitle} from 'vuetify/components/VExpansionPanel'
 import {VFooter} from 'vuetify/components/VFooter'
-import {VHover} from 'vuetify/components'
 import {VIcon} from 'vuetify/components/VIcon'
 import {VImg} from 'vuetify/components/VImg'
 import {VLayout} from 'vuetify/components/VLayout'
@@ -62,7 +61,6 @@ export default createVuetify({
     VExpansionPanelText,
     VExpansionPanelTitle,
     VFooter,
-    VHover,
     VIcon,
     VImg,
     VLayout,

@@ -21,8 +21,8 @@
     </div>
     <v-container v-if="!contextStore.loading" class="mx-0 px-0 pb-2" fluid>
       <v-row justify="start">
-        <v-col cols="12" md="5" class="pr-1">
-          <div class="border-sm contacts-container h-100 pa-3">
+        <v-col cols="12" md="6" class="pr-1">
+          <div class="border-sm h-100 pa-3">
             <v-expansion-panels v-model="contactsPanel" disable-icon-rotate flat>
               <v-expansion-panel class="panel-override">
                 <template #default>
@@ -106,7 +106,7 @@
             </div>
           </div>
         </v-col>
-        <v-col cols="12" md="7">
+        <v-col cols="12" md="6">
           <div class="border-sm px-5 py-3">
             <DepartmentNote />
           </div>
@@ -225,9 +225,6 @@ const refresh = () => {
 </script>
 
 <style scoped>
-.contacts-container {
-  max-width: 500px;
-}
 .omen-poster-img {
   height: 90vh;
 }

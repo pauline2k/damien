@@ -16,10 +16,10 @@
         v-model="selected"
         :aria-disabled="disabled"
         :aria-labelledby="`${id}-label`"
-        auto-select-first
         autocomplete="off"
         class="bg-white person-lookup"
         :class="inputClass"
+        clearable
         density="compact"
         :disabled="disabled"
         :error="required && !suppressValidation && !!size(errors)"
@@ -28,6 +28,7 @@
         :hide-no-data="isSearching || !search"
         :items="suggestions"
         :loading="isSearching ? 'tertiary' : false"
+        :menu-icon="null"
         :menu-props="{
           contentClass: 'autocomplete-menu'
         }"
@@ -38,22 +39,28 @@
         :search="search"
         single-line
         variant="outlined"
-        @update:model-value="onBlur"
-        @change="suppressValidation = false"
-        @update:list-index="onHighlight"
+        @change="() => suppressValidation = false"
+        @update:focused="onHighlight"
+        @update:search="onUpdateSearch"
+        @update:model-value="onUpdateModel"
       >
-        <template #selection="{item}">
-          <span class="text-no-wrap">{{ toLabel(item) }}</span>
-        </template>
-        <template #item="{item}">
+        <template #item="{item, props: itemSlotProps}">
           <v-list-item
-            :aria-selected="item === highlightedItem"
+            :aria-selected="item.value.uid === mouseoverUid"
             class="text-tertiary"
-          >
-            <v-list-item-title>
-              <span v-html="suggest(item)" />
-            </v-list-item-title>
-          </v-list-item>
+            :class="{
+              'bg-light-blue-lighten-5': mouseoverUid === item.value.uid
+            }"
+            v-bind="itemSlotProps"
+            @focusin="() => onFocusInSuggestion(item.value)"
+            @focusout="onFocusOutSuggestion"
+            @mouseenter="() => onFocusInSuggestion(item.value)"
+            @mouseleave="onFocusOutSuggestion"
+            v-html="suggest(item)"
+          />
+        </template>
+        <template #selection="{item}">
+          {{ item.title }}
         </template>
       </v-autocomplete>
     </div>
@@ -72,7 +79,7 @@
 </template>
 
 <script setup>
-import {debounce, delay, join, noop, size, split, trim} from 'lodash'
+import {debounce, delay, each, get, join, size, split, trim} from 'lodash'
 import {onMounted, ref, watch} from 'vue'
 import {searchInstructors} from '@/api/instructor'
 import {searchUsers} from '@/api/user'
@@ -132,9 +139,9 @@ const props = defineProps({
   }
 })
 
-const debouncedSearch = ref(noop)
+const debouncedSearch = ref(v => v)
 const errors = ref([])
-const highlightedItem = ref(undefined)
+const mouseoverUid = ref(undefined)
 const isSearching = ref(false)
 const search = ref(undefined)
 const searchTokenMatcher = ref(undefined)
@@ -144,16 +151,11 @@ const suppressValidation = ref(true)
 const theme = useTheme()
 
 watch(search, snippet => {
-  isSearching.value = true
-  debouncedSearch(snippet)
-})
-
-watch(selected, suggestion => {
-  validate(suggestion)
-  if (!suggestion) {
-    search.value = null
+  const trimmed = trim(snippet)
+  if (trimmed) {
+    isSearching.value = true
+    debouncedSearch.value(trimmed)
   }
-  props.onSelectResult(suggestion)
 })
 
 onMounted(() => {
@@ -163,10 +165,16 @@ onMounted(() => {
 const executeSearch = snippet => {
   if (snippet) {
     const apiSearch = props.instructorLookup ? searchInstructors : searchUsers
-    apiSearch(snippet, props.excludeUids).then(results => {
+    apiSearch(snippet, props.excludeUids).then(users => {
       const searchTokens = split(trim(snippet), /\W/g)
       searchTokenMatcher.value = RegExp(join(searchTokens, '|'), 'gi')
-      suggestions.value = results
+      suggestions.value = []
+      each(users, user => {
+        suggestions.value.push({
+          title: `${user.firstName} ${user.lastName} (${user.uid})`,
+          value: user
+        })
+      })
       isSearching.value = false
     })
   } else {
@@ -177,22 +185,33 @@ const executeSearch = snippet => {
   }
 }
 
-const onBlur = () => {
+const onFocusInSuggestion = user => mouseoverUid.value = user.uid
+
+const onFocusOutSuggestion = () => mouseoverUid.value = null
+
+const onUpdateModel = () => {
+  const user = get(selected.value, 'value')
+  validate(user)
+  if (!user) {
+    search.value = null
+  }
+  props.onSelectResult(user)
+  suggestions.value = []
+}
+
+const onUpdateSearch = value => {
+  search.value = value
   if (!isSearching.value && !!search.value && suggestions.value.length && !selected.value) {
     selected.value = suggestions.value[0]
   }
 }
 
-const onHighlight = index => {
-  highlightedItem.value = suggestions.value[index]
+const onHighlight = item => {
+  mouseoverUid.value = get(item.value, 'uid')
 }
 
-const suggest = user => {
-  return toLabel(user).replace(searchTokenMatcher.value, match => `<strong>${match}</strong>`)
-}
-
-const toLabel = user => {
-  return user && user instanceof Object ? `${user.firstName || ''} ${user.lastName || ''} (${user.uid})`.trim() : user
+const suggest = item => {
+  return item.title.replace(searchTokenMatcher.value, match => `<strong>${match}</strong>`)
 }
 
 const validate = suggestion => {
