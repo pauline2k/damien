@@ -1,5 +1,5 @@
 <template>
-  <v-card class="border-sm my-1" elevation="0">
+  <v-card class="bg-primary-contrast border-sm my-1" elevation="0">
     <div v-if="isSending">
       <v-progress-circular
         class="spinner"
@@ -19,7 +19,7 @@
       </h3>
     </v-card-title>
     <v-card-subtitle v-if="selectedRecipients">
-      <div class="mb-1">Message will be sent to:</div>
+      <h4 class="font-size-16 mb-2">Message will be sent to:</h4>
       <v-expansion-panels
         class="recipients-container"
         :disabled="isSending"
@@ -31,8 +31,8 @@
           v-for="(department, deptIndex) in selectedRecipients"
           :key="deptIndex"
         >
-          <v-expansion-panel-title class="pa-2 height-unset">
-            <h4 :id="`dept-head-${deptIndex}`">{{ department.deptName }}</h4>
+          <v-expansion-panel-title class="border-sm">
+            <h5 :id="`dept-head-${deptIndex}`" class="font-size-14">{{ department.deptName }}</h5>
           </v-expansion-panel-title>
           <v-expansion-panel-text>
             <div v-for="(recipient, index) in department.recipients" :key="index" class="d-flex flex-wrap w-66">
@@ -55,10 +55,9 @@
         </v-expansion-panel>
       </v-expansion-panels>
     </v-card-subtitle>
-    <v-divider />
     <v-card-text class="notification-container py-0">
       <v-form
-        class="pa-3"
+        class="py-4"
         :class="isSending ? 'text-muted' : ''"
         :disabled="isSending"
       >
@@ -68,7 +67,7 @@
         <v-text-field
           id="input-notification-subject"
           v-model="subject"
-          class="my-1"
+          class="bg-white my-1"
           color="tertiary"
           dense
           :disabled="isSending"
@@ -76,40 +75,40 @@
           outlined
           @keydown.esc="onCancel"
         />
-        <label for="input-notification-message" class="form-label">
-          Message
-        </label>
-        <v-textarea
-          id="input-notification-message"
-          v-model="message"
-          auto-grow
-          class="mt-1"
-          color="tertiary"
-          :disabled="isSending"
-          flat
-          hide-details="auto"
-          outlined
-        />
+        <div class="mt-2">
+          <label for="input-notification-message" class="form-label">
+            Message
+          </label>
+          <v-textarea
+            id="input-notification-message"
+            v-model="message"
+            auto-grow
+            class="bg-white mt-1"
+            color="tertiary"
+            :disabled="isSending"
+            hide-details="auto"
+            variant="outlined"
+          />
+        </div>
       </v-form>
     </v-card-text>
-    <v-card-actions>
-      <div class="pt-3">
+    <v-card-actions class="pb-3 pt-0">
+      <div class="text-right w-100">
         <v-btn
           id="send-notification-btn"
-          class="text-capitalize mr-2"
-          color="secondary"
+          class="mr-2"
+          color="primary"
           :disabled="disabled"
-          elevation="2"
           text="Send"
+          variant="flat"
           @click="sendNotification"
         />
         <v-btn
           id="cancel-send-notification-btn"
-          class="text-capitalize ml-1"
+          class="bg-white"
           :disabled="isSending"
-          elevation="2"
-          outlined
           text="Cancel"
+          variant="outlined"
           @click="onCancel"
         />
       </div>

@@ -31,6 +31,7 @@
       <v-btn
         id="edit-dept-note-btn"
         class="pr-0"
+        :class="{'ml-3': !note}"
         color="primary"
         :disabled="disableControls || !isEditable"
         slim
@@ -39,7 +40,7 @@
       >
         {{ note ? 'Edit ' : 'Create ' }}<span class="sr-only">Note</span>
       </v-btn>
-      <div role="presentation">|</div>
+      <div v-if="note" role="presentation">|</div>
       <v-btn
         v-if="note"
         id="delete-dept-note-btn"
@@ -53,7 +54,9 @@
       </v-btn>
       <ConfirmDialog
         v-if="isConfirming"
-        :button-context="'Delete Note'"
+        button-context="Delete Note"
+        :confirm-button-label="isDeleting ? 'Deleting...' : 'Confirm'"
+        :disabled="isDeleting"
         :on-click-cancel="onCancelDelete"
         :on-click-confirm="onDelete"
         :text="`Are you sure you want to delete the ${contextStore.selectedTermName || ''} note?`"
@@ -95,6 +98,7 @@ const contextStore = useContextStore()
 const departmentStore = useDepartmentStore()
 const {disableControls} = storeToRefs(departmentStore)
 const isConfirming = ref(false)
+const isDeleting = ref(false)
 const isEditable = ref(false)
 const isEditing = ref(false)
 const note = ref(undefined)
@@ -105,6 +109,10 @@ onMounted(() => {
 
 watch(isConfirming, () => {
   departmentStore.setDisableControls(isConfirming.value)
+})
+
+watch(isDeleting, () => {
+  departmentStore.setDisableControls(isDeleting.value)
 })
 
 watch(isEditing, () => {
@@ -124,6 +132,7 @@ const onCancelSave = () => {
 }
 
 const onDelete = () => {
+  isDeleting.value = true
   departmentStore.updateNote(null, contextStore.selectedTermId).then(() => {
     alertScreenReader('Note deleted.')
     putFocusNextTick('notes-title')
@@ -145,9 +154,8 @@ const onSave = () => {
 }
 
 const reset = () => {
-  isConfirming.value = false
   isEditable.value = contextStore.selectedTermId === contextStore.config.currentTermId
-  isEditing.value = false
+  isConfirming.value = isDeleting.value = isEditing.value = false
   note.value = departmentStore.note
 }
 </script>
