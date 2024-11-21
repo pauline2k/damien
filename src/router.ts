@@ -43,6 +43,7 @@ const routes:RouteRecordRaw[] = [
     }
   },
   {
+    name: 'Start',
     path: '/start',
     redirect: () => {
       const currentUser = useContextStore().currentUser
@@ -60,7 +61,7 @@ const routes:RouteRecordRaw[] = [
             }
         }
       } else {
-        return 'Login'
+        return {name: 'Login'}
       }
     }
   },
@@ -119,6 +120,14 @@ const routes:RouteRecordRaw[] = [
     children: [
       {
         path: '/404',
+        beforeEnter: (to: any, from: any, next: any) => {
+          const currentUser = useContextStore().currentUser
+          if (currentUser.isAuthenticated) {
+            next()
+          } else {
+            auth.goToLogin(to, next)
+          }
+        },
         component: NotFound,
         meta: {
           title: 'Page not found'
