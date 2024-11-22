@@ -135,8 +135,11 @@
     </v-card>
     <v-dialog
       v-model="isCreatingNotification"
+      aria-labelledby="send-notification-section-header"
+      min-width="600"
+      persistent
       scrollable
-      width="600"
+      width="60%"
     >
       <NotificationForm
         v-if="isCreatingNotification"
