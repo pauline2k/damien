@@ -23,6 +23,7 @@
   font-size: 18px;
 }
 .form-label {
+  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
   font-size: 15px;
   font-weight: 700;
   line-height: 1;
@@ -67,6 +68,13 @@
 }
 .input-override:not(:disabled).light:hover {
   border-color: rgba(0, 0, 0, 0.86) !important;
+}
+.modal-content {
+  margin: auto auto 24px auto !important;
+  padding: 16px 6px 18px !important;
+}
+.modal-footer {
+  padding: 0 24px !important;
 }
 .native-select-override {
   -webkit-appearance: menulist !important; /* override vuetify style */

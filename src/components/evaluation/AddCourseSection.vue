@@ -193,14 +193,7 @@ const onSubmit = courseNumber => {
   justify-content: flex-end;
   margin-left: auto;
 }
-.form-label {
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+
 .full-width {
   width: 100%;
   width: -moz-available;

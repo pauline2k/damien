@@ -1,5 +1,5 @@
 <template>
-  <v-card class="bg-primary-contrast border-sm my-1" elevation="0">
+  <v-card class="modal-content bg-surface-light" flat>
     <div v-if="isSending">
       <v-progress-circular
         class="spinner"
@@ -21,7 +21,7 @@
     <v-card-subtitle v-if="selectedRecipients">
       <h4 class="font-size-16 mb-2">Message will be sent to:</h4>
       <v-expansion-panels
-        class="recipients-container"
+        class="recipients-container border-sm"
         :disabled="isSending"
         hover
         multiple
@@ -35,17 +35,17 @@
             <h5 :id="`dept-head-${deptIndex}`" class="font-size-14">{{ department.deptName }}</h5>
           </v-expansion-panel-title>
           <v-expansion-panel-text>
-            <div v-for="(recipient, index) in department.recipients" :key="index" class="d-flex flex-wrap w-66">
-              <div class="align-center bg-green-accent-1 border-sm d-flex mb-1 rounded-xl">
-                <div class="px-4 py-2 recipient">
+            <div v-for="(recipient, index) in department.recipients" :key="index" class="d-flex flex-wrap pt-1">
+              <div class="align-center bg-green-accent-1 border-sm d-flex mb-1 pa-1 rounded-xl">
+                <div class="px-2 recipient">
                   {{ recipientLabel(recipient) }}
                 </div>
                 <v-btn
                   :aria-label="`Remove ${recipientLabel(recipient)} from recipients`"
                   color="transparent"
+                  density="compact"
                   :disabled="isSending"
                   :icon="mdiCloseCircle"
-                  size="small"
                   variant="flat"
                   @click.stop="removeRecipient(department, recipient, index)"
                 />
@@ -67,7 +67,7 @@
         <v-text-field
           id="input-notification-subject"
           v-model="subject"
-          class="bg-white my-1"
+          class="bg-surface my-1"
           color="tertiary"
           dense
           :disabled="isSending"
@@ -83,7 +83,7 @@
             id="input-notification-message"
             v-model="message"
             auto-grow
-            class="bg-white mt-1"
+            class="bg-surface mt-1"
             color="tertiary"
             :disabled="isSending"
             hide-details="auto"
@@ -92,7 +92,7 @@
         </div>
       </v-form>
     </v-card-text>
-    <v-card-actions class="pb-3 pt-0">
+    <v-card-actions class="modal-footer">
       <div class="text-right w-100">
         <v-btn
           id="send-notification-btn"
@@ -105,7 +105,6 @@
         />
         <v-btn
           id="cancel-send-notification-btn"
-          class="bg-white"
           :disabled="isSending"
           text="Cancel"
           variant="outlined"
@@ -186,7 +185,7 @@ const sendNotification = () => {
 
 <style scoped>
 .notification-container {
-  min-height: 260px;
+  min-height: 290px;
 }
 .recipient {
   white-space: break-spaces;
