@@ -9,7 +9,7 @@
         Add Contact
       </h3>
       <PersonLookup
-        class="mt-2 mb-4"
+        class="my-2"
         :exclude-uids="map(contacts, 'uid')"
         :on-select-result="onSelectSearchResult"
       />
@@ -129,25 +129,26 @@
           </template>
         </v-combobox>
       </div>
-      <div class="mt-3">
-        <v-btn
-          :id="`save-dept-contact-${contactId}-btn`"
-          class="text-capitalize mr-2"
-          color="primary"
-          :disabled="!valid || !uid"
-          elevation="2"
-          text="Save"
-          @click.prevent="onSave"
-        />
-        <v-btn
-          :id="`cancel-dept-contact-${contactId}-btn`"
-          class="text-capitalize"
-          color="primary"
-          variant="outlined"
-          text="Cancel"
-          @click.prevent="onCancel"
-        />
-      </div>
+    </div>
+    <div class="mt-3">
+      <v-btn
+        v-if="uid"
+        :id="`save-dept-contact-${contactId}-btn`"
+        class="text-capitalize mr-2"
+        color="primary"
+        :disabled="!valid || !uid"
+        elevation="2"
+        text="Save"
+        @click.prevent="onSave"
+      />
+      <v-btn
+        :id="`cancel-dept-contact-${contactId}-btn`"
+        class="text-capitalize"
+        color="primary"
+        variant="outlined"
+        text="Cancel"
+        @click.prevent="onCancel"
+      />
     </div>
   </v-form>
 </template>
@@ -271,6 +272,8 @@ const onSave = () => {
 
 const onSelectSearchResult = user => {
   populateForm(user)
+  alertScreenReader(`${user.firstName} ${user.lastName} selected`)
+  putFocusNextTick('contact-sub-header')
 }
 
 const populateForm = contact => {

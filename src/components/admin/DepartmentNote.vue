@@ -7,11 +7,12 @@
       Notes
     </h2>
     <div
-      v-if="note && !isEditing"
+      v-if="!isEditing"
       id="dept-note"
       class="text-condensed pt-2"
     >
-      <pre class="body-2 text-condensed text-prewrap">{{ note }}</pre>
+      <pre v-if="note" class="body-2 text-condensed text-prewrap">{{ note }}</pre>
+      <div v-if="!note" class="font-italic text-grey ml-1 my-2">None</div>
     </div>
     <v-form v-if="isEditing" class="pt-2">
       <v-textarea
@@ -27,13 +28,13 @@
         @keydown.esc="onCancelSave"
       />
     </v-form>
-    <div v-if="!isEditing" id="dept-note-actions" class="align-center d-flex dept-note-actions mt-2">
+    <div v-if="!isEditing && isEditable" id="dept-note-actions" class="align-center d-flex dept-note-actions mt-2">
       <v-btn
         id="edit-dept-note-btn"
         class="pr-0"
         :class="{'ml-3': !note}"
         color="primary"
-        :disabled="disableControls || !isEditable"
+        :disabled="disableControls"
         slim
         variant="text"
         @click="onEdit"
@@ -45,7 +46,7 @@
         v-if="note"
         id="delete-dept-note-btn"
         color="primary"
-        :disabled="disableControls || !isEditable"
+        :disabled="disableControls"
         slim
         variant="text"
         @click.stop="() => isConfirming = true"
@@ -68,14 +69,14 @@
         id="save-dept-note-btn"
         class="mr-2"
         color="secondary"
-        :disabled="!isEditable || !trim(note)"
-        text="Save Note"
+        :disabled="!isEditable || isSaving || !trim(note)"
+        :text="isSaving ? 'Saving...' : 'Save Note'"
         @click="onSave"
       />
       <v-btn
         id="cancel-dept-note-btn"
         class="ml-1"
-        :disabled="!isEditable"
+        :disabled="!isEditable || isSaving"
         variant="outlined"
         @click="onCancelSave"
       >
@@ -101,6 +102,7 @@ const isConfirming = ref(false)
 const isDeleting = ref(false)
 const isEditable = ref(false)
 const isEditing = ref(false)
+const isSaving = ref(false)
 const note = ref(undefined)
 
 onMounted(() => {
@@ -146,6 +148,7 @@ const onEdit = () => {
 }
 
 const onSave = () => {
+  isSaving.value = true
   departmentStore.updateNote(note.value, contextStore.selectedTermId).then(() => {
     alertScreenReader('Note saved.')
     putFocusNextTick('edit-dept-note-btn')
@@ -155,7 +158,7 @@ const onSave = () => {
 
 const reset = () => {
   isEditable.value = contextStore.selectedTermId === contextStore.config.currentTermId
-  isConfirming.value = isDeleting.value = isEditing.value = false
+  isConfirming.value = isDeleting.value = isEditing.value = isSaving.value = false
   note.value = departmentStore.note
 }
 </script>
