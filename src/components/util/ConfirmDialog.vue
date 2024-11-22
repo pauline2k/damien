@@ -19,19 +19,18 @@
       <v-card-text class="pt-3">{{ text }}</v-card-text>
       <v-card-actions>
         <div class="align-center d-flex pb-3 pr-4">
-          <v-btn
+          <ProgressButton
             id="confirm-dialog-btn"
+            :action="onClickConfirm"
             class="mr-2"
-            color="primary"
-            :disabled="disabled"
-            variant="flat"
-            @click="onClickConfirm"
+            :disabled="disabled || isSaving"
+            :in-progress="isSaving"
           >
             {{ confirmButtonLabel }} <span class="sr-only">{{ buttonContext }}</span>
-          </v-btn>
+          </ProgressButton>
           <v-btn
             id="cancel-dialog-btn"
-            :disabled="disabled"
+            :disabled="disabled || isSaving"
             variant="outlined"
             @click="cancel"
           >
@@ -44,6 +43,7 @@
 </template>
 
 <script setup>
+import ProgressButton from '@/components/util/ProgressButton.vue'
 import {putFocusNextTick} from '@/lib/utils'
 import {onMounted, ref} from 'vue'
 
@@ -66,6 +66,10 @@ const props = defineProps({
     default: undefined,
     required: false,
     type: String
+  },
+  isSaving: {
+    required: false,
+    type: Boolean
   },
   onClickCancel: {
     required: true,
