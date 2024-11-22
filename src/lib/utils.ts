@@ -37,12 +37,20 @@ export function pluralize(noun: string, count: number, substitutions: any = {}, 
   return (`${substitutions[count] || substitutions['other'] || count} ` + (count !== 1 ? `${noun}${pluralSuffix}` : noun))
 }
 
-export function putFocusNextTick(id: string, cssSelector?: string) {
+export function putFocusNextTick(
+  id: string,
+  {scroll=true, scrollBlock='center', cssSelector=undefined}: {scroll?: Boolean, scrollBlock?: any, cssSelector?: string}={}
+) {
   const callable = () => {
-      let el = document.getElementById(id)
-      el = el && cssSelector ? el.querySelector(cssSelector) : el
-      el && el.focus()
-      return !!el
+    let el = document.getElementById(id)
+    el = el && cssSelector ? el.querySelector(cssSelector) : el
+    if (el) {
+      el.focus()
+      if (scroll) {
+        el.scrollIntoView({behavior: 'smooth', block: scrollBlock})
+      }
+    }
+    return !!el
   }
   nextTick(() => {
     let counter = 0
