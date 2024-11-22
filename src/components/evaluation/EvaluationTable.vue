@@ -171,7 +171,11 @@
                   {{ get(evaluation.department, 'name') }}
                 </router-link>
               </td>
-              <td v-if="!readonly && allowEdits && !(allowEdits && isEditing(evaluation))" :id="`evaluation-${rowIndex}-select`" class="align-middle text-center pr-1">
+              <td
+                v-if="!readonly && allowEdits && !(allowEdits && isEditing(evaluation))"
+                :id="`evaluation-${rowIndex}-select`"
+                class="align-middle text-center px-1"
+              >
                 <v-checkbox
                   v-if="!isEditing(evaluation)"
                   :id="`evaluation-${rowIndex}-checkbox`"
@@ -242,10 +246,18 @@
                   </select>
                 </div>
               </td>
-              <td :id="`evaluation-${rowIndex}-lastUpdated`" class="evaluation-last-updated px-1" :class="{'pt-5': isEditing(evaluation), 'align-middle': !isEditing(evaluation)}">
+              <td
+                :id="`evaluation-${rowIndex}-lastUpdated`"
+                class="evaluation-last-updated px-1"
+                :class="{'pt-5': isEditing(evaluation), 'align-middle': !isEditing(evaluation)}"
+              >
                 {{ toFormatFromJsDate(evaluation.lastUpdated, 'LL/dd/yyyy') }}
               </td>
-              <td :id="`evaluation-${rowIndex}-courseNumber`" class="evaluation-course-number px-1" :class="{'pt-5': isEditing(evaluation), 'align-middle': !isEditing(evaluation)}">
+              <td
+                :id="`evaluation-${rowIndex}-courseNumber`"
+                class="evaluation-course-number px-1"
+                :class="{'pt-5': isEditing(evaluation), 'align-middle': !isEditing(evaluation)}"
+              >
                 {{ evaluation.courseNumber }}
                 <div v-if="evaluation.crossListedWith" class="xlisting-note">
                   (Cross-listed with {{ evaluation.crossListedWith.length > 1 ? 'sections' : 'section' }}
@@ -307,7 +319,11 @@
                   </div>
                 </div>
               </td>
-              <td :id="`evaluation-${rowIndex}-departmentForm`" class="evaluation-department-form px-1" :class="{'align-middle': !isEditing(evaluation)}">
+              <td
+                :id="`evaluation-${rowIndex}-departmentForm`"
+                class="evaluation-department-form px-1"
+                :class="{'align-middle': !isEditing(evaluation)}"
+              >
                 <div v-if="evaluation.departmentForm && !isEditing(evaluation)">
                   {{ evaluation.departmentForm.name }}
                   <EvaluationError
@@ -338,7 +354,11 @@
                   </select>
                 </div>
               </td>
-              <td :id="`evaluation-${rowIndex}-evaluationType`" class="evaluation-type px-1" :class="{'align-middle': !isEditing(evaluation)}">
+              <td
+                :id="`evaluation-${rowIndex}-evaluationType`"
+                class="evaluation-type px-1"
+                :class="{'align-middle': !isEditing(evaluation)}"
+              >
                 <div v-if="evaluation.evaluationType && !isEditing(evaluation)">
                   {{ evaluation.evaluationType.name }}
                   <EvaluationError
@@ -383,7 +403,11 @@
                   </select>
                 </div>
               </td>
-              <td :id="`evaluation-${rowIndex}-period`" class="evaluation-period px-1" :class="{'align-middle': !isEditing(evaluation)}">
+              <td
+                :id="`evaluation-${rowIndex}-period`"
+                class="evaluation-period px-1"
+                :class="{'align-middle': !isEditing(evaluation)}"
+              >
                 <div v-if="evaluation.startDate && !isEditing(evaluation)">
                   <div class="text-no-wrap">
                     {{ toFormatFromJsDate(evaluation.startDate, 'LL/dd/yyyy') }} -
@@ -644,19 +668,19 @@ const someEvaluationsSelected = computed(() => {
 
 onMounted(() => {
   evaluationHeaders.value = [
-    {key: 'status', class: 'text-center text-no-wrap', headerProps: {minWidth: '115px', width: '10%'}, sortable: true, title: 'Status', value: 'status'},
-    {key: 'lastUpdated', class: 'text-start text-no-wrap', headerProps: {width: '5%'}, sortable: true, title: 'Last Updated', value: 'lastUpdated'},
-    {key: 'courseNumber', class: 'text-start text-no-wrap', headerProps: {width: '5%'}, sortable: true, title: 'Course Number', value: 'sortableCourseNumber'},
-    {key: 'courseName', class: 'text-start course-name', headerProps: {width: '15%'}, sortable: true, title: 'Course Name', value: 'sortableCourseName'},
-    {key: 'instructor', class: 'text-start text-no-wrap', headerProps: {width: '15%'}, sortable: true, title: 'Instructor', value: 'sortableInstructor'},
-    {key: 'departmentForm', class: 'text-start', headerProps: {width: '20%'}, sortable: true, title: 'Department Form', value: 'departmentForm.name'},
-    {key: 'evaluationType', class: 'text-start', headerProps: {width: '20%'}, sortable: true, title: 'Evaluation Type', value: 'evaluationType.name'},
-    {key: 'startDate', class: 'text-start text-no-wrap', headerProps: {width: '10%'}, sortable: true, title: 'Evaluation Period', value: 'startDate'}
+    {key: 'status', class: 'px-1 text-center text-no-wrap', headerProps: {minWidth: '115px', width: '10%'}, sortable: true, title: 'Status', value: 'status'},
+    {key: 'lastUpdated', class: 'px-1 text-start text-no-wrap', headerProps: {width: '5%'}, sortable: true, title: 'Last Updated', value: 'lastUpdated'},
+    {key: 'courseNumber', class: 'px-1 text-start text-no-wrap', headerProps: {width: '5%'}, sortable: true, title: 'Course Number', value: 'sortableCourseNumber'},
+    {key: 'courseName', class: 'px-1 text-start course-name', headerProps: {width: '20%'}, sortable: true, title: 'Course Name', value: 'sortableCourseName'},
+    {key: 'instructor', class: 'px-1 text-start text-no-wrap', headerProps: {width: '20%'}, sortable: true, title: 'Instructor', value: 'sortableInstructor'},
+    {key: 'departmentForm', class: 'px-1 text-start', headerProps: {width: '10%'}, sortable: true, title: 'Department Form', value: 'departmentForm.name'},
+    {key: 'evaluationType', class: 'px-1 text-start', headerProps: {width: '10%'}, sortable: true, title: 'Evaluation Type', value: 'evaluationType.name'},
+    {key: 'startDate', class: 'px-1 text-start text-no-wrap', headerProps: {width: '10%'}, sortable: true, title: 'Evaluation Period', value: 'startDate'}
   ]
   if (props.readonly) {
-    evaluationHeaders.value.unshift({key: 'departmentId', class: 'text-start text-no-wrap pl-3', sortable: true, title: 'Department', value: 'department.id'})
+    evaluationHeaders.value.unshift({key: 'departmentId', class: 'text-start text-no-wrap pl-3 pr-1', sortable: true, title: 'Department', value: 'department.id'})
   } else if (allowEdits.value) {
-    evaluationHeaders.value.unshift({key: 'select', class: 'text-start text-no-wrap pl-1', headerProps: {maxWidth: '0px', minWidth: '0px', width: '0px'}, sortable: true, title: 'Select', value: 'isSelected'})
+    evaluationHeaders.value.unshift({key: 'select', class: 'text-center text-no-wrap px-1', headerProps: {minWidth: '80px'}, sortable: true, title: 'Select', value: 'isSelected'})
   }
   departmentForms.value = [{id: null, name: 'Revert'}].concat(useDepartmentStore().activeDepartmentForms)
   evaluationTypes.value = [{id: null, name: 'Revert'}].concat(useContextStore().config.evaluationTypes)
