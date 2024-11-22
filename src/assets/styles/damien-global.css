@@ -190,7 +190,6 @@ table thead th {
   color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
   font-size: 12px;
   font-weight: 700 !important;
-  min-width: unset !important;
 }
 table thead th button {
   color: rgba(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
