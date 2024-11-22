@@ -140,15 +140,6 @@
       @update:current-items="onChangeSearchFilter"
       @update:sort-by="onSort"
     >
-      <template #headers="{columns, isSorted, toggleSort, getSortIcon, sortBy: _sortBy}">
-        <SortableTableHeader
-          :columns="columns"
-          :is-sorted="isSorted"
-          :on-sort="toggleSort"
-          :sort-desc="get(_sortBy, 'order') === 'desc'"
-          :sort-icon="getSortIcon"
-        />
-      </template>
       <template #body="{items}">
         <TransitionGroup>
           <template v-for="(evaluation, rowIndex) in items" :key="evaluation.id">
@@ -158,7 +149,7 @@
               :class="{
                 'evaluation-row-confirmed': evaluation.id !== editRowId && evaluation.status === 'confirmed',
                 'evaluation-row-ignore text-muted': hoverId !== evaluation.id && evaluation.id !== editRowId && evaluation.status === 'ignore',
-                'secondary text-white border-bottom-none': evaluation.id === editRowId,
+                'bg-secondary text-white border-bottom-none': evaluation.id === editRowId,
                 'evaluation-row-review': evaluation.id !== editRowId && evaluation.status === 'review',
                 'evaluation-row-xlisting': evaluation.id !== editRowId && !evaluation.status && (evaluation.crossListedWith || evaluation.roomSharedWith),
                 'bg-primary-contrast text-primary': [focusedEditButtonEvaluationId, hoverId].includes(evaluation.id) && !isEditing(evaluation)
@@ -400,40 +391,25 @@
                     from ${conflict.department} department`"
                   />
                 </div>
-                <div v-if="allowEdits && isEditing(evaluation)" class="mt-1 py-2">
+                <div v-if="allowEdits && isEditing(evaluation)" class="mt-1 py-2 evaluation-period-width">
                   <div class="d-flex align-center">
-                    <label id="input-evaluation-start-date-label" for="input-evaluation-start-date">
+                    <label id="input-evaluation-start-date-label">
                       Start date:
                     </label>
                   </div>
-                  <v-date-picker
-                    v-model="selectedStartDate"
+                  <AccessibleDateInput
+                    aria-label="Select Date"
+                    container-id="input-evaluation-start-date"
+                    :get-value="() => selectedStartDate"
+                    id-prefix="search-options-from-date"
                     :min-date="minStartDate(evaluation)"
                     :max-date="evaluation.maxStartDate"
-                    :popover="{positionFixed: true}"
-                    title-position="left"
-                  >
-                    <template #default="{ inputValue, inputEvents }">
-                      <input
-                        id="input-evaluation-start-date"
-                        class="datepicker-input input-override light mt-0"
-                        :class="{'disabled': saving}"
-                        :disabled="saving"
-                        :value="inputValue"
-                        v-on="inputEvents"
-                      />
-                      <EvaluationError
-                        v-if="!selectedStartDate"
-                        id="error-msg-evaluation-start-date"
-                        color="white"
-                        message="Required"
-                      />
-                    </template>
-                  </v-date-picker>
+                    :set-value="selectedDate => selectedStartDate = selectedDate"
+                  />
                 </div>
               </td>
             </tr>
-            <tr v-if="isEditing(evaluation)" :key="`${evaluation.id}-edit`" class="secondary text-white border-top-none">
+            <tr v-if="isEditing(evaluation)" :key="`${evaluation.id}-edit`" class="bg-secondary text-white border-top-none">
               <td></td>
               <td colspan="8" class="pb-2 px-2">
                 <div class="d-flex justify-end">
@@ -468,7 +444,8 @@
                   </v-btn>
                   <v-btn
                     id="cancel-evaluation-edit-btn"
-                    class="ma-2 evaluation-form-btn"
+                    class="ma-2 evaluation-form-btn text-primary"
+                    color="bg-white"
                     :disabled="saving"
                     width="150px"
                     @click="onCancelEdit(evaluation)"
@@ -557,7 +534,6 @@ import ConfirmDialog from '@/components/util/ConfirmDialog'
 import EvaluationActions from '@/components/evaluation/EvaluationActions'
 import EvaluationError from '@/components/evaluation/EvaluationError'
 import PersonLookup from '@/components/admin/PersonLookup'
-import SortableTableHeader from '@/components/util/SortableTableHeader'
 import {EVALUATION_STATUSES, useDepartmentStore} from '@/stores/department/department-edit-session'
 import {addInstructor} from '@/api/instructor'
 import {alertScreenReader, oxfordJoin, pluralize, toFormatFromISO, toFormatFromJsDate, toLocaleFromISO} from '@/lib/utils'
@@ -569,6 +545,7 @@ import {storeToRefs} from 'pinia'
 import {useContextStore} from '@/stores/context'
 import {useTheme} from 'vuetify'
 import {validateMarkAsDone} from '@/stores/department/utils'
+import AccessibleDateInput from '@/components/util/AccessibleDateInput'
 
 const contextStore = useContextStore()
 const departmentStore = useDepartmentStore()
@@ -967,9 +944,6 @@ tr.border-top-none td {
 .evaluation-last-updated {
   min-width: 100px;
 }
-.evaluation-period {
-  min-width: 135px;
-}
 .evaluation-row {
   vertical-align: top;
 }
@@ -1060,5 +1034,9 @@ tr.border-top-none td {
 }
 .divider {
   padding: 16px 0px 5px 0px;
+}
+.evaluation-period-width {
+  width: 166px;
+  max-width: 166px;
 }
 </style>
