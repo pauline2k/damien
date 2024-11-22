@@ -45,7 +45,7 @@ export const useListManagementStore = defineStore('listManagement', {
     isConfirming: false,
     isSaving: false,
     itemToDelete: {} as ItemToDelete,
-    onDelete: () => {}
+    onDelete: () => new Promise<any>(resolve => resolve(undefined))
   }),
   actions: {
     addDepartmentForm(name: string) {
@@ -72,7 +72,7 @@ export const useListManagementStore = defineStore('listManagement', {
         description: 'department form',
         elementId: `delete-dept-form-${itemToDelete.id}-btn`
       }
-      this.onDelete = () => useListManagementStore().deleteDepartmentForm
+      this.onDelete = useListManagementStore().deleteDepartmentForm
     },
     confirmDeleteEvaluationType(itemToDelete: any) {
       this.isConfirming = true
@@ -91,7 +91,7 @@ export const useListManagementStore = defineStore('listManagement', {
         description: 'instructor',
         elementId: `delete-instructor-${itemToDelete.uid}-btn`
       }
-      this.onDelete = () => useListManagementStore().deleteInstructor
+      this.onDelete = useListManagementStore().deleteInstructor
     },
     deleteDepartmentForm() {
       this.disableControls = true
@@ -150,7 +150,7 @@ export const useListManagementStore = defineStore('listManagement', {
       this.isConfirming = false
       this.isSaving = false
       this.itemToDelete = {name: undefined, uid: undefined}
-      this.onDelete = () => {}
+      this.onDelete = () => new Promise<any>(resolve => resolve(undefined))
     },
     setAddingDepartmentForm() {
       return new Promise<void>(resolve => {

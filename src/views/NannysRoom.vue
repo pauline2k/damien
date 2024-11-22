@@ -1,5 +1,5 @@
 <template>
-  <div class="pt-2">
+  <div class="pb-6 pt-2">
     <div class="d-flex pl-2 py-3">
       <h1 id="page-title" tabindex="-1">
         Settings
@@ -55,14 +55,13 @@
                   @keydown.esc="cancelAdd('add-dept-form-btn')"
                 />
                 <div class="align-center d-flex mt-2">
-                  <v-btn
+                  <ProgressButton
                     :id="'save-dept-form-btn'"
+                    :action="onSubmitAddDepartmentForm"
                     class="mr-2"
-                    color="primary"
                     :disabled="!trim(newItemName) || isSaving"
-                    text="Save"
-                    variant="flat"
-                    @click="onSubmitAddDepartmentForm"
+                    :in-progress="isSaving"
+                    :text="isSaving ? 'Saving' : 'Save'"
                   />
                   <v-btn
                     :id="'cancel-save-dept-form-btn'"
@@ -158,14 +157,13 @@
                   @keydown.esc="cancelAdd('add-eval-type-btn')"
                 />
                 <div class="align-center d-flex mt-2">
-                  <v-btn
+                  <ProgressButton
                     id="save-eval-type-btn"
-                    class="mr-1"
-                    color="primary"
+                    :action="onSubmitAddEvaluationType"
+                    class="mr-2"
                     :disabled="!trim(newItemName) || isSaving"
-                    text="Save"
-                    variant="flat"
-                    @click="onSubmitAddEvaluationType"
+                    :in-progress="isSaving"
+                    :text="isSaving ? 'Saving' : 'Save'"
                   />
                   <v-btn
                     id="cancel-save-eval-type-btn"
@@ -246,7 +244,7 @@
               />
               <v-form
                 v-if="isAddingInstructor"
-                class="pa-2 w-100"
+                class="ml-8 w-100"
                 @submit.prevent="onSubmitAddInstructor"
               >
                 <label for="input-instructor-uid" class="form-label">
@@ -336,14 +334,13 @@
                   />
                 </div>
                 <div class="mt-3">
-                  <v-btn
+                  <ProgressButton
                     id="save-instructor-btn"
-                    class="text-capitalize mr-2"
-                    color="primary"
+                    :action="onSubmitAddInstructor"
+                    class="mr-2"
                     :disabled="!isValid(newInstructor.uid, rules.numeric) || !isValid(newInstructor.csid, rules.csid) || !trim(newInstructor.lastName) || !isValid(newInstructor.emailAddress, rules.email) || isSaving"
-                    text="Save"
-                    variant="flat"
-                    @click="onSubmitAddInstructor"
+                    :in-progress="isSaving"
+                    :text="isSaving ? 'Saving' : 'Save'"
                   />
                   <v-btn
                     id="cancel-save-instructor-btn"
@@ -360,6 +357,9 @@
               <div class="nannys-list overflow-y-auto">
                 <v-data-table
                   id="instructors-table"
+                  :cell-props="{
+                    class: 'font-size-12 pl-0 pr-1 vertical-baseline'
+                  }"
                   density="compact"
                   :headers="instructorHeaders"
                   hide-default-footer
@@ -373,19 +373,19 @@
                       :columns="columns"
                       :is-sorted="isSorted"
                       :on-sort="toggleSort"
-                      :sort-desc="get(_sortBy, 'order') === 'desc'"
+                      :sort-desc="_sortBy.order === 'desc'"
                       :sort-icon="getSortIcon"
                     />
                   </template>
                   <template #item.delete="{ item }">
                     <v-btn
                       :id="`delete-instructor-${item.uid}-btn`"
-                      class="text-capitalize px-2 py-0"
-                      color="tertiary"
+                      aria-label="Delete"
+                      class="text-capitalize"
+                      color="error"
                       :disabled="disableControls"
-                      height="unset"
-                      min-width="unset"
-                      text="Delete"
+                      :icon="mdiTrashCan"
+                      title="Delete"
                       variant="text"
                       @click.stop="() => listStore.confirmDeleteInstructor(item)"
                     />
@@ -399,11 +399,11 @@
               </div>
             </v-card-text>
           </v-card>
-          <v-card class="mr-4 mt-4">
+          <v-card class="mr-4 mt-6 pa-3">
             <v-card-title>Service Announcement</v-card-title>
             <EditServiceAnnouncement />
           </v-card>
-          <v-card class="mr-4 mt-4">
+          <v-card class="mr-4 mt-6 pa-3">
             <v-card-title>Automatically Publish</v-card-title>
             <v-card-text class="pt-0">
               <span v-if="config.scheduleLochRefresh">
@@ -418,6 +418,7 @@
                 id="auto-publish-enabled"
                 v-model="autoPublishEnabled"
                 :aria-label="`Auto-publish is ${autoPublishEnabled ? 'enabled' : 'disabled'}`"
+                class="mt-3 mx-3"
                 color="success"
                 density="compact"
                 :disabled="!config.scheduleLochRefresh"
@@ -432,7 +433,9 @@
     </v-container>
     <ConfirmDialog
       v-if="isConfirming"
+      :confirm-button-label="isDeleting ? 'Deleting' : 'Delete'"
       :disabled="disableControls"
+      :is-saving="isDeleting"
       :on-click-cancel="cancelDelete"
       :on-click-confirm="confirmDelete"
       :text="`Are you sure you want to delete ${get(listStore.itemToDelete, 'name')}?`"
@@ -444,11 +447,12 @@
 <script setup>
 import ConfirmDialog from '@/components/util/ConfirmDialog'
 import EditServiceAnnouncement from '@/components/admin/EditServiceAnnouncement'
+import ProgressButton from '@/components/util/ProgressButton.vue'
 import SortableTableHeader from '@/components/util/SortableTableHeader'
 import {alertScreenReader, putFocusNextTick} from '@/lib/utils'
 import {get, trim} from 'lodash'
 import {getAutoPublishStatus, setAutoPublishStatus} from '@/api/config'
-import {mdiPlusThick} from '@mdi/js'
+import {mdiPlusThick, mdiTrashCan} from '@mdi/js'
 import {onMounted, ref} from 'vue'
 import {storeToRefs} from 'pinia'
 import {useContextStore} from '@/stores/context'
@@ -471,6 +475,17 @@ const {
   isConfirming,
   isSaving
 } = storeToRefs(listStore)
+const instructorHeaders = [
+  {key: 'uid', class: 'pl-0 pr-2', sortable: true, title: 'UID', value: 'uid'},
+  {key: 'csid', class: 'pl-0 pr-2', sortable: true, title: 'SID', value: 'csid'},
+  {key: 'firstName', class: 'pl-0 pr-2', sortable: true, title: 'First Name', value: 'firstName'},
+  {key: 'lastName', class: 'pl-0 pr-2', sortable: true, title: 'Last Name', value: 'lastName'},
+  {key: 'email', class: 'pl-0 pr-2', sortable: true, title: 'Email', value: 'email'},
+  {key: 'delete', class: 'pl-0 pr-2', sortable: false, title: '', value: 'delete'}
+]
+const isDeleting = ref(false)
+const newInstructor = ref(null)
+const newItemName = ref(null)
 const rules = {
   csid: [v => !trim(v) || !/[^\d]/.test(v) || 'Number required'],
   email: [
@@ -479,16 +494,6 @@ const rules = {
   ],
   numeric: [v => !/[^\d]/.test(v) || 'Number required']
 }
-const instructorHeaders = [
-  {key: 'uid', class: 'pl-3', sortable: true, title: 'UID', value: 'uid'},
-  {key: 'csid', class: 'pl-3', sortable: true, title: 'SID', value: 'csid'},
-  {key: 'firstName', class: 'pl-3', sortable: true, title: 'First Name', value: 'firstName'},
-  {key: 'lastName', class: 'pl-3', sortable: true, title: 'Last Name', value: 'lastName'},
-  {key: 'email', class: 'pl-3', sortable: true, title: 'Email', value: 'email'},
-  {key: 'delete', class: 'pl-3', sortable: false, title: '', value: 'delete'}
-]
-const newInstructor = ref(null)
-const newItemName = ref(null)
 const sortBy = ref({
   departmentForms: [{key: 'name', order: 'asc'}],
   evaluationTypes: [{key: 'name', order: 'asc'}],
@@ -528,8 +533,12 @@ const cancelDelete = () => {
 }
 
 const confirmDelete = () => {
+  isDeleting.value = true
   listStore.setDisableControls(true)
-  listStore.onDelete().then(afterDelete)
+  listStore.onDelete().then(deletedItem => {
+    afterDelete(deletedItem)
+    isDeleting.value = false
+  })
 }
 
 const isValid = (value, rules) => rules.every(rule => rule(value) === true)
