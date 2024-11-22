@@ -63,9 +63,7 @@ export const useListManagementStore = defineStore('listManagement', {
     addInstructor(name: string) {
       this.isSaving = true
       this.disableControls = true
-      return addInstructor(name).then(() => {
-        $_refreshInstructors()
-      }).finally($_reset)
+      return addInstructor(name).then($_refreshInstructors).finally($_reset)
     },
     confirmDeleteDepartmentForm(itemToDelete: any) {
       this.isConfirming = true

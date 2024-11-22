@@ -13,7 +13,7 @@
         :id="`sort-col-${id}${column.value}-btn`"
         :aria-label="`Sort by ${column.title} ${isSorted(column) && !sortDesc ? 'descending' : 'ascending'}`"
         :append-icon="sortIcon(column)"
-        class="sort-col-btn font-weight-bold text-no-wrap px-1 v-table-sort-btn-override"
+        class="sort-col-btn font-weight-bold text-no-wrap pl-0 pr-1 v-table-sort-btn-override"
         :class="{'icon-visible': isSorted(column)}"
         density="compact"
         size="small"

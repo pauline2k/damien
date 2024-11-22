@@ -17,8 +17,11 @@ export type DamienConfig = {
   currentTermName: string,
   departmentForms: any[],
   devAuthEnabled: false,
+  easterEggMonastery: any,
+  easterEggNannysRoom: string,
   evaluationTypes: any[],
   isVueAppDebugMode: boolean,
+  scheduleLochRefresh: any
 }
 
 export const useContextStore = defineStore('context', {
