@@ -4,21 +4,19 @@
       <h1 id="page-title" tabindex="-1">
         Settings
       </h1>
-      <v-spacer class="d-flex justify-center"></v-spacer>
       <v-banner
-        v-if="contextStore.config.isVueAppDebugMode && contextStore.config.easterEggMonastery && theme.current.dark"
+        v-if="config.isVueAppDebugMode && config.easterEggMonastery && theme.current.dark"
+        class="pr-4 my-auto"
         shaped
         single-line
-        class="pr-4 my-auto"
       >
-        <a :href="contextStore.config.easterEggNannysRoom" target="_blank">The Nanny's Room</a>
+        <a :href="config.easterEggNannysRoom" target="_blank">The Nanny's Room</a>
       </v-banner>
     </div>
     <v-container class="px-0 mx-0" fluid>
       <v-row>
         <v-col cols="12" md="6" lg="3">
           <v-card
-            class="mr-4"
             height="100%"
             min-width="fit-content"
           >
@@ -29,100 +27,95 @@
             >
               Department Forms
             </v-card-title>
-            <v-btn
-              v-if="!isAddingDepartmentForm"
-              id="add-dept-form-btn"
-              class="text-capitalize pl-3 mb-1"
-              color="tertiary"
-              :disabled="disableControls"
-              @click="onClickAddDepartmentForm"
-            >
-              <v-icon :icon="mdiPlusThick" />
-              Add new department form
-            </v-btn>
-            <v-form v-if="isAddingDepartmentForm" class="px-4 pb-4" @submit.prevent="onSubmitAddDepartmentForm">
-              <label :for="'input-dept-form-name'" class="form-label">
-                Form name
-              </label>
-              <v-text-field
-                :id="'input-dept-form-name'"
-                v-model="newItemName"
-                class="mt-1"
+            <v-card-actions>
+              <v-btn
+                v-if="!isAddingDepartmentForm"
+                id="add-dept-form-btn"
                 color="tertiary"
-                density="compact"
-                :disabled="isSaving"
-                outlined
-                required
-                @keydown.esc="cancelAdd('add-dept-form-btn')"
+                :disabled="disableControls"
+                :prepend-icon="mdiPlusThick"
+                text="Add new department form"
+                variant="text"
+                @click="onClickAddDepartmentForm"
               />
-              <v-btn
-                :id="'save-dept-form-btn'"
-                class="text-capitalize mr-2"
-                color="secondary"
-                :disabled="!newItemName || isSaving"
-
-                @click="onSubmitAddDepartmentForm"
-              >
-                Save
-              </v-btn>
-              <v-btn
-                :id="'cancel-save-dept-form-btn'"
-                class="text-capitalize ml-1"
-                :disabled="isSaving"
-
-                outlined
-                text
-                @click="cancelAdd('add-dept-form-btn')"
-              >
-                Cancel
-              </v-btn>
-            </v-form>
-            <div class="nannys-list overflow-y-auto">
-              <v-data-table
-                id="dept-forms-table"
-                density="compact"
-                disable-pagination
-                :headers="[{key: 'name', class: 'pl-3', sortable: true, title: 'Form Name', value: 'name'}]"
-                hide-default-footer
-                :items="departmentForms"
-                item-key="name"
-                :sort-by="sortBy.departmentForms"
-              >
-                <template #headers="{columns, isSorted, toggleSort, getSortIcon, sortBy: _sortBy}">
-                  <SortableTableHeader
-                    :id="'form-'"
-                    :columns="columns"
-                    :is-sorted="isSorted"
-                    :on-sort="toggleSort"
-                    :sort-desc="get(_sortBy, 'order') === 'desc'"
-                    :sort-icon="getSortIcon"
-                  />
-                </template>
-                <template #item.name="{item}">
-                  <div class="d-flex justify-space-between">
-                    <span>{{ item.name }}</span>
-                    <v-btn
-                      :id="`delete-dept-form-${item.id}-btn`"
-                      class="text-capitalize px-2 py-0"
-                      color="tertiary"
-                      :disabled="disableControls"
-                      height="unset"
-                      min-width="unset"
-                      text
-                      @click.stop="() => confirmDeleteDepartmentForm(item)"
-                    >
-                      Delete
-                    </v-btn>
-                  </div>
-                </template>
-              </v-data-table>
-            </div>
+              <v-form v-if="isAddingDepartmentForm" class="px-2 w-100" @submit.prevent="onSubmitAddDepartmentForm">
+                <label :for="'input-dept-form-name'" class="form-label">
+                  Form name
+                </label>
+                <v-text-field
+                  :id="'input-dept-form-name'"
+                  v-model="newItemName"
+                  class="mt-1"
+                  color="tertiary"
+                  density="compact"
+                  :disabled="isSaving"
+                  required
+                  variant="outlined"
+                  @keydown.esc="cancelAdd('add-dept-form-btn')"
+                />
+                <v-btn
+                  :id="'save-dept-form-btn'"
+                  class="mr-2"
+                  color="tertiary"
+                  :disabled="!newItemName || isSaving"
+                  text="Save"
+                  variant="flat"
+                  @click="onSubmitAddDepartmentForm"
+                />
+                <v-btn
+                  :id="'cancel-save-dept-form-btn'"
+                  :disabled="isSaving"
+                  text="Cancel"
+                  variant="outlined"
+                  @click="cancelAdd('add-dept-form-btn')"
+                />
+              </v-form>
+            </v-card-actions>
+            <v-card-text>
+              <div class="nannys-list overflow-y-auto">
+                <v-data-table
+                  id="dept-forms-table"
+                  density="compact"
+                  disable-pagination
+                  :headers="[{key: 'name', class: 'pl-3', sortable: true, title: 'Form Name', value: 'name'}]"
+                  hide-default-footer
+                  :items="departmentForms"
+                  item-key="name"
+                  :sort-by="sortBy.departmentForms"
+                >
+                  <template #headers="{columns, isSorted, toggleSort, getSortIcon, sortBy: _sortBy}">
+                    <SortableTableHeader
+                      :id="'form-'"
+                      :columns="columns"
+                      :is-sorted="isSorted"
+                      :on-sort="toggleSort"
+                      :sort-desc="get(_sortBy, 'order') === 'desc'"
+                      :sort-icon="getSortIcon"
+                    />
+                  </template>
+                  <template #item.name="{item}">
+                    <div class="d-flex justify-space-between">
+                      <span>{{ item.name }}</span>
+                      <v-btn
+                        :id="`delete-dept-form-${item.id}-btn`"
+                        class="text-capitalize px-2 py-0"
+                        color="tertiary"
+                        :disabled="disableControls"
+                        height="unset"
+                        min-width="unset"
+                        text="Delete"
+                        variant="text"
+                        @click.stop="() => confirmDeleteDepartmentForm(item)"
+                      />
+                    </div>
+                  </template>
+                </v-data-table>
+              </div>
+            </v-card-text>
           </v-card>
         </v-col>
         <v-col cols="12" md="6" lg="3">
           <v-card
-            class="mr-4"
-
             height="100%"
             min-width="fit-content"
           >
@@ -133,101 +126,94 @@
             >
               Evaluation Types
             </v-card-title>
-            <v-btn
-              v-if="!isAddingEvaluationType"
-              id="add-eval-type-btn"
-              class="text-capitalize pl-3 mb-1"
-              color="tertiary"
-              :disabled="disableControls"
-              text
-              @click="onClickAddEvaluationType"
-            >
-              <v-icon :icon="mdiPlusThick" />
-              Add new evaluation type
-            </v-btn>
-            <v-form v-if="isAddingEvaluationType" class="px-4 pb-4" @submit.prevent="onSubmitAddEvaluationType">
-              <label :for="'input-eval-type-name'" class="form-label">
-                Type name
-              </label>
-              <v-text-field
-                :id="'input-eval-type-name'"
-                v-model="newItemName"
-                class="mt-1"
+            <v-card-actions>
+              <v-btn
+                v-if="!isAddingEvaluationType"
+                id="add-eval-type-btn"
                 color="tertiary"
-                density="compact"
-                :disabled="isSaving"
-                outlined
-                required
-                @keydown.esc="cancelAdd('add-eval-type-btn')"
+                :disabled="disableControls"
+                :prepend-icon="mdiPlusThick"
+                text="Add new evaluation type"
+                variant="text"
+                @click="onClickAddEvaluationType"
               />
-              <v-btn
-                :id="'save-eval-type-btn'"
-                class="text-capitalize mr-2"
-                color="secondary"
-                :disabled="!newItemName || isSaving"
-
-                @click="onSubmitAddEvaluationType"
-              >
-                Save
-              </v-btn>
-              <v-btn
-                :id="'cancel-save-eval-type-btn'"
-                class="text-capitalize ml-1"
-                :disabled="isSaving"
-
-                outlined
-                text
-                @click="cancelAdd('add-eval-type-btn')"
-              >
-                Cancel
-              </v-btn>
-            </v-form>
-            <div class="nannys-list overflow-y-auto">
-              <v-data-table
-                id="evaluation-types-table"
-                density="compact"
-                disable-pagination
-                :headers="[{key: 'name', class: 'pl-3', sortable: true, title: 'Type Name', value: 'name'}]"
-                hide-default-footer
-                :items="evaluationTypes"
-                item-key="name"
-                :sort-by="sortBy.evaluationTypes"
-              >
-                <template #headers="{columns, isSorted, toggleSort, getSortIcon, sortBy: _sortBy}">
-                  <SortableTableHeader
-                    :id="'eval-'"
-                    :columns="columns"
-                    :is-sorted="isSorted"
-                    :on-sort="toggleSort"
-                    :sort-desc="get(_sortBy, 'order') === 'desc'"
-                    :sort-icon="getSortIcon"
-                  />
-                </template>
-                <template #item.name="{item}">
-                  <div class="d-flex justify-space-between">
-                    <span>{{ item.name }}</span>
-                    <v-btn
-                      :id="`delete-eval-type-${item.id}-btn`"
-                      class="text-capitalize px-2 py-0"
-                      color="tertiary"
-                      :disabled="disableControls"
-                      height="unset"
-                      min-width="unset"
-                      text
-                      @click.stop="() => confirmDeleteEvaluationType(item)"
-                    >
-                      Delete
-                    </v-btn>
-                  </div>
-                </template>
-              </v-data-table>
-            </div>
+              <v-form v-if="isAddingEvaluationType" class="px-4" @submit.prevent="onSubmitAddEvaluationType">
+                <label :for="'input-eval-type-name'" class="form-label">
+                  Type name
+                </label>
+                <v-text-field
+                  :id="'input-eval-type-name'"
+                  v-model="newItemName"
+                  color="tertiary"
+                  density="compact"
+                  :disabled="isSaving"
+                  required
+                  variant="outlined"
+                  @keydown.esc="cancelAdd('add-eval-type-btn')"
+                />
+                <v-btn
+                  :id="'save-eval-type-btn'"
+                  class="mr-1"
+                  color="secondary"
+                  :disabled="!newItemName || isSaving"
+                  text="Save"
+                  @click="onSubmitAddEvaluationType"
+                />
+                <v-btn
+                  :id="'cancel-save-eval-type-btn'"
+                  :disabled="isSaving"
+                  text="Cancel"
+                  variant="outlined"
+                  @click="cancelAdd('add-eval-type-btn')"
+                />
+              </v-form>
+            </v-card-actions>
+            <v-card-text>
+              <div class="nannys-list overflow-y-auto">
+                <v-data-table
+                  id="evaluation-types-table"
+                  density="compact"
+                  disable-pagination
+                  :headers="[{key: 'name', class: 'pl-3', sortable: true, title: 'Type Name', value: 'name'}]"
+                  hide-default-footer
+                  :items="evaluationTypes"
+                  item-key="name"
+                  :sort-by="sortBy.evaluationTypes"
+                >
+                  <template #headers="{columns, isSorted, toggleSort, getSortIcon, sortBy: _sortBy}">
+                    <SortableTableHeader
+                      :id="'eval-'"
+                      :columns="columns"
+                      :is-sorted="isSorted"
+                      :on-sort="toggleSort"
+                      :sort-desc="get(_sortBy, 'order') === 'desc'"
+                      :sort-icon="getSortIcon"
+                    />
+                  </template>
+                  <template #item.name="{item}">
+                    <div class="d-flex justify-space-between">
+                      <span>{{ item.name }}</span>
+                      <v-btn
+                        :id="`delete-eval-type-${item.id}-btn`"
+                        class="text-capitalize px-2 py-0"
+                        color="tertiary"
+                        :disabled="disableControls"
+                        height="unset"
+                        min-width="unset"
+                        text="Delete"
+                        variant="text"
+                        @click.stop="() => confirmDeleteEvaluationType(item)"
+                      />
+                    </div>
+                  </template>
+                </v-data-table>
+              </div>
+            </v-card-text>
           </v-card>
         </v-col>
         <v-col cols="12" lg="6">
           <v-card
             class="mr-4"
-
             min-width="fit-content"
           >
             <v-card-title
@@ -243,12 +229,11 @@
               class="text-capitalize pl-2 my-1"
               color="tertiary"
               :disabled="disableControls"
-              text
+              :prepend-icon="mdiPlusThick"
+              text="Add new instructor"
+              variant="text"
               @click="onClickAddInstructor"
-            >
-              <v-icon :icon="mdiPlusThick" />
-              Add new instructor
-            </v-btn>
+            />
             <v-form
               v-if="isAddingInstructor"
               class="px-4 pb-4"
@@ -291,7 +276,7 @@
                 color="tertiary"
                 density="compact"
                 :disabled="isSaving"
-                outlined
+                variant="outlined"
               />
               <label for="input-instructor-last-name" class="form-label">
                 Last name
@@ -303,8 +288,8 @@
                 color="tertiary"
                 density="compact"
                 :disabled="isSaving"
-                outlined
                 required
+                variant="outlined"
               />
               <label for="input-instructor-last-name" class="form-label">
                 Email
@@ -316,31 +301,27 @@
                 color="tertiary"
                 density="compact"
                 :disabled="isSaving"
-                outlined
+                hide-details="auto"
                 required
                 :rules="rules.email"
+                variant="outlined"
               />
               <v-btn
                 id="save-instructor-btn"
                 class="text-capitalize mr-2"
                 color="secondary"
                 :disabled="!newInstructor.uid || !newInstructor.lastName || !newInstructor.emailAddress || isSaving"
-
+                text="Save"
                 @click="onSubmitAddInstructor"
-              >
-                Save
-              </v-btn>
+              />
               <v-btn
                 id="cancel-save-instructor-btn"
                 class="text-capitalize ml-1"
                 :disabled="!instructorValid || isSaving"
-
-                outlined
-                text
+                text="Cancel"
+                variant="outlined"
                 @click="cancelAdd('add-instructor-btn')"
-              >
-                Cancel
-              </v-btn>
+              />
             </v-form>
             <div class="nannys-list overflow-y-auto">
               <v-data-table
@@ -370,11 +351,9 @@
                     :disabled="disableControls"
                     height="unset"
                     min-width="unset"
-                    text
-                    @click.stop="() => confirmDeleteInstructor(item)"
-                  >
-                    Delete
-                  </v-btn>
+                    text="Delete"
+                    @click.stop="() => listStore.confirmDeleteInstructor(item)"
+                  />
                 </template>
                 <template #no-data>
                   <div class="text-muted my-5">
@@ -391,12 +370,12 @@
           <v-card class="mr-4 mt-4">
             <v-card-title>Automatically Publish</v-card-title>
             <v-card-text>
-              <span v-if="contextStore.config.scheduleLochRefresh">
+              <span v-if="config.scheduleLochRefresh">
                 When enabled, publication will run daily at
-                {{ `${String(contextStore.config.scheduleLochRefresh.hour).padStart(2, '0')}:${String(contextStore.config.scheduleLochRefresh.minute).padStart(2, '0')}` }}
+                {{ `${String(config.scheduleLochRefresh.hour).padStart(2, '0')}:${String(config.scheduleLochRefresh.minute).padStart(2, '0')}` }}
                 local time, immediately before loch refresh.
               </span>
-              <span v-if="!contextStore.config.scheduleLochRefresh">
+              <span v-if="!config.scheduleLochRefresh">
                 Nightly loch refresh must be scheduled in app configs to enable auto-publish.
               </span>
               <v-switch
@@ -405,7 +384,7 @@
                 :aria-label="`Auto-publish is ${autoPublishEnabled ? 'enabled' : 'disabled'}`"
                 color="success"
                 density="compact"
-                :disabled="!contextStore.config.scheduleLochRefresh"
+                :disabled="!config.scheduleLochRefresh"
                 hide-details
                 :label="autoPublishEnabled ? 'Enabled' : 'Disabled'"
                 @change="toggleAutoPublishEnabled(autoPublishEnabled)"
@@ -444,7 +423,18 @@ const contextStore = useContextStore()
 const listStore = useListManagementStore()
 
 const autoPublishEnabled = ref(undefined)
-const {departmentForms, disableControls, evaluationTypes, instructors, isAddingDepartmentForm, isAddingEvaluationType, isAddingInstructor, isConfirming} = storeToRefs(listStore)
+const config = contextStore.config
+const {
+  departmentForms,
+  disableControls,
+  evaluationTypes,
+  instructors,
+  isAddingDepartmentForm,
+  isAddingEvaluationType,
+  isAddingInstructor,
+  isConfirming,
+  isSaving
+} = storeToRefs(listStore)
 const instructorValid = ref(true)
 const rules = {
   email: [
