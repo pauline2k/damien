@@ -1,11 +1,12 @@
 <template>
-  <div class="d-flex align-baseline add-course-section">
+  <div class="d-flex add-course-section">
     <v-btn
       v-if="!isAddingSection"
       id="add-course-section-btn"
-      class="text-capitalize pl-1 mr-3"
+      class="align-self-center text-capitalize mr-3"
       color="tertiary"
       :disabled="!allowEdits"
+      slim
       variant="text"
       @click="() => isAddingSection = true"
     >
@@ -15,17 +16,14 @@
     <div v-if="isAddingSection" class="full-width px-4">
       <div v-if="!section">
         <v-form>
-          <label for="lookup-course-number-input" class="form-label">
-            Course Number
-          </label>
           <v-text-field
             id="lookup-course-number-input"
             ref="lookupCourseNumberInput"
             v-model="courseNumber"
-            class="mt-1"
             color="tertiary"
             :error-messages="errorMessage"
             maxlength="5"
+            label="Course Number"
             :rules="[rules.courseNumber, rules.notPresent]"
             dense
             outlined
@@ -48,17 +46,15 @@
           <div>
             <v-btn
               id="lookup-course-number-submit"
-              class="text-capitalize mr-2 mb-1"
+              class="text-capitalize mr-2"
               color="secondary"
               :disabled="!courseNumberReady"
-              elevation="2"
               text="Look Up"
               @click="lookupSection"
             />
             <v-btn
               id="lookup-course-number-cancel"
-              class="text-capitalize ml-1 mb-1"
-              elevation="2"
+              class="text-capitalize"
               outlined
               text="Cancel"
               @click="onCancel"
@@ -189,11 +185,9 @@ const onSubmit = courseNumber => {
 
 <style scoped>
 .add-course-section {
+  min-height: 40px;
   max-width: 300px;
-  justify-content: flex-end;
-  margin-left: auto;
 }
-
 .full-width {
   width: 100%;
   width: -moz-available;

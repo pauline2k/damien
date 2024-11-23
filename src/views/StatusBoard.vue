@@ -1,5 +1,5 @@
 <template>
-  <div class="pt-2">
+  <div class="page-margins">
     <v-row no-gutters>
       <v-col cols="9" class="d-flex align-center">
         <h1 id="page-title" tabindex="-1">

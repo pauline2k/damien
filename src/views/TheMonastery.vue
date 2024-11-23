@@ -1,5 +1,5 @@
 <template>
-  <div class="pt-2">
+  <div class="page-margins">
     <div class="pb-2 d-flex">
       <h1 id="page-title" tabindex="-1">Departments</h1>
       <v-spacer class="d-flex justify-center"></v-spacer>
