@@ -97,7 +97,7 @@
                   v-if="department.totalInError"
                   :id="`errors-count-dept-${department.id}`"
                   class="error text-error error-count"
-                  outlined
+                  variant="outlined"
                   small
                 >
                   {{ department.totalInError }} <span class="sr-only">errors</span>
@@ -278,6 +278,6 @@ const toggleSelectAll = () => {
 .error-count {
   border-width: 2px;
   font-weight: bold;
-  padding: 0 7px;
+  padding: 0 6px;
 }
 </style>
