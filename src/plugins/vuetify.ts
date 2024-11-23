@@ -115,13 +115,13 @@ export default createVuetify({
           'evaluation-row-review': '#F2FFF6',
           'evaluation-row-xlisting': '#FFFFDD',
           hovered: '#EEE',
-          inactive: '#EEE',
-          'inactive-contrast': '#666',
           muted: '#606060',
+          'on-surface-variant': '#000',
           primary: '#125074',
           'primary-contrast': '#DAF0FD',
           secondary: '#307AAB',
           success: '#00C853',
+          'surface-variant': '#F8F8F8',
           tertiary: '#307AAB',
           title: '#125074'
         }
@@ -138,13 +138,13 @@ export default createVuetify({
           'evaluation-row-review': '#0E1F0E',
           'evaluation-row-xlisting': '#2D2800',
           hovered: '#616161',
-          inactive: '#AAA',
-          'inactive-contrast': '#333',
           muted: '#BDBDBD',
+          'on-surface-variant': '#FFF',
           primary: '#0C354D',
           'primary-contrast': '#94A8B3',
           secondary: '#1C4F72',
           success: '#00953E',
+          'surface-variant': '#171717',
           tertiary: '#80BAE0',
           title: '#1E71A4'
         }

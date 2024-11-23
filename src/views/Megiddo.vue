@@ -1,12 +1,12 @@
 <template>
-  <div class="pt-2">
+  <div class="page-margins">
     <v-row no-gutters>
-      <v-col cols="9" class="d-flex align-center">
-        <h1 id="page-title" tabindex="-1">
+      <v-col cols="8" class="d-flex align-center">
+        <h1 id="page-title" class="align-self-start" tabindex="-1">
           Publish<span v-if="contextStore.selectedTermName"> - {{ contextStore.selectedTermName }}</span>
         </h1>
       </v-col>
-      <v-col cols="3">
+      <v-col cols="4">
         <TermSelect :after-select="refresh" />
       </v-col>
     </v-row>
@@ -70,8 +70,8 @@
           flat
         >
           <v-expansion-panel class="panel-override">
-            <v-expansion-panel-title id="term-exports-btn" class="term-exports-btn">
-              <h2>Term Exports</h2>
+            <v-expansion-panel-title id="term-exports-btn" class="term-exports-btn text-no-wrap">
+              <h2 class="pr-2">Term Exports</h2>
             </v-expansion-panel-title>
             <v-expansion-panel-text>
               <div v-if="isEmpty(termExports)" id="term-exports-no-data">There are no {{ selectedTermName }} exports.</div>

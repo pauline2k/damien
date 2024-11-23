@@ -1,5 +1,5 @@
 <template>
-  <div class="pb-6 pt-2">
+  <div class="page-margins pb-6">
     <div class="d-flex pl-2 py-3">
       <h1 id="page-title" tabindex="-1">
         Settings

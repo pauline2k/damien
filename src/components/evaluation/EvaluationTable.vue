@@ -1,11 +1,10 @@
 <template>
   <div v-if="evaluations.length > 0">
     <div
-      class="sticky"
-      :class="theme.global.current.value.dark ? 'sticky-dark' : 'sticky-light'"
+      class="bg-surface-variant elevation-2 sticky"
       role="search"
     >
-      <div class="align-baseline d-flex flex-wrap px-5 pt-1 w-75">
+      <div class="align-start d-flex flex-wrap justify-start px-5 pt-3" :class="{'pb-2': readonly}">
         <v-text-field
           id="evaluation-search-input"
           v-model="searchFilter"
@@ -18,14 +17,12 @@
           max-width="600px"
           type="search"
         />
-        <div class="text-left add-course-section">
-          <AddCourseSection
-            v-if="!readonly"
-            id="add-course-section"
-            :evaluations="evaluations"
-            :allow-edits="allowEdits"
-          />
-        </div>
+        <AddCourseSection
+          v-if="!readonly"
+          id="add-course-section"
+          :evaluations="evaluations"
+          :allow-edits="allowEdits"
+        />
       </div>
       <div class="align-center d-flex flex-wrap justify-space-between px-5">
         <div v-if="!readonly && allowEdits" class="d-flex">
@@ -59,13 +56,16 @@
             <EvaluationActions v-if="!readonly" />
           </div>
         </div>
-        <div class="align-center d-flex flex-wrap">
+        <div class="align-center d-flex flex-wrap py-2">
           <div class="mr-2">Show statuses:</div>
           <v-btn-toggle
             v-model="selectedFilterTypes"
             aria-controls="evaluation-table"
             borderless
+            class="status-filter"
+            color="primary"
             density="compact"
+            flat
             multiple
             rounded
           >
@@ -73,27 +73,22 @@
               v-for="status in keys(filterTypes)"
               :id="`evaluations-filter-${status}`"
               :key="status"
-              color="primary"
               :aria-selected="filterTypes[status].enabled"
-              class="mr-1 pl-3 rounded-pill"
-              :class="{
-                'secondary': filterTypes[status].enabled,
-                'inactive': !filterTypes[status].enabled
-              }"
+              color="primary"
+              class="mr-1 rounded-pill text-uppercase"
+              :disabled="!filterTypes[status].enabled"
+              height="30"
               size="small"
               :value="status"
             >
               <div class="align-center d-flex justify-space-between">
-                <div>
-                  <v-icon
-                    v-if="filterTypes[status].enabled"
-                    :color="filterTypes[status].enabled ? 'green' : 'inactive-contrast'"
-                    :icon="filterTypes[status].enabled ? mdiCheckCircle : mdiPlusCircle"
-                    left
-                    size="small"
-                  />
-                </div>
-                <div :class="filterTypes[status].enabled ? 'text-white' : 'text-grey darken-2'">
+                <v-icon
+                  v-if="filterTypes[status].enabled"
+                  color="success"
+                  :icon="filterTypes[status].enabled ? mdiCheckCircle : mdiPlusCircle"
+                  left
+                />
+                <div class="pl-1">
                   <span class="sr-only">{{ filterTypes[status].enabled ? 'Hide' : 'Show' }} evaluations of marked with</span>
                   {{ filterTypes[status].label }}
                 </div>
@@ -112,9 +107,6 @@
         </div>
       </div>
     </div>
-    <div class="divider">
-      <v-divider></v-divider>
-    </div>
     <div
       id="evaluation-table-search-results-desc"
       aria-atomic="true"
@@ -127,7 +119,7 @@
       id="evaluation-table"
       v-model:sort-by="sortBy"
       aria-label="Evaluations"
-      class="v-table-hidden-row-override mt-3"
+      class="v-table-hidden-row-override pt-3"
       :custom-filter="customFilter"
       density="compact"
       :headers="evaluationHeaders"
@@ -560,21 +552,18 @@ import EvaluationError from '@/components/evaluation/EvaluationError'
 import PersonLookup from '@/components/admin/PersonLookup'
 import {EVALUATION_STATUSES, useDepartmentStore} from '@/stores/department/department-edit-session'
 import {addInstructor} from '@/api/instructor'
-import {alertScreenReader, oxfordJoin, pluralize, toFormatFromISO, toFormatFromJsDate, toLocaleFromISO} from '@/lib/utils'
+import {alertScreenReader, oxfordJoin, pluralize, putFocusNextTick, toFormatFromISO, toFormatFromJsDate, toLocaleFromISO} from '@/lib/utils'
 import {clone, cloneDeep, each, find, get, keys, pickBy, size, some} from 'lodash'
 import {computed, nextTick, onMounted, ref} from 'vue'
-import {putFocusNextTick} from '@/lib/utils'
 import {mdiAlertCircle, mdiCheckCircle, mdiMagnify, mdiPlusCircle} from '@mdi/js'
 import {storeToRefs} from 'pinia'
 import {useContextStore} from '@/stores/context'
-import {useTheme} from 'vuetify'
 import {validateMarkAsDone} from '@/stores/department/utils'
 import AccessibleDateInput from '@/components/util/AccessibleDateInput'
 
 const contextStore = useContextStore()
 const departmentStore = useDepartmentStore()
 const {disableControls, dismissErrorDialog, errorDialog, errorDialogText, evaluations, selectedEvaluationIds} = storeToRefs(useDepartmentStore())
-const theme = useTheme()
 
 const props = defineProps({
   readonly: {
@@ -950,8 +939,12 @@ tr.border-top-none td {
 .align-middle {
   vertical-align: middle;
 }
-.evaluation-form-btn {
-  width: 150px;
+.divider {
+  padding: 16px 0px 5px 0px;
+}
+.evaluation-actions {
+  position: relative;
+  top: 2px;
 }
 .evaluation-course-name {
   min-width: 200px;
@@ -962,11 +955,18 @@ tr.border-top-none td {
 .evaluation-department-form {
   min-width: 155px;
 }
+.evaluation-form-btn {
+  width: 150px;
+}
 .evaluation-instructor {
   min-width: 175px;
 }
 .evaluation-last-updated {
   min-width: 100px;
+}
+.evaluation-period-width {
+  width: 166px;
+  max-width: 166px;
 }
 .evaluation-row {
   vertical-align: top;
@@ -1035,32 +1035,15 @@ tr.border-top-none td {
 .select-evaluation-status {
   width: 80%;
 }
+.status-filter {
+  height: fit-content !important;
+}
 .sticky {
   position: sticky;
+  top: 60px;
   z-index: 10;
-}
-.sticky-dark {
-  background-color: #171717;
-}
-.sticky-light {
-  background-color: #fff;
 }
 .xlisting-note {
   font-size: 0.8em;
-}
-.add-course-section {
-  position: relative;
-  top: -6px;
-}
-.evaluation-actions {
-  position: relative;
-  top: 2px;
-}
-.divider {
-  padding: 16px 0px 5px 0px;
-}
-.evaluation-period-width {
-  width: 166px;
-  max-width: 166px;
 }
 </style>

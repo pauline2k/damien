@@ -101,6 +101,9 @@
   background: #FFFFFF;
   color: rgba(0, 0, 0, 0.87);
 }
+.page-margins {
+  padding: 8px;
+}
 .position-absolute {
   position: absolute !important;
 }
@@ -136,6 +139,9 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.v-btn-toggle > .v-btn.v-btn--active:not(.v-btn--disabled) > .v-btn__overlay {
+  opacity: 0 !important;
 }
 .vs__actions button:enabled {
   cursor: pointer;

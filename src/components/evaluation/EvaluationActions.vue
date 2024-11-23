@@ -7,8 +7,8 @@
             :id="`apply-course-action-btn-${key}`"
             :key="key"
             class="text-capitalize text-no-wrap mx-0 px-2"
-            variant="plain"
             :disabled="disableControls || !allowEdits || !selectedEvaluationIds.length || isLoading || isInvalidAction(action)"
+            variant="plain"
             @click.stop="action.apply(key)"
           >
             <span v-if="!(isLoading && key !== 'duplicate' && applyingAction.key === key)">{{ action.text }}</span>

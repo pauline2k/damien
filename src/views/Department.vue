@@ -1,5 +1,5 @@
 <template>
-  <div class="pt-2">
+  <div class="page-margins">
     <div class="align-center d-flex flex-wrap justify-space-between">
       <div>
         <h1
@@ -113,7 +113,7 @@
         </v-col>
       </v-row>
     </v-container>
-    <div v-if="!contextStore.loading" class="border-sm mt-3 py-5">
+    <div v-if="!contextStore.loading" class="border-sm mt-3 position-relative">
       <EvaluationTable />
     </div>
     <v-overlay :value="showTheOmenPoster" z-index="300">
