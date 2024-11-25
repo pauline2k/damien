@@ -49,7 +49,6 @@
                   :id="`dept-contact-${contact.id}-form-${formIndex}`"
                   class="border-sm"
                   color="green"
-                  :ripple="false"
                   :text="form.name"
                 />
               </div>

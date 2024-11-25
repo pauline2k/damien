@@ -18,7 +18,6 @@
       :disabled="isSaving"
       hide-details
       label="Publish"
-      :ripple="false"
     />
     <ProgressButton
       id="service-announcement-save"

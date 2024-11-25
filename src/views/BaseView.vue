@@ -61,7 +61,7 @@
             color="primary-contrast"
             variant="tonal"
             min-width="34"
-            @click="() => isSidebarCollapsed = !isSidebarCollapsed"
+            @click="toggleSidebarCollapsed"
           >
             <v-icon :icon="isSidebarCollapsed ? mdiArrowExpandRight : mdiArrowCollapseLeft" />
           </v-btn>
@@ -77,7 +77,7 @@
         @click="toRoute(item.path)"
       >
         <div class="align-center d-flex">
-          <v-icon :icon="item.icon" />
+          <v-icon :icon="item.icon" :title="isSidebarCollapsed ? item.title : undefined" />
           <div class="ml-3 text-no-wrap" role="link">
             {{ item.title }}
           </div>
@@ -156,7 +156,8 @@ const footerHeight = computed(() => {
 })
 
 onMounted(() => {
-  prefersColorScheme()
+  setPreferredColorScheme()
+  setPreferredSidebarState()
   if (currentUser.isAdmin) {
     navItems.value = [
       {title: 'Status', icon: mdiListStatus, path: '/status'},
@@ -181,7 +182,7 @@ const logOut = () => {
   getCasLogoutUrl().then(data => window.location.href = data.casLogoutUrl)
 }
 
-const prefersColorScheme = () => {
+const setPreferredColorScheme = () => {
   let prefersDarkMode
   if (window.localStorage.getItem('prefersDarkMode')) {
     prefersDarkMode = window.localStorage.getItem('prefersDarkMode') === 'true'
@@ -191,10 +192,21 @@ const prefersColorScheme = () => {
   theme.global.name.value = prefersDarkMode ? 'dark' : 'light'
 }
 
+const setPreferredSidebarState = () => {
+  if (window.localStorage.getItem('prefersSidebarCollapsed')) {
+    isSidebarCollapsed.value = window.localStorage.getItem('prefersSidebarCollapsed') === 'true'
+  }
+}
+
 const toggleColorScheme = () => {
   const getDark = !theme.global.current.value.dark
   theme.global.name.value = getDark ? 'dark' : 'light'
   window.localStorage.setItem('prefersDarkMode', `${getDark}`)
+}
+
+const toggleSidebarCollapsed = () => {
+  isSidebarCollapsed.value = !isSidebarCollapsed.value
+  window.localStorage.setItem('prefersSidebarCollapsed', isSidebarCollapsed.value)
 }
 
 const toRoute = path => router.push({path})

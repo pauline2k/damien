@@ -21,4 +21,5 @@ const screenReaderAlert = useContextStore().screenReaderAlert
 <style>
   @import './assets/styles/damien-global.css';
   @import 'v-calendar/style.css';
+  @import "@/assets/styles/vcalendar-custom.css";
 </style>
