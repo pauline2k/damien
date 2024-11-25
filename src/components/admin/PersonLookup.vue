@@ -1,5 +1,5 @@
 <template>
-  <div :class="inline ? 'row d-flex align-center row--dense' : 'd-flex flex-column flex-grow-1'">
+  <div :class="inline ? 'row d-flex align-center row--dense' : 'd-flex flex-column'">
     <div :class="{'col col-4': inline}">
       <label
         :id="`${id}-label`"
@@ -17,7 +17,7 @@
         :aria-disabled="disabled"
         :aria-labelledby="`${id}-label`"
         autocomplete="off"
-        class="bg-white person-lookup"
+        class="person-lookup"
         :class="inputClass"
         clearable
         density="compact"
@@ -38,7 +38,8 @@
         return-object
         :search="search"
         single-line
-        variant="outlined"
+        theme="light"
+        variant="solo"
         @change="() => suppressValidation = false"
         @update:focused="onHighlight"
         @update:search="value => search = value"
@@ -229,6 +230,9 @@ const validate = suggestion => {
 }
 .person-lookup {
   overflow-x: clip;
+}
+.person-lookup .v-input__control {
+  height: 38px;
 }
 .person-lookup .v-select__selections,
 .person-lookup .v-select__selections input {

@@ -10,7 +10,7 @@
         <TermSelect />
       </v-col>
     </v-row>
-    <v-card v-if="!contextStore.loading" outlined class="elevation-1 mt-4">
+    <v-card v-if="!contextStore.loading" class="mt-4">
       <v-data-table
         id="department-table"
         density="compact"
@@ -67,6 +67,7 @@
                 </label>
                 <v-checkbox
                   :id="`checkbox-select-dept-${kebabCase(department.deptName)}`"
+                  aria-controls="open-notification-form-btn"
                   class="align-center mt-0 pt-0"
                   color="tertiary"
                   :disabled="contextStore.loading"

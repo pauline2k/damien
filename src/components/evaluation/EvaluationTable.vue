@@ -72,10 +72,10 @@
               v-for="status in keys(filterTypes)"
               :id="`evaluations-filter-${status}`"
               :key="status"
+              :active="filterTypes[status].enabled"
               :aria-selected="filterTypes[status].enabled"
               color="primary"
               class="mr-1 rounded-pill text-uppercase"
-              :disabled="!filterTypes[status].enabled"
               height="30"
               size="small"
               :value="status"
@@ -123,7 +123,7 @@
       density="compact"
       :headers="evaluationHeaders"
       hide-default-footer
-      :items="evaluations"
+      :items="visibleEvaluations"
       :loading="contextStore.loading"
       must-sort
       :search="searchFilter"
@@ -141,10 +141,9 @@
         />
       </template>
       <template #body="{items}">
-        <TransitionGroup>
+        <TransitionGroup v-if="size(items)">
           <template v-for="(evaluation, rowIndex) in items" :key="evaluation.id">
             <tr
-              v-if="statusFilterEnabled(evaluation)"
               class="evaluation-row"
               :class="{
                 'evaluation-row-confirmed': evaluation.id !== editRowId && evaluation.status === 'confirmed',
@@ -218,7 +217,7 @@
                     id="select-evaluation-status"
                     v-model="selectedEvaluationStatus"
                     class="d-block light mx-auto native-select-override"
-                    :disabled="saving"
+                    :disabled="isSaving"
                   >
                     <option
                       v-if="!selectedEvaluationStatus"
@@ -260,7 +259,14 @@
                   {{ evaluation.roomSharedWith.join(', ') }})
                 </div>
               </td>
-              <td class="align-middle evaluation-course-name px-1" :class="{'font-weight-bold pt-5': isEditing(evaluation)}">
+              <td
+                class="evaluation-course-name px-1"
+                :class="{
+                  'font-weight-bold pt-5': isEditing(evaluation),
+                  'align-middle': !isEditing(evaluation),
+                  'pt-2': !evaluation.instructor && isEditing(evaluation) && allowEdits
+                }"
+              >
                 <label :id="`evaluation-${rowIndex}-courseName`" :for="`evaluation-${rowIndex}-checkbox`">
                   {{ evaluation.subjectArea }}
                   {{ evaluation.catalogId }}
@@ -273,8 +279,8 @@
               </td>
               <td
                 :id="`evaluation-${rowIndex}-instructor`"
-                class="align-middle evaluation-instructor px-1"
-                :class="{'font-weight-bold pt-5': isEditing(evaluation)}"
+                class="evaluation-instructor px-1"
+                :class="{'font-weight-bold py-2': isEditing(evaluation)}"
               >
                 <div v-if="evaluation.instructor">
                   {{ evaluation.instructor.firstName }}
@@ -291,16 +297,14 @@
                   message="Instructor required"
                 />
                 <div v-if="!evaluation.instructor && isEditing(evaluation) && allowEdits">
-                  <div class="mt-1 py-2">
-                    <PersonLookup
-                      id="input-instructor-lookup-autocomplete"
-                      class="instructor-lookup"
-                      :disabled="saving"
-                      :instructor-lookup="true"
-                      label="Instructor: "
-                      :on-select-result="selectInstructor"
-                    />
-                  </div>
+                  <PersonLookup
+                    id="input-instructor-lookup-autocomplete"
+                    class="font-weight-regular instructor-lookup"
+                    :disabled="isSaving"
+                    :instructor-lookup="true"
+                    label="Instructor"
+                    :on-select-result="selectInstructor"
+                  />
                   <div v-if="pendingInstructor">
                     {{ pendingInstructor.firstName }}
                     {{ pendingInstructor.lastName }}
@@ -340,7 +344,7 @@
                     id="select-department-form"
                     v-model="selectedDepartmentForm"
                     class="native-select-override light"
-                    :disabled="saving"
+                    :disabled="isSaving"
                   >
                     <option v-for="df in departmentForms" :key="df.id" :value="df.id">{{ df.name }}</option>
                   </select>
@@ -375,7 +379,7 @@
                     id="select-evaluation-type"
                     v-model="selectedEvaluationType"
                     class="native-select-override light"
-                    :disabled="saving"
+                    :disabled="isSaving"
                   >
                     <option
                       v-if="!selectedEvaluationType"
@@ -434,7 +438,7 @@
             </tr>
             <tr v-if="isEditing(evaluation)" :key="`${evaluation.id}-edit`" class="bg-secondary text-white border-top-none">
               <td></td>
-              <td colspan="8" class="pb-1 px-3">
+              <td :colspan="size(evaluationHeaders) - 1" class="pb-1 px-3">
                 <div class="d-flex justify-end">
                   <ConfirmDialog
                     v-if="markAsDoneWarning"
@@ -451,13 +455,13 @@
                     class="ma-2 evaluation-form-btn"
                     color="primary"
                     width="150px"
-                    :disabled="disableControls || !rowValid || saving"
+                    :disabled="disableControls || !rowValid || isSaving"
                     @click.prevent="validateAndSave(evaluation)"
                     @keypress.enter.prevent="validateAndSave(evaluation)"
                   >
-                    <span v-if="!saving">Save</span>
+                    <span v-if="!isSaving">Save</span>
                     <v-progress-circular
-                      v-if="saving"
+                      v-if="isSaving"
                       :indeterminate="true"
                       color="white"
                       rotate="5"
@@ -468,7 +472,7 @@
                   <v-btn
                     id="cancel-evaluation-edit-btn"
                     class="ma-2 evaluation-form-btn"
-                    :disabled="saving"
+                    :disabled="isSaving"
                     variant="outlined"
                     width="150px"
                     @click="onCancelEdit(evaluation)"
@@ -481,6 +485,11 @@
             </tr>
           </template>
         </TransitionGroup>
+        <tr v-if="isEmpty(items)">
+          <td :colspan="size(evaluationHeaders)">
+            <div class="d-flex justify-center">No data to display.</div>
+          </td>
+        </tr>
       </template>
     </v-data-table>
     <ConfirmDialog
@@ -562,8 +571,8 @@ import SortableTableHeader from '@/components/util/SortableTableHeader'
 import {EVALUATION_STATUSES, useDepartmentStore} from '@/stores/department/department-edit-session'
 import {addInstructor} from '@/api/instructor'
 import {alertScreenReader, oxfordJoin, pluralize, putFocusNextTick, toFormatFromISO, toFormatFromJsDate, toLocaleFromISO} from '@/lib/utils'
-import {clone, cloneDeep, each, find, get, keys, pickBy, size, some} from 'lodash'
-import {computed, nextTick, onMounted, ref} from 'vue'
+import {clone, cloneDeep, each, filter, find, get, includes, isEmpty, keys, pickBy, size, some} from 'lodash'
+import {computed, nextTick, onMounted, ref, watch} from 'vue'
 import {mdiAlertCircle, mdiCheckCircle, mdiMagnify, mdiPlusCircle} from '@mdi/js'
 import {storeToRefs} from 'pinia'
 import {useContextStore} from '@/stores/context'
@@ -594,13 +603,13 @@ const evaluationHeaders = ref([])
 const hoverId = ref(undefined)
 const isConfirmingCancelEdit = ref(false)
 const isConfirmingNonSisInstructor = ref(false)
+const isSaving = ref(false)
 const markAsDoneWarning = ref(undefined)
 const pendingEditRowId = ref(undefined)
 const pendingInstructor = ref(undefined)
 const rules = {
   instructorUid: undefined
 }
-const saving = ref(false)
 const searchFilter = ref('')
 const searchFilterResults = ref([])
 const searchFilterResultLength = computed(() => {
@@ -609,35 +618,33 @@ const searchFilterResultLength = computed(() => {
 const selectedDepartmentForm = ref(undefined)
 const selectedEvaluationStatus = ref(undefined)
 const selectedEvaluationType = ref(undefined)
+const selectedFilterTypes = ref(keys(pickBy(filterTypes, 'enabled')))
 const selectedStartDate = ref(undefined)
 const sortBy = ref([{key: 'sortableCourseName', order: 'asc'}])
 
-const selectedFilterTypes = defineModel({
-  get() {
-    return keys(pickBy(filterTypes, 'enabled'))
-  },
-  set(types) {
-    alertScreenReader(`Showing ${types.length ? `evaluations marked ${oxfordJoin(types)}` : 'no evaluations'}`)
-    each(keys(filterTypes), type => {
-      filterTypes[type].enabled = types.includes(type)
-    })
-  },
-  type: Array
-})
-
 const allEvaluationsSelected = computed(() => {
-  return !!(size(useDepartmentStore().selectedEvaluationIds) && size(useDepartmentStore().selectedEvaluationIds) === size(useDepartmentStore().evaluations))
+  return !!(size(selectedEvaluationIds.value) && size(selectedEvaluationIds.value) === size(evaluations.value))
 })
 const allowEdits = computed(() => {
   const currentUser = useContextStore().currentUser
   return currentUser.isAdmin || !useContextStore().isSelectedTermLocked
 })
 const rowValid = computed(() => {
-  const evaluation = find(useDepartmentStore().evaluations, ['id', editRowId.value])
+  const evaluation = find(evaluations.value, ['id', editRowId.value])
   return selectedStartDate.value >= minStartDate(evaluation) && selectedStartDate.value <= evaluation.maxStartDate
 })
 const someEvaluationsSelected = computed(() => {
-  return !!(size(useDepartmentStore().selectedEvaluationIds) && size(useDepartmentStore().selectedEvaluationIds) < size(useDepartmentStore().evaluations))
+  return !!(size(selectedEvaluationIds.value) && size(selectedEvaluationIds.value) < size(evaluations.value))
+})
+const visibleEvaluations = computed(() => {
+  return filter(evaluations.value, isStatusFilterEnabled)
+})
+
+watch(selectedFilterTypes, types => {
+  alertScreenReader(`Showing ${types.length ? `evaluations marked ${oxfordJoin(types)}` : 'no evaluations'}`)
+  each(keys(filterTypes), type => {
+    filterTypes[type].enabled = types.includes(type)
+  })
 })
 
 onMounted(() => {
@@ -672,7 +679,7 @@ const afterEditEvaluation = evaluation => {
   editRowId.value = null
   pendingEditRowId.value = null
   pendingInstructor.value = null
-  saving.value = false
+  isSaving.value = false
   selectedDepartmentForm.value = null
   selectedEvaluationStatus.value = null
   selectedEvaluationType.value = null
@@ -739,9 +746,9 @@ const evaluationPillClass = evaluation => {
 
 const filterTypeCounts = type => {
   if (type === 'unmarked') {
-    return useDepartmentStore().evaluations.filter(e => e.status === null).length
+    return filter(evaluations.value, e => e.status === null).length
   }
-  return useDepartmentStore().evaluations.filter(e => e.status === type).length
+  return filter(evaluations.value, e => e.status === type).length
 }
 
 const instructorConfirmationText = instructor => {
@@ -752,6 +759,11 @@ const instructorConfirmationText = instructor => {
 
 const isEditing = evaluation => {
   return editRowId.value === evaluation.id
+}
+
+const isStatusFilterEnabled = evaluation => {
+  const status = evaluation.status || 'unmarked'
+  return includes(selectedFilterTypes.value, status)
 }
 
 const isStatusVisible = evaluation => {
@@ -783,8 +795,8 @@ const onCancelNonSisInstructor = () => {
 
 const onChangeSearchFilter = filterResults => {
   searchFilterResults.value = filterResults
-  if (size(useDepartmentStore().selectedEvaluationIds)) {
-    useDepartmentStore().filterSelectedEvaluations({
+  if (size(selectedEvaluationIds.value)) {
+    departmentStore.filterSelectedEvaluations({
       searchFilterResults: searchFilterResults.value,
       enabledStatuses: selectedFilterTypes.value
     })
@@ -795,9 +807,9 @@ const onChangeSearchFilter = filterResults => {
 }
 
 const onConfirm = () => {
+  const evaluation = find(evaluations.value, ['id', pendingEditRowId.value])
   isConfirmingCancelEdit.value = false
   editRowId.value = null
-  const evaluation = find(useDepartmentStore().evaluations, ['id', pendingEditRowId.value])
   onEditEvaluation(evaluation)
 }
 
@@ -807,7 +819,7 @@ const onConfirmNonSisInstructor = () => {
 
 const onEditEvaluation = evaluation => {
   if (editRowId.value) {
-    const editingEvaluation = find(useDepartmentStore().evaluations, ['id', editRowId.value])
+    const editingEvaluation = find(evaluations.value, ['id', editRowId.value])
     isConfirmingCancelEdit.value = editingEvaluation && (
       get(pendingInstructor.value, 'uid') !== get(editingEvaluation, 'instructor.uid')
       || selectedDepartmentForm.value !== get(editingEvaluation, 'departmentForm.id')
@@ -837,9 +849,9 @@ const onProceedMarkAsDone = () => {
 }
 
 const onSort = () => {
-  const selectedEvaluationIds = cloneDeep(useDepartmentStore().selectedEvaluationIds)
+  const selectedEvalIds = cloneDeep(selectedEvaluationIds.value)
   nextTick(() => {
-    useDepartmentStore().setSelectedEvaluations(selectedEvaluationIds)
+    departmentStore.setSelectedEvaluations(selectedEvalIds)
   })
 }
 
@@ -853,18 +865,13 @@ const selectInstructor = instructor => {
   pendingInstructor.value = instructor
 }
 
-const statusFilterEnabled = evaluation => {
-  const status = evaluation.status || 'unmarked'
-  return filterTypes[status].enabled
-}
-
 const toggleSelectAll = () => {
   if (allEvaluationsSelected.value || someEvaluationsSelected.value) {
-    useDepartmentStore().deselectAllEvaluations()
+    departmentStore.deselectAllEvaluations()
     alertScreenReader('All evaluations unselected')
   } else {
     alertScreenReader('All evaluations selected')
-    useDepartmentStore().selectAllEvaluations({
+    departmentStore.selectAllEvaluations({
       searchFilterResults: searchFilterResults.value,
       enabledStatuses: selectedFilterTypes.value
     })
@@ -872,29 +879,29 @@ const toggleSelectAll = () => {
 }
 
 const updateEvaluation = (evaluation, fields) => {
-  saving.value = true
+  isSaving.value = true
   alertScreenReader('Saving evaluation row.')
   return new Promise(resolve => {
     if (fields.status === 'confirmed' &&
       !(fields.departmentFormId && fields.evaluationTypeId && fields.instructorUid)) {
-      useDepartmentStore().showErrorDialog('Cannot confirm an evaluation with missing fields.')
-      saving.value = false
+      departmentStore.showErrorDialog('Cannot confirm an evaluation with missing fields.')
+      isSaving.value = false
       resolve()
     } else {
-      useDepartmentStore().editEvaluation({
+      departmentStore.editEvaluation({
         evaluationId: evaluation.id,
         sectionId: evaluation.courseNumber,
         termId: useContextStore().selectedTermId,
         fields
       }).then(() => {
         alertScreenReader('Changes saved.')
-        saving.value = false
+        isSaving.value = false
         afterEditEvaluation(evaluation)
-        useDepartmentStore().deselectAllEvaluations()
+        departmentStore.deselectAllEvaluations()
         resolve()
       }).catch(error => {
-        useDepartmentStore().showErrorDialog(get(error, 'response.data.message', 'An unknown error occurred.'))
-        saving.value = false
+        departmentStore.showErrorDialog(get(error, 'response.data.message', 'An unknown error occurred.'))
+        isSaving.value = false
         resolve()
       })
     }
