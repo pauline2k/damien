@@ -13,7 +13,8 @@
         :id="`sort-col-${id}${column.value}-btn`"
         :aria-label="`Sort by ${column.title} ${isSorted(column) && !sortDesc ? 'descending' : 'ascending'}`"
         :append-icon="sortIcon(column)"
-        class="sort-col-btn font-weight-bold text-no-wrap pl-0 pr-1 v-table-sort-btn-override"
+        block
+        class="sort-col-btn font-weight-bold text-no-wrap v-table-sort-btn-override"
         :class="{'icon-visible': isSorted(column)}"
         density="compact"
         size="small"
@@ -62,9 +63,11 @@ defineProps({
 
 <style scoped>
 .sort-col-btn {
-  height: unset !important;
+  height: 28px !important;
   letter-spacing: normal !important;
+  margin-left: -2px;
   min-width: 0px !important;
+  padding: 0 2px;
 }
 </style>
 <style>

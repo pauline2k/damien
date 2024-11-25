@@ -29,7 +29,6 @@
           aria-haspopup="dialog"
           :aria-required="required"
           autocomplete="off"
-          class="date-input"
           :disabled="disabled"
           :value="inputValue"
           placeholder="MM/DD/YYYY"
@@ -314,27 +313,28 @@ const onInput = (event, inputEvents) => {
   position: relative;
   display: flex;
   align-items: center;
-  border: 1px solid #ccc; /* Border color similar to v-text-field */
   border-radius: 4px;
+  box-shadow: 0px 3px 1px -2px rgb(0 0 0 / 20%), 0px 2px 2px 0px rgb(0 0 0 / 14%), 0px 1px 5px 0px rgb(0 0 0 / 12%);
+  height: 38px;
   padding: 0 12px;
   background-color: white;
   transition: border-color 0.3s;
+  width: 150px;
 }
-
 .custom-text-field input {
   flex: 1;
   border: none;
+  color-scheme: light;
+  height: inherit;
   outline: none;
   padding: 8px 0;
   font-size: 16px;
   background-color: transparent;
   width: 100%;
 }
-
 .custom-text-field input::placeholder {
   color: #aaa;
 }
-
 .custom-text-field .clear-button {
   background: transparent;
   border: none;
@@ -344,31 +344,25 @@ const onInput = (event, inputEvents) => {
   align-items: center;
   justify-content: center;
 }
-
 .custom-text-field .clear-icon {
   width: 20px;
   height: 20px;
   color: #999; /* Icon color */
 }
-
 .custom-text-field.error--text {
   border-color: red;
 }
-
 .custom-text-field.disabled {
   background-color: #f5f5f5;
   cursor: not-allowed;
 }
-
 .custom-text-field.disabled input {
   background-color: #f5f5f5;
   cursor: not-allowed;
 }
-
 .custom-text-field:hover {
   border-color: #aaa;
 }
-
 .custom-text-field:focus-within {
   border-color: #1976d2; /* Primary color on focus */
 }

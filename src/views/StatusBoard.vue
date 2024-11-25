@@ -24,7 +24,6 @@
       >
         <template #top>
           <div class="align-center d-flex pl-3 py-2">
-            <label class="sr-only" for="checkbox-select-dept-all">Select all department rows</label>
             <v-checkbox
               id="checkbox-select-dept-all"
               aria-controls="open-notification-form-btn"
@@ -34,6 +33,7 @@
               hide-details
               :indeterminate="someDepartmentsSelected"
               :model-value="allDepartmentsSelected"
+              title="Select All Departments"
               @update:model-value="toggleSelectAll"
             />
             <div id="checkbox-select-dept-all-desc">Send notification</div>

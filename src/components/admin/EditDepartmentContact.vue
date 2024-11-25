@@ -47,7 +47,6 @@
             color="tertiary"
             density="compact"
             hide-details
-            :ripple="false"
             role="checkbox"
             tabindex="0"
           />

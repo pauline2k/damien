@@ -37,7 +37,6 @@
               hide-details
               :indeterminate="someEvaluationsSelected"
               :input-value="someEvaluationsSelected || allEvaluationsSelected"
-              :ripple="false"
               :value="allEvaluationsSelected"
               @change="toggleSelectAll"
             >
@@ -132,6 +131,15 @@
       @update:current-items="onChangeSearchFilter"
       @update:sort-by="onSort"
     >
+      <template #headers="{columns, isSorted, toggleSort, getSortIcon, sortBy: _sortBy}">
+        <SortableTableHeader
+          :columns="columns"
+          :is-sorted="isSorted"
+          :on-sort="toggleSort"
+          :sort-desc="get(_sortBy, 'order') === 'desc'"
+          :sort-icon="getSortIcon"
+        />
+      </template>
       <template #body="{items}">
         <TransitionGroup>
           <template v-for="(evaluation, rowIndex) in items" :key="evaluation.id">
@@ -149,7 +157,7 @@
               @mouseenter="() => hoverId = evaluation.id"
               @mouseleave="() => hoverId = null"
             >
-              <td v-if="readonly" :id="`evaluation-${rowIndex}-department`" class="align-middle py-1">
+              <td v-if="readonly" :id="`evaluation-${rowIndex}-department`" class="align-middle py-1 pl-2">
                 <router-link :to="`/department/${get(evaluation.department, 'id')}`">
                   {{ get(evaluation.department, 'name') }}
                 </router-link>
@@ -157,7 +165,7 @@
               <td
                 v-if="!readonly && allowEdits && !(allowEdits && isEditing(evaluation))"
                 :id="`evaluation-${rowIndex}-select`"
-                class="align-middle text-center px-1"
+                class="align-middle text-center pr-1 pl-2"
               >
                 <v-checkbox
                   v-if="!isEditing(evaluation)"
@@ -166,7 +174,7 @@
                   class="pr-1"
                   :color="`${hoverId === evaluation.id ? 'primary' : 'tertiary'}`"
                   :disabled="editRowId === evaluation.id"
-                  :ripple="false"
+                  hide-details
                   :value="selectedEvaluationIds.includes(evaluation.id)"
                   @change="departmentStore.toggleSelectEvaluation(evaluation)"
                 />
@@ -174,7 +182,7 @@
               <td
                 :id="`evaluation-${rowIndex}-status`"
                 :class="{'align-middle position-relative': !isEditing(evaluation)}"
-                class="px-1"
+                class="evaluation-status px-1"
                 :colspan="allowEdits && isEditing(evaluation) ? 2 : 1"
               >
                 <div
@@ -190,18 +198,19 @@
                 >
                   <v-btn
                     :id="`edit-evaluation-${evaluation.id}-btn`"
-                    class="primary-contrast text-primary"
+                    class="text-uppercase"
                     :class="{'sr-only': ![focusedEditButtonEvaluationId, hoverId].includes(evaluation.id), 'focus-btn': evaluation.id === focusedEditButtonEvaluationId}"
+                    color="primary"
                     block
                     :disabled="!allowEdits"
-                    :ripple="false"
                     text="Edit"
+                    variant="text"
                     @blur="() => focusedEditButtonEvaluationId = null"
                     @click="() => onEditEvaluation(evaluation)"
                     @focus="() => focusedEditButtonEvaluationId = evaluation.id"
                   />
                 </div>
-                <div v-if="allowEdits && isEditing(evaluation)" class="mt-1 pl-2 py-2 select-evaluation-status">
+                <div v-if="allowEdits && isEditing(evaluation)" class="pl-2 py-2 select-evaluation-status">
                   <label for="select-evaluation-status">
                     Status:
                   </label>
@@ -231,15 +240,15 @@
               </td>
               <td
                 :id="`evaluation-${rowIndex}-lastUpdated`"
-                class="evaluation-last-updated px-1"
-                :class="{'pt-5': isEditing(evaluation), 'align-middle': !isEditing(evaluation)}"
+                class="align-middle evaluation-last-updated px-1"
+                :class="{'font-weight-bold pt-5': isEditing(evaluation)}"
               >
                 {{ toFormatFromJsDate(evaluation.lastUpdated, 'LL/dd/yyyy') }}
               </td>
               <td
                 :id="`evaluation-${rowIndex}-courseNumber`"
-                class="evaluation-course-number px-1"
-                :class="{'pt-5': isEditing(evaluation), 'align-middle': !isEditing(evaluation)}"
+                class="align-middle evaluation-course-number px-1"
+                :class="{'font-weight-bold pt-5': isEditing(evaluation)}"
               >
                 {{ evaluation.courseNumber }}
                 <div v-if="evaluation.crossListedWith" class="xlisting-note">
@@ -251,7 +260,7 @@
                   {{ evaluation.roomSharedWith.join(', ') }})
                 </div>
               </td>
-              <td class="evaluation-course-name px-1" :class="{'pt-3': isEditing(evaluation), 'align-middle': !isEditing(evaluation)}">
+              <td class="align-middle evaluation-course-name px-1" :class="{'font-weight-bold pt-5': isEditing(evaluation)}">
                 <label :id="`evaluation-${rowIndex}-courseName`" :for="`evaluation-${rowIndex}-checkbox`">
                   {{ evaluation.subjectArea }}
                   {{ evaluation.catalogId }}
@@ -264,8 +273,8 @@
               </td>
               <td
                 :id="`evaluation-${rowIndex}-instructor`"
-                :class="{'pt-5': isEditing(evaluation) && evaluation.instructor, 'align-middle': !isEditing(evaluation)}"
-                class="evaluation-instructor px-1"
+                class="align-middle evaluation-instructor px-1"
+                :class="{'font-weight-bold pt-5': isEditing(evaluation)}"
               >
                 <div v-if="evaluation.instructor">
                   {{ evaluation.instructor.firstName }}
@@ -305,7 +314,7 @@
               <td
                 :id="`evaluation-${rowIndex}-departmentForm`"
                 class="evaluation-department-form px-1"
-                :class="{'align-middle': !isEditing(evaluation)}"
+                :class="{'align-middle': !isEditing(evaluation), 'py-2': isEditing(evaluation)}"
               >
                 <div v-if="evaluation.departmentForm && !isEditing(evaluation)">
                   {{ evaluation.departmentForm.name }}
@@ -323,7 +332,7 @@
                   :hover="[focusedEditButtonEvaluationId, hoverId].includes(evaluation.id)"
                   message="Department form required"
                 />
-                <div v-if="allowEdits && isEditing(evaluation)" class="mt-1 py-2">
+                <div v-if="allowEdits && isEditing(evaluation)">
                   <label id="select-department-form-label" for="select-department-form">
                     Department Form:
                   </label>
@@ -340,7 +349,7 @@
               <td
                 :id="`evaluation-${rowIndex}-evaluationType`"
                 class="evaluation-type px-1"
-                :class="{'align-middle': !isEditing(evaluation)}"
+                :class="{'align-middle': !isEditing(evaluation), 'py-2': isEditing(evaluation)}"
               >
                 <div v-if="evaluation.evaluationType && !isEditing(evaluation)">
                   {{ evaluation.evaluationType.name }}
@@ -358,7 +367,7 @@
                   :hover="[focusedEditButtonEvaluationId, hoverId].includes(evaluation.id)"
                   message="Evaluation type required"
                 />
-                <div v-if="allowEdits && isEditing(evaluation)" class="mt-1 py-2">
+                <div v-if="allowEdits && isEditing(evaluation)">
                   <label id="select-evaluation-type-label" for="select-evaluation-type">
                     Evaluation Type:
                   </label>
@@ -389,7 +398,7 @@
               <td
                 :id="`evaluation-${rowIndex}-period`"
                 class="evaluation-period px-1"
-                :class="{'align-middle': !isEditing(evaluation)}"
+                :class="{'align-middle': !isEditing(evaluation), 'py-2': isEditing(evaluation)}"
               >
                 <div v-if="evaluation.startDate && !isEditing(evaluation)">
                   <div class="text-no-wrap">
@@ -407,12 +416,10 @@
                     from ${conflict.department} department`"
                   />
                 </div>
-                <div v-if="allowEdits && isEditing(evaluation)" class="mt-1 py-2 evaluation-period-width">
-                  <div class="d-flex align-center">
-                    <label id="input-evaluation-start-date-label">
-                      Start date:
-                    </label>
-                  </div>
+                <div v-if="allowEdits && isEditing(evaluation)" class="evaluation-period-edit">
+                  <label id="input-evaluation-start-date-label">
+                    Start date:
+                  </label>
                   <AccessibleDateInput
                     aria-label="Select Date"
                     container-id="input-evaluation-start-date"
@@ -427,7 +434,7 @@
             </tr>
             <tr v-if="isEditing(evaluation)" :key="`${evaluation.id}-edit`" class="bg-secondary text-white border-top-none">
               <td></td>
-              <td colspan="8" class="pb-2 px-2">
+              <td colspan="8" class="pb-1 px-3">
                 <div class="d-flex justify-end">
                   <ConfirmDialog
                     v-if="markAsDoneWarning"
@@ -460,9 +467,9 @@
                   </v-btn>
                   <v-btn
                     id="cancel-evaluation-edit-btn"
-                    class="ma-2 evaluation-form-btn text-primary"
-                    color="bg-white"
+                    class="ma-2 evaluation-form-btn"
                     :disabled="saving"
+                    variant="outlined"
                     width="150px"
                     @click="onCancelEdit(evaluation)"
                     @keypress.enter.prevent="onCancelEdit(evaluation)"
@@ -545,11 +552,13 @@
 </template>
 
 <script setup>
+import AccessibleDateInput from '@/components/util/AccessibleDateInput'
 import AddCourseSection from '@/components/evaluation/AddCourseSection'
 import ConfirmDialog from '@/components/util/ConfirmDialog'
 import EvaluationActions from '@/components/evaluation/EvaluationActions'
 import EvaluationError from '@/components/evaluation/EvaluationError'
 import PersonLookup from '@/components/admin/PersonLookup'
+import SortableTableHeader from '@/components/util/SortableTableHeader'
 import {EVALUATION_STATUSES, useDepartmentStore} from '@/stores/department/department-edit-session'
 import {addInstructor} from '@/api/instructor'
 import {alertScreenReader, oxfordJoin, pluralize, putFocusNextTick, toFormatFromISO, toFormatFromJsDate, toLocaleFromISO} from '@/lib/utils'
@@ -559,7 +568,6 @@ import {mdiAlertCircle, mdiCheckCircle, mdiMagnify, mdiPlusCircle} from '@mdi/js
 import {storeToRefs} from 'pinia'
 import {useContextStore} from '@/stores/context'
 import {validateMarkAsDone} from '@/stores/department/utils'
-import AccessibleDateInput from '@/components/util/AccessibleDateInput'
 
 const contextStore = useContextStore()
 const departmentStore = useDepartmentStore()
@@ -634,19 +642,21 @@ const someEvaluationsSelected = computed(() => {
 
 onMounted(() => {
   evaluationHeaders.value = [
-    {key: 'status', class: 'px-1 text-center text-no-wrap', headerProps: {minWidth: '115px', width: '10%'}, sortable: true, title: 'Status', value: 'status'},
-    {key: 'lastUpdated', class: 'px-1 text-start text-no-wrap', headerProps: {width: '5%'}, sortable: true, title: 'Last Updated', value: 'lastUpdated'},
-    {key: 'courseNumber', class: 'px-1 text-start text-no-wrap', headerProps: {width: '5%'}, sortable: true, title: 'Course Number', value: 'sortableCourseNumber'},
-    {key: 'courseName', class: 'px-1 text-start course-name', headerProps: {width: '20%'}, sortable: true, title: 'Course Name', value: 'sortableCourseName'},
-    {key: 'instructor', class: 'px-1 text-start text-no-wrap', headerProps: {width: '20%'}, sortable: true, title: 'Instructor', value: 'sortableInstructor'},
+    {key: 'status', class: 'pl-4 pr-1 text-no-wrap', headerProps: {justifyItems: 'center', minWidth: '115px', width: '10%'}, sortable: true, title: 'Status', value: 'status'},
+    {key: 'lastUpdated', class: 'px-1 text-no-wrap', headerProps: {width: '5%'}, sortable: true, title: 'Last Updated', value: 'lastUpdated'},
+    {key: 'courseNumber', class: 'px-1 text-no-wrap', headerProps: {width: '5%'}, sortable: true, title: 'Course Number', value: 'sortableCourseNumber'},
+    {key: 'courseName', class: 'px-1 course-name', headerProps: {width: '20%'}, sortable: true, title: 'Course Name', value: 'sortableCourseName'},
+    {key: 'instructor', class: 'px-1 text-no-wrap', headerProps: {width: '20%'}, sortable: true, title: 'Instructor', value: 'sortableInstructor'},
     {key: 'departmentForm', class: 'px-1 text-start', headerProps: {width: '10%'}, sortable: true, title: 'Department Form', value: 'departmentForm.name'},
     {key: 'evaluationType', class: 'px-1 text-start', headerProps: {width: '10%'}, sortable: true, title: 'Evaluation Type', value: 'evaluationType.name'},
-    {key: 'startDate', class: 'px-1 text-start text-no-wrap', headerProps: {width: '10%'}, sortable: true, title: 'Evaluation Period', value: 'startDate'}
+    {key: 'startDate', class: 'px-1 text-no-wrap', headerProps: {width: '15%'}, sortable: true, title: 'Evaluation Period', value: 'startDate'}
   ]
   if (props.readonly) {
-    evaluationHeaders.value.unshift({key: 'departmentId', class: 'text-start text-no-wrap pl-3 pr-1', sortable: true, title: 'Department', value: 'department.id'})
+    evaluationHeaders.value.unshift({key: 'departmentId', class: 'text-no-wrap pl-2 pr-1', sortable: true, title: 'Department', value: 'department.id'})
   } else if (allowEdits.value) {
-    evaluationHeaders.value.unshift({key: 'select', class: 'text-center text-no-wrap px-1', headerProps: {minWidth: '80px'}, sortable: true, title: 'Select', value: 'isSelected'})
+    evaluationHeaders.value.unshift(
+      {key: 'select', class: 'text-no-wrap pl-2 pr-1', headerProps: {justifyItems: 'center', width: '5%'}, sortable: true, title: 'Select', value: 'isSelected'}
+    )
   }
   departmentForms.value = [{id: null, name: 'Revert'}].concat(useDepartmentStore().activeDepartmentForms)
   evaluationTypes.value = [{id: null, name: 'Revert'}].concat(useContextStore().config.evaluationTypes)
@@ -964,7 +974,7 @@ tr.border-top-none td {
 .evaluation-last-updated {
   min-width: 100px;
 }
-.evaluation-period-width {
+.evaluation-period-edit {
   width: 166px;
   max-width: 166px;
 }
@@ -992,6 +1002,9 @@ tr.border-top-none td {
 }
 .evaluation-search-input {
   max-width: 540px;
+}
+.evaluation-status {
+
 }
 .evaluation-type {
   min-width: 145px;

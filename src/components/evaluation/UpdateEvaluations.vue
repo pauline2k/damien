@@ -39,7 +39,6 @@
                 :disabled="disableControls"
                 hide-details
                 label="Use midterm department forms"
-                :ripple="false"
               />
             </v-col>
           </v-row>
