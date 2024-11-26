@@ -52,13 +52,6 @@ def get_sftp_client():
                 'username': app.config['SFTP_USER'],
                 'pkey': private_key,
                 'port': app.config['SFTP_PORT'],
-                'transport_factory': _transport_factory,
             }
             ssh.connect(**ssh_config)
             yield ssh.open_sftp()
-
-
-def _transport_factory(*args):
-    transport = paramiko.transport.Transport(args)
-    transport.get_security_options().key_types = ('ssh-dss',)
-    return transport
