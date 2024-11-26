@@ -2,61 +2,89 @@
   <div :class="inline ? 'row d-flex align-center row--dense' : 'd-flex flex-column'">
     <div :class="{'col col-4': inline}">
       <label
-        :id="`${id}-label`"
-        :for="id"
+        :id="`${idPrefix}-label`"
+        :for="`${idPrefix}-input`"
         :class="labelClass"
       >
         <span v-if="label">{{ label }}</span>
-        <span v-if="placeholder" class="sr-only">{{ placeholder }}</span>
       </label>
     </div>
-    <div :class="{'col col-6': inline}">
+    <div :id="`${idPrefix}-container`" :class="{'col col-6': inline}">
       <v-autocomplete
-        :id="id"
+        :id="`${idPrefix}-input`"
+        ref="container"
         v-model="selected"
         :aria-disabled="disabled"
-        :aria-labelledby="`${id}-label`"
-        autocomplete="off"
-        class="person-lookup"
+        :aria-labelledby="`${idPrefix}-label`"
+        autocomplete="list"
+        class="person-lookup w-100"
         :class="inputClass"
         clearable
+        color="primary"
+        base-color="primary"
+        bg-color="surface"
         density="compact"
         :disabled="disabled"
         :error="required && !suppressValidation && !!size(errors)"
         :error-messages="required && !suppressValidation ? errors : []"
         hide-details="auto"
-        :hide-no-data="isSearching || !search"
+        :hide-no-data="isSearching || !query"
         :items="suggestions"
+        :list-props="{ariaLive: 'off'}"
         :loading="isSearching ? 'tertiary' : false"
         :menu-icon="null"
-        :menu-props="{
-          contentClass: 'autocomplete-menu'
-        }"
+        :menu-props="{closeOnContentClick: true}"
         no-data-text="No results found."
         no-filter
+        persistent-clear
         :placeholder="placeholder"
         return-object
-        :search="search"
-        single-line
+        :search="query"
         theme="light"
         variant="solo"
-        @change="() => suppressValidation = false"
-        @update:focused="onHighlight"
-        @update:search="value => search = value"
+        @update:focused="onFocusInput"
+        @update:menu="onToggleMenu"
+        @update:search="onUpdateSearch"
         @update:model-value="onUpdateModel"
       >
-        <template #item="{item, props: itemSlotProps}">
+        <template #loader="{isActive}">
+          <v-progress-circular
+            v-if="isActive"
+            class="mr-5"
+            color="primary"
+            indeterminate
+            size="x-small"
+            width="2"
+          />
+        </template>
+        <template #clear>
+          <v-btn
+            v-if="!isSearching"
+            :id="`${idPrefix}-clear-btn`"
+            :aria-label="`Clear ${label} input`"
+            class="d-flex align-self-center v-icon"
+            :class="{'disabled-opacity': !selected}"
+            density="compact"
+            :disabled="!selected"
+            exact
+            :icon="mdiCloseCircle"
+            :ripple="false"
+            variant="text"
+            @keydown.enter.stop.prevent="onClearInput"
+            @click.stop.prevent="onClearInput"
+          />
+        </template>
+        <template #item="{index, item}">
           <v-list-item
-            :aria-selected="item.value.uid === mouseoverUid"
-            class="text-tertiary"
+            :id="`${idPrefix}-option-${index}`"
+            :aria-selected="index === focusedListItemIndex"
+            class="font-size-18 text-tertiary"
             :class="{
-              'bg-light-blue-lighten-5': mouseoverUid === item.value.uid
+              'bg-light-blue-lighten-5': index === focusedListItemIndex
             }"
-            v-bind="itemSlotProps"
-            @focusin="() => onFocusInSuggestion(item.value)"
-            @focusout="onFocusOutSuggestion"
-            @mouseenter="() => onFocusInSuggestion(item.value)"
-            @mouseleave="onFocusOutSuggestion"
+            @click="() => onSelectItem(item)"
+            @focus="e => onFocusListItem(e, index)"
+            @mouseenter="e => onFocusListItem(e, index)"
           >
             <template #title>
               <span v-html="suggest(item)" />
@@ -64,14 +92,14 @@
           </v-list-item>
         </template>
         <template #selection="{item}">
-          {{ getUserLabel(item.value) }}
+          <span class="truncate-with-ellipsis">{{ getUserLabel(item.value) }}</span>
         </template>
       </v-autocomplete>
     </div>
     <div :class="{'col col-2 pl-0': inline}">
       <div
         v-if="required && !suppressValidation && errors && errors[0]"
-        :id="`${id}-error`"
+        :id="`${idPrefix}-error`"
         class="v-messages text-error px-3 mt-1"
         :class="theme.global.current.value.dark ? 'text--lighten-2' : ''"
         role="alert"
@@ -83,8 +111,11 @@
 </template>
 
 <script setup>
-import {debounce, delay, each, get, replace, size, split, trim} from 'lodash'
-import {onMounted, ref, watch} from 'vue'
+import {alertScreenReader, putFocusNextTick} from '@/lib/utils'
+import {debounce, delay, each, filter, get, includes, replace, size, split, trim} from 'lodash'
+import {mdiCloseCircle} from '@mdi/js'
+import {nextTick, onMounted, ref} from 'vue'
+import {pluralize} from '@/lib/utils'
 import {searchInstructors} from '@/api/instructor'
 import {searchUsers} from '@/api/user'
 import {useTheme} from 'vuetify'
@@ -99,8 +130,8 @@ const props = defineProps({
     required: false,
     type: Array
   },
-  id: {
-    default: 'input-person-lookup-autocomplete',
+  idPrefix: {
+    default: 'person-lookup',
     required: false,
     type: String
   },
@@ -127,6 +158,10 @@ const props = defineProps({
     required: false,
     type: String
   },
+  listLabel: {
+    required: true,
+    type: String
+  },
   onSelectResult: {
     default: () => {},
     required: false,
@@ -143,25 +178,34 @@ const props = defineProps({
   }
 })
 
+const container = ref()
 const debouncedSearch = ref(v => v)
 const errors = ref([])
-const mouseoverUid = ref(undefined)
+const focusedListItemIndex = ref(undefined)
 const isSearching = ref(false)
-const search = ref('')
+const resultsSummary = ref(undefined)
+const resultsSummaryInterval = ref(undefined)
+const query = ref(undefined)
+// const selected = defineModel('selected', {default: {}, type: Object})
 const selected = ref(undefined)
 const suggestions = ref([])
 const suppressValidation = ref(true)
 const theme = useTheme()
 
-watch(search, snippet => {
-  const trimmed = trim(snippet)
-  if (trimmed) {
-    isSearching.value = true
-    debouncedSearch.value(trimmed)
-  }
-})
-
 onMounted(() => {
+  const combobox = getComboboxElement()
+  if (combobox) {
+    combobox.removeAttribute('role')
+    combobox.removeAttribute('aria-expanded')
+  }
+  const input = getInputElement()
+  if (input) {
+    input.setAttribute('role', 'combobox')
+    input.setAttribute('aria-autocomplete', 'list')
+    input.setAttribute('aria-controls', `${props.idPrefix}-menu`)
+    input.setAttribute('aria-expanded', false)
+    input.setAttribute('aria-label', props.label)
+  }
   debouncedSearch.value = debounce(executeSearch, 300)
 })
 
@@ -189,29 +233,95 @@ const executeSearch = snippet => {
   }
 }
 
-const getUserLabel = user => `${user.firstName} ${user.lastName} (${user.uid})`
-
-const onFocusInSuggestion = user => mouseoverUid.value = user.uid
-
-const onFocusOutSuggestion = () => mouseoverUid.value = null
-
-const onUpdateModel = () => {
-  const user = get(selected.value, 'value')
-  validate(user)
-  if (!user) {
-    search.value = null
-  }
-  props.onSelectResult(user)
-  suggestions.value = []
+const getComboboxElement = () => {
+  const container = document.getElementById(`${props.idPrefix}-container`)
+  return container ? container.querySelector('[role=\'combobox\']') : null
 }
 
-const onHighlight = item => {
-  mouseoverUid.value = get(item.value, 'uid')
+const getInputElement = () => {
+  return document.getElementById(`${props.idPrefix}-input`)
+}
+
+const getUserLabel = user => `${user.firstName} ${user.lastName} (${user.uid})`
+
+const onClearInput = () => {
+  query.value = selected.value = null
+  suggestions.value = []
+  alertScreenReader('Cleared.')
+  putFocusNextTick(`${props.idPrefix}-input`)
+}
+
+
+const onFocusInput = isFocused => {
+  // Passing open-on-focus via menuProps (https://vuetifyjs.com/en/api/v-menu/#props-open-on-focus)
+  // doesn't seem to have an effect, thus this workaround.
+  if (props.openOnFocus && isFocused && !container.value.menu) {
+    container.value.menu = true
+  }
+}
+
+const onFocusListItem = (event, index) => {
+  const input = getInputElement()
+  input.setAttribute('aria-activedescendant', event.target.id)
+  focusedListItemIndex.value = index
+}
+
+const onSelectItem = item => {
+  selected.value = get(item.raw, 'value', item.raw)
+  validate(selected.value)
+  if (!selected.value) {
+    query.value = null
+  }
+  props.onSelectResult(selected.value)
+  suggestions.value = []
+  container.value.search = ''
+}
+
+const onToggleMenu = isOpen => {
+  nextTick(() => {
+    const input = getInputElement()
+    if (isOpen) {
+      const menu = document.getElementById(`${props.idPrefix}-menu`)
+      const listbox = menu && menu.querySelector('[role="listbox"]')
+      if (listbox) {
+        listbox.setAttribute('aria-label', props.listLabel)
+      }
+      input.setAttribute('aria-expanded', true)
+    } else {
+      input.setAttribute('aria-expanded', false)
+      input.removeAttribute('aria-activedescendant')
+      clearInterval(resultsSummaryInterval.value)
+    }
+  })
+}
+
+const onUpdateSearch = q => {
+  const trimmed = trim(q)
+  query.value = q
+  suppressValidation.value = false
+  if (trimmed) {
+    isSearching.value = true
+    debouncedSearch.value(trimmed)
+  }
+  clearInterval(resultsSummaryInterval.value)
+  resultsSummaryInterval.value = setInterval(setResultsSummary, 1000)
+}
+
+const setResultsSummary = () => {
+  const menuOverlay = document.getElementById(`${props.idPrefix}-menu`)
+  const listbox = menuOverlay && menuOverlay.querySelector('[role="listbox"]')
+  clearInterval(resultsSummaryInterval.value)
+  if (listbox) {
+    const suggestions = filter(listbox.children, child => includes(child.classList, 'v-list-item'))
+    resultsSummary.value = pluralize('result', suggestions.length)
+  } else {
+    resultsSummary.value = ''
+  }
 }
 
 const suggest = item => {
   let label = item.title
-  each(split(trim(search.value)), token => {
+  each(split(trim(query.value)), token => {
     label = replace(label, new RegExp(token, 'ig'), match => `<strong>${match}</strong>`)
   })
   return item.title
@@ -224,31 +334,37 @@ const validate = suggestion => {
 }
 </script>
 
-<style>
+<style scoped>
 .autocomplete-menu {
   z-index: 210 !important;
 }
 .person-lookup {
   overflow-x: clip;
 }
-.person-lookup .v-input__control {
+:deep(.person-lookup .v-autocomplete__selection) {
+  max-width: 110%;
+}
+:deep(.person-lookup .v-field) {
+  padding: 0 !important;
+}
+:deep(.person-lookup .v-field__clearable) {
   height: 38px;
+  max-height: 38px;
 }
-.person-lookup .v-select__selections,
-.person-lookup .v-select__selections input {
-  color: rgba(0, 0, 0, 0.87) !important;
+:deep(.person-lookup .v-field__input) {
+  height: 38px;
+  max-height: 38px;
+  padding-inline-start: 12px !important;
 }
-.person-lookup.v-input--is-focused {
-  appearance: auto !important;
-  caret-color: #000 !important;
-  color: -webkit-focus-ring-color !important;
-  outline: auto !important;
-  outline-color: -webkit-focus-ring-color !important;
-  outline-offset: 0px !important;
-  outline-style: auto !important;
+:deep(.person-lookup .v-field__loader) {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+  padding-right: 1px;
+  top: 0;
 }
-.person-lookup.v-input--is-focused fieldset {
-  border-color: unset !important;
-  border-width: 1px !important;
+:deep(.person-lookup .v-input__control) {
+  height: 38px;
 }
 </style>

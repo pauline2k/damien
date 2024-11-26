@@ -267,7 +267,7 @@
                   'pt-2': !evaluation.instructor && isEditing(evaluation) && allowEdits
                 }"
               >
-                <label :id="`evaluation-${rowIndex}-courseName`" :for="`evaluation-${rowIndex}-checkbox`">
+                <label :id="`evaluation-${rowIndex}-courseName`" :for="isEditing(evaluation) ? undefined : `evaluation-${rowIndex}-checkbox`">
                   {{ evaluation.subjectArea }}
                   {{ evaluation.catalogId }}
                   {{ evaluation.instructionFormat }}
@@ -296,22 +296,23 @@
                   :hover="[focusedEditButtonEvaluationId, hoverId].includes(evaluation.id)"
                   message="Instructor required"
                 />
-                <div v-if="!evaluation.instructor && isEditing(evaluation) && allowEdits">
+                <div v-if="!evaluation.instructor && isEditing(evaluation) && allowEdits" class="position-relative">
                   <PersonLookup
-                    id="input-instructor-lookup-autocomplete"
                     class="font-weight-regular instructor-lookup"
                     :disabled="isSaving"
+                    input-class="text-no-wrap overflow-hidden"
                     :instructor-lookup="true"
                     label="Instructor"
+                    list-label="Suggested Instructors List"
                     :on-select-result="selectInstructor"
                   />
-                  <div v-if="pendingInstructor">
-                    {{ pendingInstructor.firstName }}
-                    {{ pendingInstructor.lastName }}
-                    ({{ pendingInstructor.uid }})
-                  </div>
-                  <div v-if="pendingInstructor">
-                    {{ pendingInstructor.emailAddress }}
+                  <div v-if="pendingInstructor" class="position-absolute pt-1">
+                    <div>
+                      {{ pendingInstructor.firstName }} {{ pendingInstructor.lastName }} ({{ pendingInstructor.uid }})
+                    </div>
+                    <div>
+                      {{ pendingInstructor.emailAddress }}
+                    </div>
                   </div>
                 </div>
               </td>
@@ -1010,14 +1011,12 @@ tr.border-top-none td {
 .evaluation-search-input {
   max-width: 540px;
 }
-.evaluation-status {
-
-}
 .evaluation-type {
   min-width: 145px;
 }
 .instructor-lookup {
-  max-width: 168px !important;
+  max-width: 300px !important;
+  min-width: 168px !important;
 }
 .no-eligible-sections {
   font-size: 20px;
