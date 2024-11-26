@@ -39,15 +39,11 @@ def get_sftp_client():
             private_key = paramiko.RSAKey.from_private_key_file('config/damien_rsa')
             ssh_config = {
                 # Stick to older algorithms that Explorance's server understands.
-                'disabled_algorithms': {
-                    'pubkeys': [
-                        'rsa-sha2-256',
-                        'rsa-sha2-512',
-                    ],
-                    'kex': [
-                        'diffie-hellman-group-exchange-sha256',
-                    ],
-                },
+                'disabled_algorithms': {'pubkeys': [
+                    'rsa-sha2-256',
+                    'rsa-sha2-512',
+                    'diffie-hellman-group-exchange-sha256',
+                ]},
                 'hostname': app.config['SFTP_HOST'],
                 'username': app.config['SFTP_USER'],
                 'pkey': private_key,
