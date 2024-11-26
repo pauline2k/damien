@@ -40,6 +40,7 @@ def initialize_logger(app):
     loggers = [
         logging.getLogger(),
         logging.getLogger('ldap3'),
+        logging.getLogger('paramiko'),
     ]
 
     # Capture runtime warnings so that we'll see them.
