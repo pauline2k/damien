@@ -56,7 +56,7 @@
         <div class="d-flex justify-end pa-2">
           <v-btn
             id="sidebar-toggle-btn"
-            aria-hidden
+            :aria-hidden="true"
             class="px-0"
             color="primary-contrast"
             variant="tonal"
