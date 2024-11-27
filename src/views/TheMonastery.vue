@@ -35,7 +35,7 @@
             >
               <th
                 :id="`department-${deptIndex}-name`"
-                class="dept-name"
+                class="dept-name pl-6"
                 :class="{'bg-hovered': hoveredDept === department.id}"
                 rowspan="1"
                 scope="row"
@@ -65,7 +65,7 @@
               <th
                 v-if="contactIndex === 0"
                 :id="`department-${deptIndex}-name`"
-                class="dept-name"
+                class="dept-name pl-6"
                 :class="{'bg-hovered': hoveredDept === department.id}"
                 :rowspan="department.contacts.length"
                 scope="row"
