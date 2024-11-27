@@ -29,9 +29,15 @@
               <span class="sr-only">User profile for </span>{{ currentUser.firstName }}
             </v-btn>
           </template>
-          <v-list>
-            <v-list-item id="menu-item-log-out" link @click="logOut">
-              <v-list-item-title>Log Out</v-list-item-title>
+          <v-list density="comfortable">
+            <v-list-item
+              id="menu-item-log-out"
+              :append-icon="mdiLogout"
+              base-color="secondary"
+              link
+              @click="logOut"
+            >
+              <v-list-item-title class="font-weight-medium">Log Out</v-list-item-title>
             </v-list-item>
           </v-list>
         </v-menu>
@@ -135,6 +141,7 @@ import {
   mdiArrowExpandRight,
   mdiLightbulb,
   mdiListStatus,
+  mdiLogout,
   mdiPlaylistEdit
 } from '@mdi/js'
 import {useContextStore} from '@/stores/context'

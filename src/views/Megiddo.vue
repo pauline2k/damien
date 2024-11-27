@@ -10,7 +10,7 @@
         <TermSelect :after-select="refresh" />
       </v-col>
     </v-row>
-    <v-row>
+    <v-row v-if="!contextStore.loading">
       <v-col cols="auto" class="mr-auto">
         <div v-if="size(confirmed)">
           Rows confirmed for publication:
@@ -139,32 +139,31 @@ const onUpdateStatus = () => {
 const publish = () => {
   isExporting.value = true
   alertScreenReader('Publishing.')
-  exportEvaluations(useContextStore().selectedTermId).then(() => {
-    useContextStore().snackbarOpen('Publication has started and will run in the background.')
+  exportEvaluations(contextStore.selectedTermId).then(() => {
+    contextStore.snackbarOpen('Publication has started and will run in the background.')
     putFocusNextTick('publish-btn')
   })
 }
 
 const refresh = () => {
-  useContextStore().loadingStart()
-  alertScreenReader(`Loading ${useContextStore().selectedTermName}`)
-  Promise.all([getValidation(useContextStore().selectedTermId), getConfirmed(useContextStore().selectedTermId), getExports(useContextStore().selectedTermId)]).then(responses => {
+  contextStore.loadingStart()
+  alertScreenReader(`Loading ${contextStore.selectedTermName}`)
+  Promise.all([getValidation(contextStore.selectedTermId), getConfirmed(contextStore.selectedTermId), getExports(contextStore.selectedTermId)]).then(responses => {
     useDepartmentStore().setEvaluations(sortBy(responses[0], 'sortableCourseName'))
     confirmed.value = responses[1]
     termExports.value = responses[2]
-    useContextStore().loadingComplete(`Publish ${useContextStore().selectedTermName || ''}`)
+    contextStore.loadingComplete(`Publish ${contextStore.selectedTermName || ''}`)
   })
 }
 
 const updateStatus = () => {
   getExportStatus().then(response => {
     isExporting.value = false
-    if (isEmpty(response)) {
-      return false
-    }
-    const lastUpdate = DateTime.fromISO(response.updatedAt)
-    if (DateTime.now().diff(lastUpdate, ['hours']) < 1) {
-      showStatus(response)
+    if (!isEmpty(response)) {
+      const lastUpdate = DateTime.fromISO(response.updatedAt)
+      if (DateTime.now().diff(lastUpdate, ['hours']) < 1) {
+        showStatus(response)
+      }
     }
   }).finally(() => {
     nextTick(() => {
@@ -175,14 +174,14 @@ const updateStatus = () => {
 
 const showStatus = termExport => {
   const exportLabel = toLocaleFromISO(termExport.createdAt, dateFormat)
-  const term = find(useContextStore().config.availableTerms, {'id': termExport.termId})
+  const term = find(contextStore.config.availableTerms, {'id': termExport.termId})
   if (termExport.status === 'success') {
-    useContextStore().snackbarOpen(
+    contextStore.snackbarOpen(
       `Success! Publication of ${term.name} term export <b>${exportLabel || ''}</b> is complete.`,
       'success'
     )
   } else if (termExport.status === 'error') {
-    useContextStore().snackbarReportError(`Error: Publication of ${term.name} term export <b>${exportLabel || ''}</b> failed.`)
+    contextStore.snackbarReportError(`Error: Publication of ${term.name} term export <b>${exportLabel || ''}</b> failed.`)
   } else {
     isExporting.value = true
   }
