@@ -16,7 +16,7 @@ import {useTheme} from 'vuetify'
 import {mdiAlertCircle} from '@mdi/js'
 import {computed} from 'vue'
 
-defineProps({
+const props = defineProps({
   color: {
     default: 'error',
     required: false,
@@ -34,7 +34,7 @@ defineProps({
 
 const theme = useTheme()
 const shade = computed(() => {
-  return theme.global.current.value.dark && !this.hover ? 'lighten-3' : 'darken-1'
+  return theme.global.current.value.dark && !props.hover ? 'lighten-3' : 'darken-1'
 })
 </script>
 

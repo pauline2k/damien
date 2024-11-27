@@ -99,6 +99,7 @@ const model = computed({
   },
   set(termId) {
     contextStore.setSelectedTerm(termId)
+    props.afterSelect(termId)
   }
 })
 
@@ -131,7 +132,6 @@ const setTerm = termId => {
         contextStore.setIsSelectedTermLocked(data.isLocked === true)
       })
     }
-    props.afterSelect()
   })
 }
 

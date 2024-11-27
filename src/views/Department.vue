@@ -1,5 +1,5 @@
 <template>
-  <div class="page-margins">
+  <div v-if="!contextStore.loading" class="page-margins">
     <div class="align-center d-flex flex-wrap justify-space-between">
       <div>
         <h1
@@ -113,7 +113,7 @@
         </v-col>
       </v-row>
     </v-container>
-    <div v-if="!contextStore.loading" class="border-sm mt-3 position-relative">
+    <div class="border-sm mt-3 position-relative">
       <EvaluationTable />
     </div>
     <v-overlay :value="showTheOmenPoster" z-index="300">
@@ -180,7 +180,7 @@ watch(isCreatingNotification, () => {
   departmentStore.setDisableControls(isCreatingNotification.value)
 })
 
-onMounted(() => departmentStore.setShowTheOmenPoster(route.query.n === NUMBER_OF_THE_BEAST))
+onMounted(() => refresh())
 
 const afterSaveContact = () => {
   isAddingContact.value = false
@@ -219,6 +219,7 @@ const refresh = () => {
   alertScreenReader(`Loading ${contextStore.selectedTermName}`)
   const departmentId = get(route, 'params.departmentId')
   departmentStore.init(departmentId).then(department => {
+    departmentStore.setShowTheOmenPoster(route.query.n === NUMBER_OF_THE_BEAST)
     contextStore.loadingComplete(`${department.deptName} ${contextStore.selectedTermName}`)
   })
 }

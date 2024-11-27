@@ -93,7 +93,7 @@ const routes:RouteRecordRaw[] = [
       },
       {
         path: '/publish',
-          component: Megiddo,
+        component: Megiddo,
         meta: {
           title: 'Publish'
         }
