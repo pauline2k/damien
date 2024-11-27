@@ -1,16 +1,12 @@
 <template>
   <div class="page-margins">
-    <v-row no-gutters>
-      <v-col cols="9" class="d-flex align-center">
-        <h1 id="page-title" tabindex="-1">
-          Evaluation Status Dashboard - {{ contextStore.selectedTermName }}
-        </h1>
-      </v-col>
-      <v-col cols="3">
-        <TermSelect />
-      </v-col>
-    </v-row>
-    <v-card v-if="!contextStore.loading" class="mt-4">
+    <div class="align-center d-flex flex-wrap justify-space-between">
+      <h1 id="page-title" tabindex="-1">
+        Evaluation Status Dashboard &mdash;&nbsp;{{ contextStore.selectedTermName }}
+      </h1>
+      <TermSelect />
+    </div>
+    <v-card v-if="!contextStore.loading">
       <v-data-table
         id="department-table"
         density="compact"

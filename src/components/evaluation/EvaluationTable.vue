@@ -1,7 +1,7 @@
 <template>
   <div v-if="evaluations.length > 0">
     <div
-      class="bg-surface-variant elevation-2 sticky"
+      class="elevation-2"
       role="search"
     >
       <div class="align-start d-flex flex-wrap justify-start px-5 pt-3" :class="{'pb-2': readonly}">
@@ -121,6 +121,7 @@
       class="v-table-hidden-row-override pt-3"
       :custom-filter="customFilter"
       density="compact"
+      fixed-header
       :headers="evaluationHeaders"
       hide-default-footer
       :items="visibleEvaluations"

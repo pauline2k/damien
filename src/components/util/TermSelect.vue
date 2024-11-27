@@ -1,6 +1,6 @@
 <template>
-  <div class="d-flex align-center justify-end flex-wrap">
-    <div class="float-right mr-3">
+  <div class="align-center d-flex flex-wrap">
+    <div class="mr-3 pt-1">
       <label
         id="select-term-label"
         for="select-term"
@@ -11,8 +11,8 @@
       <select
         id="select-term"
         v-model="model"
-        class="native-select-override select-term my-2"
-        :class="currentThemeName"
+        class="font-size-18 native-select-override select-term my-2"
+        :class="selectMenuClass"
         :disabled="contextStore.loading"
         @change="onChangeTerm"
       >
@@ -20,14 +20,14 @@
           v-for="term in contextStore.config.availableTerms"
           :id="`term-option-${term.id}`"
           :key="term.id"
-          :value="term.id"
           :disabled="termIds && !includes(termIds, term.id)"
+          :value="term.id"
         >
           {{ term.name }}
         </option>
       </select>
     </div>
-    <div class="flex-md-shrink-0 mr-3">
+    <div>
       <label for="toggle-term-locked" class="sr-only">
         Evaluation term is {{ contextStore.isSelectedTermLocked ? 'locked' : 'unlocked' }}.
         Evaluation term is {{ contextStore.isSelectedTermLocked ? 'locked' : 'unlocked' }}.
@@ -47,11 +47,11 @@
         <v-progress-circular
           v-if="isTogglingLock"
           class="spinner"
+          color="primary"
           :indeterminate="true"
           rotate="5"
           size="24"
           width="4"
-          color="primary"
         />
         <v-icon
           v-if="!isTogglingLock"
@@ -66,10 +66,10 @@
 
 <script setup>
 import {alertScreenReader, putFocusNextTick} from '@/lib/utils'
+import {computed, onMounted, ref} from 'vue'
 import {find, includes} from 'lodash'
 import {getEvaluationTerm, lockEvaluationTerm, unlockEvaluationTerm} from '@/api/evaluationTerms'
 import {mdiLock, mdiLockOpen} from '@mdi/js'
-import {computed, onMounted, ref} from 'vue'
 import {useContextStore} from '@/stores/context'
 import {useRoute, useRouter} from 'vue-router'
 import {useTheme} from 'vuetify'
@@ -88,10 +88,17 @@ const props = defineProps({
 })
 
 const contextStore = useContextStore()
-const currentThemeName = useTheme().global.name
 const isTogglingLock = ref(false)
 const query = useRoute().query
 const router = useRouter()
+const theme = useTheme()
+
+const selectMenuClass = computed(() => {
+  const clazz = {}
+  clazz[theme.global.name] = true
+  clazz['bg-grey-lighten-3 text-grey'] = contextStore.loading
+  return clazz
+})
 
 const model = computed({
   get() {

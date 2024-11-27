@@ -1,17 +1,13 @@
 <template>
   <div class="page-margins">
-    <v-row no-gutters>
-      <v-col cols="8" class="d-flex align-center">
-        <h1 id="page-title" class="align-self-start" tabindex="-1">
-          Publish<span v-if="contextStore.selectedTermName"> - {{ contextStore.selectedTermName }}</span>
-        </h1>
-      </v-col>
-      <v-col cols="4">
-        <TermSelect :after-select="refresh" />
-      </v-col>
-    </v-row>
-    <v-row v-if="!contextStore.loading">
-      <v-col cols="auto" class="mr-auto">
+    <div class="align-center d-flex flex-wrap justify-space-between">
+      <h1 id="page-title" class="align-self-start" tabindex="-1">
+        Publish<span v-if="contextStore.selectedTermName"> &mdash;&nbsp;{{ contextStore.selectedTermName }}</span>
+      </h1>
+      <TermSelect :after-select="refresh" />
+    </div>
+    <div v-if="!contextStore.loading" class="align-start d-flex justify-space-between">
+      <div>
         <div v-if="size(confirmed)">
           Rows confirmed for publication:
           <ul id="confirmed-list" class="pl-4">
@@ -31,7 +27,7 @@
         </div>
         <v-btn
           id="publish-btn"
-          class="publish-btn align-self-end my-4 mr-2"
+          class="publish-btn align-self-end"
           color="secondary"
           :disabled="isExporting || contextStore.loading || !!size(blockers)"
           @click="publish"
@@ -61,20 +57,19 @@
           <v-icon :icon="mdiRefresh" />
           <span class="sr-only">Refresh</span>
         </v-btn>
-      </v-col>
-      <v-col cols="auto" class="pr-4 mb-2">
+      </div>
+      <div class="float-right mr-15">
         <v-expansion-panels
           v-model="exportsPanel"
           class="term-exports"
           :disabled="contextStore.loading"
-          flat
         >
-          <v-expansion-panel class="panel-override">
+          <v-expansion-panel class="border-sm panel-override">
             <v-expansion-panel-title id="term-exports-btn" class="term-exports-btn text-no-wrap">
               <h2 class="pr-2">Term Exports</h2>
             </v-expansion-panel-title>
             <v-expansion-panel-text>
-              <div v-if="isEmpty(termExports)" id="term-exports-no-data">There are no {{ selectedTermName }} exports.</div>
+              <div v-if="isEmpty(termExports)" id="term-exports-no-data">There are no {{ contextStore.selectedTermName }} exports.</div>
               <ul v-if="!isEmpty(termExports)" id="term-exports-list" class="pl-2">
                 <li v-for="(e, index) in termExports" :key="index">
                   <a
@@ -99,9 +94,9 @@
             </v-expansion-panel-text>
           </v-expansion-panel>
         </v-expansion-panels>
-      </v-col>
-    </v-row>
-    <v-card v-if="!contextStore.loading" outlined class="elevation-1">
+      </div>
+    </div>
+    <v-card v-if="!contextStore.loading">
       <EvaluationTable :readonly="true" />
     </v-card>
   </div>
@@ -193,9 +188,9 @@ const showStatus = termExport => {
   width: 8rem;
 }
 .term-exports {
-  width: 325px;
+  min-width: 325px;
 }
 .term-exports-btn {
-  width: 225px;
+  min-width: 225px;
 }
 </style>
