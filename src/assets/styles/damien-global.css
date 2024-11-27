@@ -105,7 +105,7 @@
   color: rgba(0, 0, 0, 0.87);
 }
 .page-margins {
-  padding: 8px;
+  margin: 14px;
 }
 .position-absolute {
   position: absolute !important;

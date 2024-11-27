@@ -7,17 +7,15 @@
           id="page-title"
           tabindex="-1"
         >
-          {{ department.deptName }}&MediumSpace;
+          {{ department.deptName }}
           <span v-if="size(getCatalogListings(department))">
-            ({{ getCatalogListings(department).join(', ') }})&MediumSpace;
+            ({{ getCatalogListings(department).join(', ') }})
           </span>
-          <span v-if="contextStore.selectedTermName" class="mr-2">&mdash;&nbsp;</span>
+          <span v-if="contextStore.selectedTermName" class="mr-2">&mdash;</span>
           {{ contextStore.selectedTermName }}
         </h1>
       </div>
-      <div class="text-no-wrap">
-        <TermSelect :after-select="refresh" :term-ids="get(department, 'enrolledTerms')" />
-      </div>
+      <TermSelect :after-select="refresh" :term-ids="get(department, 'enrolledTerms')" />
     </div>
     <v-container v-if="!contextStore.loading" class="mx-0 px-0 pb-2" fluid>
       <v-row justify="start">
