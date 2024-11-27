@@ -32,7 +32,7 @@
               class="select-all-evals align-center mt-0 pt-0"
               color="tertiary"
               density="compact"
-              :disabled="searchFilterResultLength === 0"
+              :disabled="!!searchFilterResults.length"
               :false-value="!someEvaluationsSelected && !allEvaluationsSelected"
               hide-details
               :indeterminate="someEvaluationsSelected"
@@ -114,6 +114,9 @@
     >
       <span v-if="searchFilter">{{ pluralize('evaluation', size(searchFilterResults.value)) }} displayed.</span>
     </div>
+    <pre>
+      {{ selectedEvaluationIds }}
+    </pre>
     <v-data-table
       id="evaluation-table"
       v-model:sort-by="sortBy"
@@ -129,8 +132,8 @@
       must-sort
       :search="searchFilter"
       :sort-by="sortBy"
-      @update:current-items="onChangeSearchFilter"
       @update:sort-by="onSort"
+      @update:current-items="onChangeSearchFilter"
     >
       <template #headers="{columns, isSorted, toggleSort, getSortIcon, sortBy: _sortBy}">
         <SortableTableHeader
@@ -175,8 +178,7 @@
                   :color="`${hoverId === evaluation.id ? 'primary' : 'tertiary'}`"
                   :disabled="editRowId === evaluation.id"
                   hide-details
-                  :value="evaluation"
-                  @update:model-value="departmentStore.toggleSelectEvaluation"
+                  @update:model-value="() => departmentStore.toggleSelectEvaluation(evaluation)"
                 />
               </td>
               <td
@@ -529,17 +531,14 @@
         <v-divider />
         <v-card-actions>
           <v-spacer />
-          <div class="d-flex pa-2">
-            <div class="mr-2">
-              <v-btn
-                id="error-dialog-ok-btn"
-                color="primary"
-                @click="dismissErrorDialog"
-                @keypress.enter.prevent="dismissErrorDialog"
-              >
-                OK
-              </v-btn>
-            </div>
+          <div class="pa-2">
+            <v-btn
+              id="error-dialog-ok-btn"
+              class="mr-2"
+              color="primary"
+              text="OK"
+              @click="dismissErrorDialog"
+            />
           </div>
         </v-card-actions>
       </v-card>
@@ -578,7 +577,7 @@ import SortableTableHeader from '@/components/util/SortableTableHeader'
 import {EVALUATION_STATUSES, useDepartmentStore} from '@/stores/department/department-edit-session'
 import {addInstructor} from '@/api/instructor'
 import {alertScreenReader, oxfordJoin, pluralize, putFocusNextTick, toFormatFromISO, toFormatFromJsDate, toLocaleFromISO} from '@/lib/utils'
-import {clone, cloneDeep, each, filter, find, get, includes, isEmpty, keys, pickBy, size, some} from 'lodash'
+import {clone, cloneDeep, each, filter, find, get, includes, isEmpty, keys, map, pickBy, size, some} from 'lodash'
 import {computed, nextTick, onMounted, ref, watch} from 'vue'
 import {mdiAlertCircle, mdiCheckCircle, mdiMagnify, mdiPlusCircle} from '@mdi/js'
 import {storeToRefs} from 'pinia'
@@ -619,9 +618,6 @@ const rules = {
 }
 const searchFilter = ref('')
 const searchFilterResults = ref([])
-const searchFilterResultLength = computed(() => {
-  return searchFilterResults.value.length
-})
 const selectedDepartmentForm = ref(undefined)
 const selectedEvaluationStatus = ref(undefined)
 const selectedEvaluationType = ref(undefined)
@@ -630,7 +626,7 @@ const selectedStartDate = ref(undefined)
 const sortBy = ref([{key: 'sortableCourseName', order: 'asc'}])
 
 const allEvaluationsSelected = computed(() => {
-  const selectedCount = size(selectedEvaluationIds)
+  const selectedCount = size(selectedEvaluationIds.value)
   return !!selectedCount && selectedCount === size(evaluations.value)
 })
 const allowEdits = computed(() => {
@@ -641,7 +637,7 @@ const rowValid = computed(() => {
   return selectedStartDate.value >= minStartDate(evaluation) && selectedStartDate.value <= evaluation.maxStartDate
 })
 const someEvaluationsSelected = computed(() => {
-  const selectedCount = size(selectedEvaluationIds)
+  const selectedCount = size(selectedEvaluationIds.value)
   return !!selectedCount && selectedCount < size(evaluations.value)
 })
 const visibleEvaluations = computed(() => {
@@ -794,12 +790,14 @@ const onCancelNonSisInstructor = () => {
 }
 
 const onChangeSearchFilter = filterResults => {
-  searchFilterResults.value = filterResults
-  if (size(selectedEvaluationIds)) {
-    departmentStore.filterSelectedEvaluations(searchFilterResults.value, selectedFilterTypes.value)
-  }
-  if (!some(searchFilterResults.value, {'id': editRowId.value})) {
-    editRowId.value = null
+  if (!contextStore.loading) {
+    searchFilterResults.value = map(filterResults, r => r.raw)
+    if (size(selectedEvaluationIds.value)) {
+      departmentStore.filterSelectedEvaluations(searchFilterResults.value, selectedFilterTypes.value)
+    }
+    if (!some(searchFilterResults.value, {'id': editRowId.value})) {
+      editRowId.value = null
+    }
   }
 }
 
@@ -846,8 +844,8 @@ const onProceedMarkAsDone = () => {
 }
 
 const onSort = () => {
-  const selectedEvalIds = cloneDeep(selectedEvaluationIds)
   nextTick(() => {
+    const selectedEvalIds = cloneDeep(selectedEvaluationIds.value)
     departmentStore.setSelectedEvaluationIds(selectedEvalIds)
   })
 }

@@ -272,26 +272,15 @@ export const useDepartmentStore = defineStore('department', {
       const evaluations = sortBy(updatedEvaluations, 'sortableCourseName')
       this.evaluations.splice(sectionIndex, sectionCount, ...evaluations)
     },
-    setIsSelected(evaluationId: any) {
-      const evaluation = find(this.evaluations, {'id': evaluationId})
-      if (evaluation) {
-        const index = indexOf(this.selectedEvaluationIds, evaluationId)
-        if (index === -1 && !evaluation.isSelected) {
-          evaluation.isSelected = true
-          this.selectedEvaluationIds.push(evaluationId)
-        } else {
-          evaluation.isSelected = false
-          this.selectedEvaluationIds.splice(index, 1)
-        }
+    setIsSelected(evaluation: any) {
+      const index = indexOf(this.selectedEvaluationIds, evaluation.id)
+      if (index === -1 && !evaluation.isSelected) {
+        evaluation.isSelected = true
+        this.selectedEvaluationIds.push(evaluation.id)
+      } else {
+        evaluation.isSelected = false
+        this.selectedEvaluationIds.splice(index, 1)
       }
-    },
-    setSelectedEvaluations(selectedEvaluationIds: any[]) {
-      this.selectedEvaluationIds = selectedEvaluationIds
-      each(this.evaluations, e => {
-        if (includes(selectedEvaluationIds, e.id)) {
-          e.isSelected = true
-        }
-      })
     },
     setShowTheOmenPoster(show: boolean) {
       // This easter-egg flag can only be enabled once.
@@ -304,7 +293,7 @@ export const useDepartmentStore = defineStore('department', {
       this.errorDialogText = text
     },
     toggleSelectEvaluation(evaluation: any) {
-      useDepartmentStore().setIsSelected(evaluation.id)
+      useDepartmentStore().setIsSelected(evaluation)
       const course = `${evaluation.subjectArea} ${evaluation.catalogId} ${evaluation.instructionFormat} ${evaluation.sectionNumber} (${evaluation.courseNumber})`
       const message = `${this.selectedEvaluationIds.includes(evaluation.id) ? '' : 'un'}selected ${course} evaluation`
       alertScreenReader(message)
