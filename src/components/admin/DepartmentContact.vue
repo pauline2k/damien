@@ -70,7 +70,7 @@
               <v-btn
                 :id="`edit-dept-contact-${contact.id}-btn`"
                 class="text-capitalize pa-0"
-                color="primary"
+                color="tertiary"
                 :disabled="disableControls"
                 height="unset"
                 min-width="unset"
@@ -88,7 +88,7 @@
               <v-btn
                 :id="`delete-dept-contact-${contact.id}-btn`"
                 class="text-capitalize pa-0"
-                color="primary"
+                color="tertiary"
                 :disabled="disableControls"
                 height="unset"
                 min-width="unset"
@@ -98,7 +98,6 @@
               />
               <ConfirmDialog
                 v-if="isConfirming"
-                :disabled="disableControls"
                 :on-click-cancel="onCancelDelete"
                 :on-click-confirm="onDelete"
                 :text="`Are you sure you want to remove ${fullName}?`"

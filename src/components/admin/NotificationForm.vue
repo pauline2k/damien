@@ -72,7 +72,7 @@
           dense
           :disabled="isSending"
           hide-details="auto"
-          outlined
+          variant="outlined"
           @keydown.esc="onCancel"
         />
         <div class="mt-2">

@@ -41,7 +41,7 @@
         return-object
         :search="query"
         theme="light"
-        variant="solo"
+        :variant="variant"
         @update:focused="onFocusInput"
         @update:menu="onToggleMenu"
         @update:search="onUpdateSearch"
@@ -174,6 +174,11 @@ const props = defineProps({
   required: {
     required: false,
     type: Boolean
+  },
+  variant: {
+    default: 'outlined',
+    required: false,
+    type: String
   }
 })
 

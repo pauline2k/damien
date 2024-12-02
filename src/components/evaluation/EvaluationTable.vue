@@ -313,6 +313,7 @@
                     label="Instructor"
                     list-label="Suggested Instructors List"
                     :on-select-result="selectInstructor"
+                    variant="solo"
                   />
                   <div v-if="pendingInstructor" class="position-absolute pt-1">
                     <div>

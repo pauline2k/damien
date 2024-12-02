@@ -22,7 +22,6 @@
         color="tertiary"
         :disabled="!isEditable"
         hide-details="auto"
-        outlined
         rows="3"
         variant="outlined"
         @keydown.esc="onCancelSave"
@@ -33,7 +32,7 @@
         id="edit-dept-note-btn"
         class="pr-0"
         :class="{'ml-3': !note}"
-        color="primary"
+        color="tertiary"
         :disabled="disableControls"
         slim
         variant="text"
@@ -45,7 +44,7 @@
       <v-btn
         v-if="note"
         id="delete-dept-note-btn"
-        color="primary"
+        color="tertiary"
         :disabled="disableControls"
         slim
         variant="text"
