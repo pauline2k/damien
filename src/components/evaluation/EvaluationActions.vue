@@ -28,15 +28,18 @@
       </div>
     </div>
     <UpdateEvaluations
+      key="0"
       action="Duplicate"
       :apply-action="onConfirmDuplicate"
       :cancel-action="onCancelDuplicate"
+      id-prefix="duplicate-evaluations"
       :is-applying="isApplying"
       :is-updating="isDuplicating"
       :midterm-form-available="midtermFormAvailable"
       v-bind="bulkUpdateOptions"
     />
     <UpdateEvaluations
+      key="1"
       action="Edit"
       :apply-action="onConfirmEdit"
       :cancel-action="onCancelEdit"
@@ -47,11 +50,7 @@
       <template #status="{status, on}">
         <v-row class="d-flex align-center" dense>
           <v-col cols="4">
-            <label
-              id="update-evaluations-select-status-label"
-              for="update-evaluations-select-status"
-              class="v-label"
-            >
+            <label for="update-evaluations-select-status" class="v-label">
               Status
             </label>
           </v-col>
@@ -72,11 +71,7 @@
       <template #form="{form, on}">
         <v-row class="d-flex align-center" dense>
           <v-col cols="4">
-            <label
-              id="update-evaluations-select-form-label"
-              for="update-evaluations-select-form"
-              class="v-label"
-            >
+            <label for="update-evaluations-select-form" class="v-label">
               Department Form
             </label>
           </v-col>
@@ -229,7 +224,7 @@ const onClickDuplicate = () => {
     })
   }
   isDuplicating.value = true
-  putFocusNextTick('update-evaluations-instructor-lookup-autocomplete')
+  putFocusNextTick('duplicate-evaluations-instructor-lookup-input')
 }
 
 const onClickEdit = () => {

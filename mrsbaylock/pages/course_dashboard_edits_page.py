@@ -101,11 +101,11 @@ class CourseDashboardEditsPage(CourseDashboards):
     IGNORE_BUTTON = (By.ID, 'apply-course-action-btn-ignore')
     DUPE_BUTTON = (By.ID, 'apply-course-action-btn-duplicate')
     EDIT_BUTTON = (By.ID, 'apply-course-action-btn-edit')
-    DUPE_SECTION_INSTR_INPUT = (By.ID, 'update-evaluations-instructor-lookup-autocomplete')
-    DUPE_EVAL_TYPE_SELECT = (By.ID, 'update-evaluations-select-type')
+    DUPE_SECTION_INSTR_INPUT = (By.ID, 'duplicate-evaluations-instructor-lookup-input')
+    DUPE_EVAL_TYPE_SELECT = (By.ID, 'duplicate-evaluations-select-type')
     DUPE_CXL_BUTTON = (By.ID, 'cancel-duplicate-btn')
-    USE_MIDTERM_FORM_CBX = (By.XPATH, '//label[text()="Use midterm department forms"]/preceding-sibling::div')
-    USE_START_DATE_INPUT = (By.ID, 'update-evaluations-start-date')
+    USE_MIDTERM_FORM_CBX = (By.ID, 'duplicate-evaluations-midterm-checkbox')
+    USE_START_DATE_INPUT = (By.ID, 'duplicate-evaluations-start-date')
     ACTION_APPLY_BUTTON = (By.XPATH, '//button[contains(., "Apply")]')
 
     def edit_button_is_enabled(self):

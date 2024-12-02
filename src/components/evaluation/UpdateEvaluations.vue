@@ -1,7 +1,7 @@
 <template>
   <v-dialog
     v-model="model"
-    aria-labelledby="update-evaluations-dialog-title"
+    :aria-labelledby="`${idPrefix}-dialog-title`"
     class="overflow-y-visible"
     width="800"
     v-bind="$attrs"
@@ -9,14 +9,14 @@
     @keydown.esc="onClickCancel"
   >
     <v-card>
-      <v-card-title id="update-evaluations-dialog-title" tabindex="-1">{{ action }} {{ selectedEvaluationsDescription }}</v-card-title>
+      <v-card-title :id="`${idPrefix}-dialog-title`" tabindex="-1">{{ action }} {{ selectedEvaluationsDescription }}</v-card-title>
       <v-card-text class="px-0 pb-0">
         <v-container class="px-8 pb-4">
           <slot name="status" :status="selectedEvaluationStatus" :on="{change: e => selectedEvaluationStatus = e.target.value}"></slot>
           <PersonLookup
             v-if="isObject(instructor)"
-            id="update-evaluations-instructor-lookup-autocomplete"
             :disabled="disableControls"
+            :id-prefix="`${idPrefix}-instructor-lookup`"
             :inline="true"
             input-class="bulk-action-form-input"
             :instructor-lookup="true"
@@ -30,6 +30,7 @@
             <v-col cols="4"></v-col>
             <v-col cols="8">
               <v-checkbox
+                :id="`${idPrefix}-midterm-checkbox`"
                 v-model="midtermFormEnabled"
                 class="bulk-action-form-input text-no-wrap my-1"
                 color="tertiary"
@@ -42,17 +43,13 @@
           <slot name="form" :form="selectedDepartmentForm" :on="{change: e => selectedDepartmentForm = toInteger(e.target.value)}"></slot>
           <v-row class="d-flex align-center" dense>
             <v-col cols="4">
-              <label
-                id="update-evaluations-select-type-label"
-                for="update-evaluations-select-type"
-                class="v-label d-block text-no-wrap py-1"
-              >
+              <label :for="`${idPrefix}-select-type`" class="v-label d-block text-no-wrap py-1">
                 Evaluation Type
               </label>
             </v-col>
             <v-col cols="8">
               <select
-                id="update-evaluations-select-type"
+                :id="`${idPrefix}-select-type`"
                 v-model="selectedEvaluationType"
                 class="native-select-override bulk-action-form-input light"
                 :disabled="disableControls"
@@ -64,7 +61,7 @@
           <v-row class="d-flex align-center" dense>
             <v-col cols="4">
               <label
-                for="update-evaluations-start-date"
+                :for="`${idPrefix}-start-date`"
                 class="v-label text-no-wrap"
                 :class="theme.global.current.value.dark ? 'theme--dark' : 'theme--light'"
               >
@@ -81,7 +78,7 @@
               >
                 <template #default="{ inputValue, inputEvents }">
                   <input
-                    id="update-evaluations-start-date"
+                    :id="`${idPrefix}-start-date`"
                     class="datepicker-input input-override light my-0"
                     :disabled="disableControls"
                     maxlength="10"
@@ -284,6 +281,11 @@ const props = defineProps({
     default: undefined,
     required: false,
     type: Number
+  },
+  idPrefix: {
+    default: 'update-evaluations',
+    required: false,
+    type: String
   },
   instructor: {
     default: undefined,
