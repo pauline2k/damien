@@ -16,18 +16,15 @@
           <PersonLookup
             v-if="isObject(instructor)"
             id="update-evaluations-instructor-lookup-autocomplete"
-            container-class="flex-row py-1"
             :disabled="disableControls"
             :inline="true"
             input-class="bulk-action-form-input"
             :instructor-lookup="true"
-            label="Instructor: "
+            label="Instructor"
             label-class="v-label d-flex text-no-wrap align-center"
+            list-label="Suggested Instructors List"
             :on-select-result="selectInstructor"
-            placeholder="Name or UID"
             :required="isInstructorRequired"
-            solo
-            :value="selectedInstructor"
           />
           <v-row v-if="midtermFormAvailable" class="d-flex align-center" dense>
             <v-col cols="4"></v-col>
@@ -50,7 +47,7 @@
                 for="update-evaluations-select-type"
                 class="v-label d-block text-no-wrap py-1"
               >
-                Evaluation Type:
+                Evaluation Type
               </label>
             </v-col>
             <v-col cols="8">
@@ -71,7 +68,7 @@
                 class="v-label text-no-wrap"
                 :class="theme.global.current.value.dark ? 'theme--dark' : 'theme--light'"
               >
-                Evaluation Start Date:
+                Evaluation Start Date
               </label>
             </v-col>
             <v-col cols="8">
@@ -475,7 +472,7 @@ const selectInstructor = suggestion => {
 
 <style>
 .bulk-action-form-input {
-  width: 250px
+  width: 250px !important;
 }
 .bulk-action-preview-table > div {
   margin-right: -15px !important;

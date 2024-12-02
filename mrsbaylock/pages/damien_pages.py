@@ -40,7 +40,7 @@ class DamienPages(Page):
     GRP_MGMT_LINK = (By.XPATH, '//div[contains(@id, "sidebar-link")][contains(., "Group Management")]')
     LIST_MGMT_LINK = (By.XPATH, '//div[contains(@id, "sidebar-link")][contains(., "List Management")]')
 
-    ADD_CONTACT_LOOKUP_INPUT = (By.ID, 'input-person-lookup-autocomplete')
+    ADD_CONTACT_LOOKUP_INPUT = (By.ID, 'person-lookup-input')
 
     MENU_BUTTON = (By.ID, 'btn-main-menu')
     LOG_OUT_LINK = (By.ID, 'menu-item-log-out')

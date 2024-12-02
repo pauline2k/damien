@@ -1,6 +1,6 @@
 <template>
-  <div :class="inline ? 'row d-flex align-center row--dense' : 'd-flex flex-column'">
-    <div :class="{'col col-4': inline}">
+  <div :class="inline ? 'v-row d-flex align-center v-row--dense' : 'd-flex flex-column'">
+    <div :class="{'v-col v-col-4': inline}">
       <label
         :id="`${idPrefix}-label`"
         :for="`${idPrefix}-input`"
@@ -9,7 +9,7 @@
         <span v-if="label">{{ label }}</span>
       </label>
     </div>
-    <div :id="`${idPrefix}-container`" :class="{'col col-6': inline}">
+    <div :id="`${idPrefix}-container`" :class="{'v-col v-col-6': inline}">
       <v-autocomplete
         :id="`${idPrefix}-input`"
         ref="container"
@@ -17,7 +17,7 @@
         :aria-disabled="disabled"
         :aria-labelledby="`${idPrefix}-label`"
         autocomplete="list"
-        class="person-lookup w-100"
+        class="person-lookup"
         :class="inputClass"
         clearable
         color="primary"
@@ -45,7 +45,6 @@
         @update:focused="onFocusInput"
         @update:menu="onToggleMenu"
         @update:search="onUpdateSearch"
-        @update:model-value="onUpdateModel"
       >
         <template #loader="{isActive}">
           <v-progress-circular
@@ -96,7 +95,7 @@
         </template>
       </v-autocomplete>
     </div>
-    <div :class="{'col col-2 pl-0': inline}">
+    <div :class="{'v-col v-col-2 pl-0': inline}">
       <div
         v-if="required && !suppressValidation && errors && errors[0]"
         :id="`${idPrefix}-error`"
@@ -340,6 +339,7 @@ const validate = suggestion => {
 }
 .person-lookup {
   overflow-x: clip;
+  width: 100%;
 }
 :deep(.person-lookup .v-autocomplete__selection) {
   max-width: 110%;
