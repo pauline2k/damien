@@ -25,6 +25,7 @@
             list-label="Suggested Instructors List"
             :on-select-result="selectInstructor"
             :required="isInstructorRequired"
+            variant="solo"
           />
           <v-row v-if="midtermFormAvailable" class="d-flex align-center" dense>
             <v-col cols="4"></v-col>

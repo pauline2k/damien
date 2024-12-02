@@ -24,7 +24,7 @@
             <v-expansion-panels v-model="contactsPanel" disable-icon-rotate flat>
               <v-expansion-panel class="panel-override">
                 <template #default>
-                  <div class="d-flex flex-wrap justify-space-between">
+                  <div class="d-flex align-center flex-wrap justify-space-between">
                     <h2 class="ml-2">Department Contacts</h2>
                     <v-expansion-panel-title
                       class="px-1 py-0 w-fit-content"
@@ -88,7 +88,7 @@
               <v-btn
                 v-if="!isAddingContact"
                 id="add-dept-contact-btn"
-                color="primary"
+                color="tertiary"
                 :disabled="disableControls"
                 :prepend-icon="mdiPlusThick"
                 text="Add Contact"

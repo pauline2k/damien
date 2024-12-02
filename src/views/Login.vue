@@ -4,7 +4,7 @@
     <v-main class="align-center d-flex flex-column h-100">
       <div class="my-auto">
         <v-slide-y-transition>
-          <v-card v-show="showCard" class="accent-border frosted mx-auto pb-9 pt-6 px-10" outlined>
+          <v-card v-show="showCard" class="accent-border frosted mx-auto pb-9 pt-6 px-10" variant="outlined">
             <v-card-text class="text-center">
               <h1 id="page-title" class="text-accent">
                 <strong>Welcome to Course Evaluations</strong>

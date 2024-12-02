@@ -26,7 +26,7 @@
             label="Course Number"
             :rules="[rules.courseNumber, rules.notPresent]"
             dense
-            outlined
+            variant="outlined"
             required
             @keydown.enter.prevent="lookupSection"
             @keydown.esc="onCancel"
@@ -55,7 +55,7 @@
             <v-btn
               id="lookup-course-number-cancel"
               class="text-capitalize"
-              outlined
+              variant="outlined"
               text="Cancel"
               @click="onCancel"
             />
@@ -85,7 +85,7 @@
             id="add-course-section-cancel"
             class="text-capitalize ml-1 mb-1"
             elevation="2"
-            outlined
+            variant="outlined"
             text="Cancel"
             @click="onCancel"
           />
