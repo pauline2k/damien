@@ -11,6 +11,8 @@
       <PersonLookup
         class="my-2"
         :exclude-uids="map(contacts, 'uid')"
+        label="Contact"
+        list-label="Suggested Contacts List"
         :on-select-result="onSelectSearchResult"
       />
     </div>
@@ -291,7 +293,7 @@ const populateForm = contact => {
     if (contact.canViewReports) {
       permissions.value = contact.canViewResponseRates.value ? 'response_rates' : 'reports_only'
     }
-    putFocusNextTick('input-person-lookup-autocomplete')
+    putFocusNextTick('person-lookup-input')
   } else {
     csid.value = null
     canReceiveCommunications.value = true

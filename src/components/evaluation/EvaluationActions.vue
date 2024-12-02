@@ -52,7 +52,7 @@
               for="update-evaluations-select-status"
               class="v-label"
             >
-              Status:
+              Status
             </label>
           </v-col>
           <v-col cols="8">
@@ -77,7 +77,7 @@
               for="update-evaluations-select-form"
               class="v-label"
             >
-              Department Form:
+              Department Form
             </label>
           </v-col>
           <v-col>
@@ -147,7 +147,7 @@ const allowEdits = computed(() => {
   return currentUser.isAdmin || !useContextStore().isSelectedTermLocked
 })
 const selectedEvaluations = computed(() => {
-  return _filter(evaluations.value, e => selectedEvaluationIds.includes(e.id))
+  return _filter(evaluations.value, e => selectedEvaluationIds.value.includes(e.id))
 })
 onMounted(() => {
   courseActions.value = {
