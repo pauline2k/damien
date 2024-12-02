@@ -1,7 +1,7 @@
 <template>
   <div v-if="evaluations.length > 0">
     <div
-      class="elevation-2"
+      class="bg-surface-variant elevation-2 sticky"
       role="search"
     >
       <div class="align-start d-flex flex-wrap justify-start px-5 pt-3" :class="{'pb-2': readonly}">
@@ -114,9 +114,6 @@
     >
       <span v-if="searchFilter">{{ pluralize('evaluation', size(searchFilterResults.value)) }} displayed.</span>
     </div>
-    <pre>
-      {{ selectedEvaluationIds }}
-    </pre>
     <v-data-table
       id="evaluation-table"
       v-model:sort-by="sortBy"
@@ -124,7 +121,6 @@
       class="v-table-hidden-row-override pt-3"
       :custom-filter="customFilter"
       density="compact"
-      fixed-header
       :headers="evaluationHeaders"
       hide-default-footer
       :items="visibleEvaluations"
