@@ -19,15 +19,15 @@
     </div>
     <v-container v-if="!contextStore.loading" class="mx-0 px-0 pb-2" fluid>
       <v-row justify="start">
-        <v-col cols="12" md="6" class="pr-1">
+        <v-col cols="12" md="6">
           <div class="border-sm h-100 pa-3">
-            <v-expansion-panels v-model="contactsPanel" disable-icon-rotate flat>
+            <v-expansion-panels v-model="contactsPanel" flat>
               <v-expansion-panel class="panel-override">
                 <template #default>
                   <div class="d-flex align-center flex-wrap justify-space-between">
                     <h2 class="ml-2">Department Contacts</h2>
                     <v-expansion-panel-title
-                      class="px-1 py-0 w-fit-content"
+                      class="pl-1 pr-2 py-0 w-fit-content"
                       hide-actions
                       @click="collapseAllContacts"
                     >
@@ -64,11 +64,11 @@
                       />
                     </v-expansion-panels>
                   </v-expansion-panel-text>
-                  <div v-if="contextStore.currentUser.isAdmin" class="pl-2">
+                  <div v-if="contextStore.currentUser.isAdmin" class="pt-2">
                     <v-btn
                       v-if="!isCreatingNotification"
                       id="open-notification-form-btn"
-                      class="secondary text-capitalize"
+                      class="secondary text-capitalize mx-6"
                       color="primary"
                       :disabled="disableControls || isEmpty(contacts)"
                       text="Send notification"
@@ -84,10 +84,11 @@
                 </template>
               </v-expansion-panel>
             </v-expansion-panels>
-            <div v-if="currentUser.isAdmin" class="pl-2 pt-3">
+            <div v-if="currentUser.isAdmin" class="px-2 pt-3">
               <v-btn
                 v-if="!isAddingContact"
                 id="add-dept-contact-btn"
+                class="mx-4"
                 color="tertiary"
                 :disabled="disableControls"
                 :prepend-icon="mdiPlusThick"
@@ -143,7 +144,7 @@ import EvaluationTable from '@/components/evaluation/EvaluationTable'
 import NotificationForm from '@/components/admin/NotificationForm'
 import TermSelect from '@/components/util/TermSelect'
 import {NUMBER_OF_THE_BEAST, useDepartmentStore} from '@/stores/department/department-edit-session'
-import {alertScreenReader, getCatalogListings, putFocusNextTick, scrollToTop} from '@/lib/utils'
+import {alertScreenReader, getCatalogListings, putFocusNextTick} from '@/lib/utils'
 import {computed, onMounted, ref, watch} from 'vue'
 import {filter as _filter, get, includes, isEmpty, size} from 'lodash'
 import {mdiClose, mdiMinusBoxMultipleOutline, mdiPlusBoxMultipleOutline, mdiPlusThick} from '@mdi/js'
@@ -195,8 +196,7 @@ const afterSendNotification = () => {
 
 const cancelSendNotification = () => {
   isCreatingNotification.value = false
-  alertScreenReader('Notification canceled.')
-  scrollToTop(1000)
+  alertScreenReader('Canceled notification.')
   putFocusNextTick('open-notification-form-btn')
 }
 

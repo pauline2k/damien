@@ -43,7 +43,7 @@
 .input-override {
   background-color: transparent !important;
   border-radius: 4px;
-  border: 1px solid #333;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   height: 40px;
   max-height: 40px;
   min-height: 40px;

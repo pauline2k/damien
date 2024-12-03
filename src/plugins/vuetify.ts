@@ -87,6 +87,7 @@ export default createVuetify({
   },
   defaults: {
     VBtn: {
+      flat: true,
       style: 'text-transform: none;',
     },
     VTextField: {

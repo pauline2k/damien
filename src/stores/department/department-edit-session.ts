@@ -20,7 +20,6 @@ import {
   indexOf,
   intersectionWith,
   isUndefined,
-  noop,
   reduce,
   reject,
   some,
@@ -157,8 +156,10 @@ export const useDepartmentStore = defineStore('department', {
     deleteContact(userId: number) {
       this.disableControls = true
       const departmentId = get(this.department, 'id', NaN)
-      return deleteContact(departmentId, userId).then(() => {
-        $_refresh(departmentId).then(noop)
+      return new Promise((resolve: Function) => {
+        deleteContact(departmentId, userId).then(() => {
+          $_refresh(departmentId).then(() => resolve())
+        })
       })
     },
     deselectAllEvaluations() {
