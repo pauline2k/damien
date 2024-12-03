@@ -151,10 +151,10 @@
                   </td>
                   <td :id="`preview-${index}-startDate`" class="bulk-action-startDate-col px-1">
                     <div v-if="evaluation.startDate" :class="{'text-decoration-line-through text-accent': action === 'Edit' && showSelectedStartDate(evaluation)}">
-                      {{ toLocaleFromISO(evaluation.startDate, 'LL/dd/yyyy') }}
+                      {{ DateTime.fromISO(new Date(evaluation.startDate).toISOString()).toFormat("MM/dd/yy") }}
                     </div>
                     <div v-if="action === 'Edit' && showSelectedStartDate(evaluation)">
-                      {{ toLocaleFromISO(selectedStartDate, 'LL/dd/yyyy') }}
+                      {{ DateTime.fromISO(new Date(selectedStartDate).toISOString()).toFormat("MM/dd/yy") }}
                     </div>
                   </td>
                 </tr>
@@ -190,7 +190,7 @@
                   </td>
                   <td :id="`preview-${index}-dupe-startDate`" class="bulk-action-startDate-col px-1">
                     <div>
-                      {{ toLocaleFromISO(selectedStartDate || evaluation.startDate, 'LL/dd/yyyy') }}
+                      {{ DateTime.fromISO(new Date(selectedStartDate || evaluation.startDate).toISOString()).toFormat("MM/dd/yy") }}
                     </div>
                   </td>
                 </tr>
@@ -251,9 +251,10 @@ import {addInstructor} from '@/api/instructor'
 import {computed, onMounted, ref, watch} from 'vue'
 import {endsWith, find, get, isEmpty, isObject, map, max, min, reduce, size, toInteger} from 'lodash'
 import {storeToRefs} from 'pinia'
-import {toLocaleFromISO, toFormatFromISO} from '@/lib/utils'
+import {toFormatFromISO} from '@/lib/utils'
 import {useContextStore} from '@/stores/context'
 import {useTheme} from 'vuetify'
+import {DateTime} from 'luxon'
 
 const props = defineProps({
   action: {
