@@ -52,7 +52,7 @@
               <select
                 :id="`${idPrefix}-select-type`"
                 v-model="selectedEvaluationType"
-                class="native-select-override bulk-action-form-input light"
+                class="bulk-action-form-input bg-white v-theme--light"
                 :disabled="disableControls"
               >
                 <option v-for="et in evaluationTypes" :key="et.id" :value="et.id">{{ et.name }}</option>
@@ -64,7 +64,6 @@
               <label
                 :for="`${idPrefix}-start-date`"
                 class="v-label text-no-wrap"
-                :class="theme.global.current.value.dark ? 'theme--dark' : 'theme--light'"
               >
                 Evaluation Start Date
               </label>
@@ -253,7 +252,6 @@ import {endsWith, find, get, isEmpty, isObject, map, max, min, reduce, size, toI
 import {storeToRefs} from 'pinia'
 import {toFormatFromISO} from '@/lib/utils'
 import {useContextStore} from '@/stores/context'
-import {useTheme} from 'vuetify'
 import {DateTime} from 'luxon'
 
 const props = defineProps({
@@ -334,7 +332,6 @@ const selectedEvaluationStatus = ref(undefined)
 const selectedEvaluationType = ref(undefined)
 const selectedInstructor = ref(undefined)
 const selectedStartDate = ref(undefined)
-const theme = useTheme()
 
 const allowEdits = computed(() => {
   const currentUser = useContextStore().currentUser

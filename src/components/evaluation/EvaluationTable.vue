@@ -220,7 +220,7 @@
                   <select
                     id="select-evaluation-status"
                     v-model="selectedEvaluationStatus"
-                    class="d-block light mx-auto native-select-override"
+                    class="d-block mx-auto bg-white v-theme--light w-99"
                     :disabled="isSaving"
                   >
                     <option
@@ -349,7 +349,7 @@
                   <select
                     id="select-department-form"
                     v-model="selectedDepartmentForm"
-                    class="native-select-override light"
+                    class="bg-white v-theme--light"
                     :disabled="isSaving"
                   >
                     <option v-for="df in departmentForms" :key="df.id" :value="df.id">{{ df.name }}</option>
@@ -384,7 +384,7 @@
                   <select
                     id="select-evaluation-type"
                     v-model="selectedEvaluationType"
-                    class="native-select-override light"
+                    class="bg-white v-theme--light"
                     :disabled="isSaving"
                   >
                     <option
@@ -433,6 +433,7 @@
                   <AccessibleDateInput
                     aria-label="Select Date"
                     container-id="input-evaluation-start-date"
+                    :disabled="isSaving"
                     :get-value="() => selectedStartDate"
                     id-prefix="search-options-from-date"
                     :min-date="minStartDate(evaluation)"
@@ -1046,6 +1047,9 @@ tr.border-top-none td {
   position: sticky;
   top: 60px;
   z-index: 10;
+}
+.w-99 {
+  width: 99%;
 }
 .xlisting-note {
   font-size: 0.8em;

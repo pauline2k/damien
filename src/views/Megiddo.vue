@@ -63,6 +63,7 @@
           v-model="exportsPanel"
           class="term-exports"
           :disabled="contextStore.loading"
+          flat
         >
           <v-expansion-panel class="border-sm panel-override">
             <v-expansion-panel-title id="term-exports-btn" class="term-exports-btn text-no-wrap">
@@ -123,12 +124,10 @@ const isExporting = ref(false)
 const isUpdatingStatus = ref(false)
 const termExports = ref([])
 
-onMounted(() => updateStatus())
+onMounted(() => refresh())
 
 const onUpdateStatus = () => {
-  isUpdatingStatus.value = true
-  updateStatus()
-  putFocusNextTick('status-btn')
+  updateStatus().then(() => putFocusNextTick('status-btn'))
 }
 
 const publish = () => {
@@ -143,7 +142,12 @@ const publish = () => {
 const refresh = () => {
   contextStore.loadingStart()
   alertScreenReader(`Loading ${contextStore.selectedTermName}`)
-  Promise.all([getValidation(contextStore.selectedTermId), getConfirmed(contextStore.selectedTermId), getExports(contextStore.selectedTermId)]).then(responses => {
+  Promise.all([
+    getValidation(contextStore.selectedTermId),
+    getConfirmed(contextStore.selectedTermId),
+    getExports(contextStore.selectedTermId),
+    updateStatus()
+  ]).then(responses => {
     useDepartmentStore().setEvaluations(sortBy(responses[0], 'sortableCourseName'))
     confirmed.value = responses[1]
     termExports.value = responses[2]
@@ -151,8 +155,10 @@ const refresh = () => {
   })
 }
 
-const updateStatus = () => {
-  getExportStatus().then(response => {
+const updateStatus = async () => {
+  isUpdatingStatus.value = true
+  try {
+    const response = await getExportStatus()
     isExporting.value = false
     if (!isEmpty(response)) {
       const lastUpdate = DateTime.fromISO(response.updatedAt)
@@ -160,11 +166,11 @@ const updateStatus = () => {
         showStatus(response)
       }
     }
-  }).finally(() => {
+  } finally {
     nextTick(() => {
       isUpdatingStatus.value = false
     })
-  })
+  }
 }
 
 const showStatus = termExport => {

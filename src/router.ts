@@ -1,4 +1,4 @@
-import {capitalize, get, size, trim} from 'lodash'
+import {capitalize, find, get, size, trim} from 'lodash'
 import auth from './auth'
 import BaseView from '@/views/BaseView.vue'
 import Department from '@/views/Department.vue'
@@ -10,7 +10,25 @@ import NotFound from '@/views/NotFound.vue'
 import StatusBoard from '@/views/StatusBoard.vue'
 import TheMonastery from '@/views/TheMonastery.vue'
 import {createRouter, createWebHistory, RouteRecordRaw} from 'vue-router'
+import {getEvaluationTerm} from '@/api/evaluationTerms'
 import {useContextStore} from '@/stores/context'
+
+const setTerm = (to: any, from: any, next: any) => {
+  const termId = get(to.query, 'term')
+  if (termId && find(useContextStore().config.availableTerms, {id: termId})) {
+    useContextStore().selectTerm(termId).then((term: any) => {
+      getEvaluationTerm(term.id).then(data => {
+        useContextStore().setIsSelectedTermLocked(data.isLocked === true)
+        next()
+      })
+    })
+  } else {
+    next({
+      path: to.path,
+      query: {...to.query, term: useContextStore().selectedTermId || useContextStore().config.currentTermId}
+    })
+  }
+}
 
 const beforeEnterDefaultRoute = (to: any, from: any, next: any) => {
   const currentUser = useContextStore().currentUser
@@ -72,7 +90,7 @@ const routes:RouteRecordRaw[] = [
       {
         path: '/department/:departmentId',
         component: Department,
-        beforeEnter: auth.requiresDepartmentMembership,
+        beforeEnter: [auth.requiresDepartmentMembership, setTerm],
         meta: {
           title: 'Department'
         }
@@ -94,6 +112,7 @@ const routes:RouteRecordRaw[] = [
       {
         path: '/publish',
         component: Megiddo,
+        beforeEnter: setTerm,
         meta: {
           title: 'Publish'
         }
@@ -108,6 +127,7 @@ const routes:RouteRecordRaw[] = [
       {
         path: '/status',
         component: StatusBoard,
+        beforeEnter: setTerm,
         meta: {
           title: 'Status Board'
         }
