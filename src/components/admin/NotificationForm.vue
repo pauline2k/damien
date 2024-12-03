@@ -1,46 +1,38 @@
 <template>
   <v-card class="modal-content bg-surface-light" flat>
-    <div v-if="isSending">
-      <v-progress-circular
-        class="spinner"
-        :indeterminate="true"
-        rotate="5"
-        size="64"
-        width="4"
-        color="secondary"
-      />
-    </div>
-    <v-card-title :class="isSending ? 'text-muted' : ''">
-      <h3
-        id="send-notification-section-header"
-        tabindex="-1"
-      >
+    <v-card-title :class="{'text-muted': isSending}">
+      <h3>
         Send Notification
       </h3>
     </v-card-title>
     <v-card-subtitle v-if="selectedRecipients">
-      <h4 class="font-size-16 mb-2">Message will be sent to:</h4>
+      <h4 id="notification-recipients-header" class="font-size-16 mb-2">Message will be sent to:</h4>
       <v-expansion-panels
+        id="notification-recipients-container"
+        aria-describedby="notification-recipients-header"
         class="recipients-container border-sm"
-        :disabled="isSending"
         hover
         multiple
+        tabindex="-1"
         tile
       >
         <v-expansion-panel
           v-for="(department, deptIndex) in selectedRecipients"
           :key="deptIndex"
         >
-          <v-expansion-panel-title class="border-sm">
-            <h5 :id="`dept-head-${deptIndex}`" class="font-size-14">{{ department.deptName }}</h5>
+          <v-expansion-panel-title :id="`notification-recipients-dept-${department.deptId}`" class="border-sm">
+            <h5 :id="`dept-head-${deptIndex}`" class="font-size-14">
+              {{ department.deptName }} <span class="sr-only">recipients</span>
+            </h5>
           </v-expansion-panel-title>
-          <v-expansion-panel-text>
+          <v-expansion-panel-text :aria-describedby="`notification-recipients-dept-${department.deptId}`">
             <div v-for="(recipient, index) in department.recipients" :key="index" class="d-flex flex-wrap pt-1">
-              <div class="align-center bg-green-accent-1 border-sm d-flex mb-1 pa-1 rounded-xl">
+              <div :id="`notification-recipient-${department.deptId}-${recipient.uid}`" class="align-center bg-green-accent-1 border-sm d-flex mb-1 pa-1 rounded-xl">
                 <div class="px-2 recipient">
                   {{ recipientLabel(recipient) }}
                 </div>
                 <v-btn
+                  :id="`notification-recipient-remove-${department.deptId}-${recipient.uid}-btn`"
                   :aria-label="`Remove ${recipientLabel(recipient)} from recipients`"
                   color="transparent"
                   density="compact"
@@ -94,14 +86,13 @@
     </v-card-text>
     <v-card-actions class="modal-footer">
       <div class="text-right w-100">
-        <v-btn
+        <ProgressButton
           id="send-notification-btn"
+          :action="sendNotification"
           class="mr-2"
-          color="primary"
           :disabled="disabled"
+          :in-progress="isSending"
           text="Send"
-          variant="flat"
-          @click="sendNotification"
         />
         <v-btn
           id="cancel-send-notification-btn"
@@ -116,6 +107,7 @@
 </template>
 
 <script setup>
+import ProgressButton from '@/components/util/ProgressButton'
 import {alertScreenReader, putFocusNextTick} from '@/lib/utils'
 import {cloneDeep, indexOf, size, trim} from 'lodash'
 import {computed, onMounted, ref} from 'vue'
@@ -151,8 +143,7 @@ const disabled = computed(() => {
 
 onMounted(() => {
   selectedRecipients.value = cloneDeep(props.recipients)
-  alertScreenReader('Send notification form is ready.')
-  putFocusNextTick('send-notification-section-header')
+  putFocusNextTick('notification-recipients-container')
 })
 
 const recipientLabel = recipient => `${recipient.firstName} ${recipient.lastName} (${recipient.email})`
@@ -165,7 +156,7 @@ const removeRecipient = (department, recipient, index) => {
   } else {
     selectedRecipients.value[indexOfDepartment].recipients.splice(index, 1)
   }
-  alertScreenReader(`Removed ${label} from list of recipients.`)
+  alertScreenReader(`Removed ${label} from recipients.`)
   return false
 }
 
@@ -193,17 +184,5 @@ const sendNotification = () => {
 .recipients-container {
   max-height: 180px;
   overflow-y: auto;
-}
-.spinner {
-  bottom: 0;
-  height: 2em;
-  left: 0;
-  margin: auto;
-  overflow: visible;
-  position: absolute;
-  right: 0;
-  top: 0;
-  width: 2em;
-  z-index: 999;
 }
 </style>

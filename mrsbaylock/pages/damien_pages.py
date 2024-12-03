@@ -144,7 +144,7 @@ class DamienPages(Page):
     NOTIF_BODY_INPUT = (By.ID, 'input-notification-message')
     NOTIF_SEND_BUTTON = (By.ID, 'send-notification-btn')
     NOTIF_CXL_BUTTON = (By.ID, 'cancel-send-notification-btn')
-    NOTIF_DEPT_RECIPIENT = (By.XPATH, '//h4[contains(@id, "dept-head-")]')
+    NOTIF_DEPT_RECIPIENT = (By.XPATH, '//h5[contains(@id, "dept-head-")]')
 
     def open_notif_form(self):
         self.wait_for_page_and_click_js(DamienPages.NOTIF_FORM_BUTTON)
@@ -154,7 +154,7 @@ class DamienPages(Page):
 
     @staticmethod
     def notif_expand_dept_xpath(dept):
-        return f'//h4[contains(@id, "dept-head-")][text()="{dept.name}"]/..'
+        return f'//h5[contains(@id, "dept-head-")][text()="{dept.name}"]/..'
 
     def notif_expand_dept_recipient_members(self, dept):
         app.logger.info(f'Expanding notification department {dept.name}')

@@ -6,7 +6,7 @@
     @keydown.esc="cancel"
   >
     <v-card>
-      <v-card-title id="confirm-dialog-title" tabindex="-1">
+      <v-card-title id="confirm-dialog-title">
         <div class="align-center d-flex pt-3 px-2">
           <div v-if="icon" class="pb-1 pr-2">
             <v-icon aria-label="Error icon" color="error">{{ icon }}</v-icon>
@@ -91,7 +91,7 @@ const props = defineProps({
 
 const model = ref(true)
 
-onMounted(() => putFocusNextTick('confirm-dialog-title'))
+onMounted(() => putFocusNextTick('confirm-dialog-btn'))
 
 const cancel = () => {
   model.value = false

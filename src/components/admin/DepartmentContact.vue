@@ -61,7 +61,7 @@
               v-if="currentUser.isAdmin"
               :id="`dept-contact-${contact.id}-actions`"
               class="pl-0"
-              color="transparent"
+              color="surface"
               dense
               flat
               height="unset"
@@ -71,16 +71,14 @@
                 :id="`edit-dept-contact-${contact.id}-btn`"
                 class="text-capitalize pa-0"
                 color="tertiary"
+                density="compact"
                 :disabled="disableControls"
-                height="unset"
-                min-width="unset"
                 text="Edit"
                 variant="text"
                 @click="() => isEditing = true"
               />
               <v-divider
-                class="mx-2"
-                color="black"
+                class="mx-1"
                 role="presentation"
                 thickness="2"
                 vertical
@@ -89,15 +87,15 @@
                 :id="`delete-dept-contact-${contact.id}-btn`"
                 class="text-capitalize pa-0"
                 color="tertiary"
+                density="compact"
                 :disabled="disableControls"
-                height="unset"
-                min-width="unset"
                 text="Delete"
                 variant="text"
                 @click.stop="() => isConfirming = true"
               />
               <ConfirmDialog
                 v-if="isConfirming"
+                :is-saving="isDeleting"
                 :on-click-cancel="onCancelDelete"
                 :on-click-confirm="onDelete"
                 :text="`Are you sure you want to remove ${fullName}?`"
@@ -153,11 +151,16 @@ const currentUser = contextStore.currentUser
 const departmentForms = computed(() => sortBy(props.contact.departmentForms, 'name'))
 const fullName = computed(() => `${props.contact.firstName} ${props.contact.lastName}`)
 const isConfirming = ref(false)
+const isDeleting = ref(false)
 const isEditing = ref(false)
 const theme = useTheme()
 
 watch(isConfirming, () => {
   departmentStore.setDisableControls(isConfirming.value)
+})
+
+watch(isDeleting, () => {
+  departmentStore.setDisableControls(isDeleting.value)
 })
 
 watch(isEditing, () => {
@@ -189,9 +192,11 @@ const onCancelEdit = () => {
 }
 
 const onDelete = () => {
+  isDeleting.value = true
   const nameOfDeleted = fullName.value
   departmentStore.deleteContact(props.contact.userId).then(() => {
     isConfirming.value = false
+    isDeleting.value = false
     alertScreenReader(`Deleted contact ${nameOfDeleted}.`)
     putFocusNextTick('add-dept-contact-btn')
   })
@@ -200,10 +205,7 @@ const onDelete = () => {
 
 <style scoped>
 .edit-contact-container {
-  border-radius: 4px;
-  border: 2px solid #eee;
-}
-.v-expansion-panel::before {
-   box-shadow: none !important;
+  border-radius: 0 0 4px 4px;
+  border: 2px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 </style>

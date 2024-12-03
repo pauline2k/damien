@@ -1,7 +1,8 @@
 <template>
   <v-form
     v-model="valid"
-    class="py-2"
+    class="px-5 py-4"
+    :class="{'bg-surface-variant': uid && !contact}"
     lazy-validation
   >
     <div v-if="!contact && !uid" class="w-75">
@@ -133,14 +134,13 @@
       </div>
     </div>
     <div class="pt-3">
-      <v-btn
+      <ProgressButton
         :id="`save-dept-contact-${contactId}-btn`"
+        :action="onSave"
         class="text-capitalize mr-2"
-        color="primary"
-        :disabled="!valid || !uid"
-        elevation="2"
+        :disabled="!valid || !uid || isSaving"
+        :in-progress="isSaving"
         text="Save"
-        @click.prevent="onSave"
       />
       <v-btn
         :id="`cancel-dept-contact-${contactId}-btn`"
@@ -155,6 +155,7 @@
 
 <script setup>
 import PersonLookup from '@/components/admin/PersonLookup'
+import ProgressButton from '@/components/util/ProgressButton'
 import {alertScreenReader, oxfordJoin, putFocusNextTick} from '@/lib/utils'
 import {cloneDeep, differenceBy, find, findIndex, get, isNil, map, sortBy} from 'lodash'
 import {computed, onMounted, ref, watch} from 'vue'
@@ -191,6 +192,7 @@ const emailRules = [
   v => /.+@.+\..+/.test(v) || 'E-mail must be valid'
 ]
 const firstName = ref(undefined)
+const isSaving = ref(false)
 const lastName = ref(undefined)
 const permissions = ref(undefined)
 const theme = useTheme()
@@ -254,6 +256,7 @@ const onChangeContactDepartmentForms = selectedValues => {
 }
 
 const onSave = () => {
+  isSaving.value = true
   alertScreenReader('Saving')
   departmentStore.updateContact({
     canReceiveCommunications: canReceiveCommunications.value,
@@ -266,13 +269,15 @@ const onSave = () => {
     lastName: lastName.value,
     uid: uid.value,
     userId: userId.value
-  }).then(props.afterSave)
+  }).then(() => {
+    props.afterSave()
+    isSaving.value = false
+  })
 }
 
 const onSelectSearchResult = user => {
   populateForm(user)
   alertScreenReader(`${user.firstName} ${user.lastName} selected`)
-  putFocusNextTick('contact-sub-header')
 }
 
 const populateForm = contact => {
