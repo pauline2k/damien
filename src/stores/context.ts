@@ -1,6 +1,6 @@
 import {alertScreenReader, putFocusNextTick} from '@/lib/utils'
 import {defineStore} from 'pinia'
-import {find,} from 'lodash'
+import {find} from 'lodash'
 
 export type CurrentUser = {
   departments: any[],
@@ -62,12 +62,14 @@ export const useContextStore = defineStore('context', {
       this.loading = true
     },
     selectTerm(termId: string|number) {
-      return new Promise<void>(resolve => {
+      return new Promise<void>((resolve, reject) => {
         const term = find(this.config.availableTerms, {'id': termId || this.config.currentTermId})
         if (term) {
           this.selectedTermId = term.id
           this.selectedTermName = term.name
-          resolve()
+          resolve(term)
+        } else {
+          reject()
         }
       })
     },
@@ -125,8 +127,3 @@ export const useContextStore = defineStore('context', {
     }
   }
 })
-
-
-// const mutations = {
-
-// }

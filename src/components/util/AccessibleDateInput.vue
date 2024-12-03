@@ -16,7 +16,7 @@
   >
     <template #default="{ inputValue, inputEvents }">
       <div
-        class="custom-text-field"
+        class="v-theme--light custom-text-field"
         :class="{ 'error--text': !isValid(inputValue), disabled: disabled }"
         :aria-invalid="!isValid(inputValue)"
       >
@@ -46,10 +46,11 @@
           @focusout="inputEvents.focusout"
         />
         <button
-          v-if="inputValue && !disabled"
+          v-if="inputValue"
           :id="`${idPrefix}-clear-btn`"
           :aria-label="`Clear ${ariaLabel}`"
           class="clear-button clear-icon"
+          :disabled="disabled"
           @click.stop.prevent="onClickClear($event, inputEvents)"
         >
           <v-icon :icon="mdiCloseCircleOutline"></v-icon>
@@ -310,39 +311,46 @@ const onInput = (event, inputEvents) => {
 
 <style scoped>
 .custom-text-field {
-  position: relative;
-  display: flex;
   align-items: center;
-  border-radius: 4px;
-  box-shadow: 0px 3px 1px -2px rgb(0 0 0 / 20%), 0px 2px 2px 0px rgb(0 0 0 / 14%), 0px 1px 5px 0px rgb(0 0 0 / 12%);
-  height: 38px;
-  padding: 0 12px;
   background-color: white;
+  display: flex;
+  padding: .375rem .75rem;
+  position: relative;
   transition: border-color 0.3s;
   width: 150px;
+  &:focus-within {
+    --v-field-border-width: 1.875px;
+    --v-field-border-opacity: 1;
+    outline: 0;
+  }
 }
 .custom-text-field input {
-  flex: 1;
+  background-color: transparent;
   border: none;
-  color-scheme: light;
-  height: inherit;
+  flex: 1;
   outline: none;
   padding: 8px 0;
-  font-size: 16px;
-  background-color: transparent;
   width: 100%;
+  &:disabled {
+    cursor: not-allowed;
+    opacity: var(--v-disabled-opacity);
+  }
 }
 .custom-text-field input::placeholder {
-  color: #aaa;
+  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
 }
 .custom-text-field .clear-button {
+  align-items: center;
   background: transparent;
   border: none;
   cursor: pointer;
-  padding: 4px;
   display: flex;
-  align-items: center;
   justify-content: center;
+  padding: 4px;
+  &:disabled {
+    cursor: not-allowed;
+    opacity: var(--v-disabled-opacity);
+  }
 }
 .custom-text-field .clear-icon {
   width: 20px;
@@ -350,21 +358,11 @@ const onInput = (event, inputEvents) => {
   color: #999; /* Icon color */
 }
 .custom-text-field.error--text {
-  border-color: red;
+  border-color: rgb(var(--v-theme-error));
 }
 .custom-text-field.disabled {
-  background-color: #f5f5f5;
   cursor: not-allowed;
-}
-.custom-text-field.disabled input {
-  background-color: #f5f5f5;
-  cursor: not-allowed;
-}
-.custom-text-field:hover {
-  border-color: #aaa;
-}
-.custom-text-field:focus-within {
-  border-color: #1976d2; /* Primary color on focus */
+  opacity: var(--v-disabled-opacity);
 }
 </style>
 

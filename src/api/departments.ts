@@ -16,11 +16,11 @@ export function getDepartment(departmentId: number, termId: string) {
 }
 
 export function getDepartmentsEnrolled(
-    includeContacts: boolean,
-    includeSections: boolean,
-    includeStatus: boolean,
-    termId: string
-  ) {
+  includeContacts: boolean,
+  includeSections: boolean,
+  includeStatus: boolean,
+  termId: string
+) {
   let url = `${getApiBaseUrl()}/api/departments/enrolled?c=${includeContacts ? 1 : 0}&s=${includeSections ? 1 : 0}&t=${includeStatus ? 1 : 0}`
   if (termId) {
     url = url + `&term_id=${termId}`

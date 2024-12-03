@@ -11,8 +11,7 @@
       <select
         id="select-term"
         v-model="model"
-        class="font-size-18 native-select-override select-term my-2"
-        :class="selectMenuClass"
+        class="font-size-18 select-term my-2"
         :disabled="contextStore.loading"
         @change="onChangeTerm"
       >
@@ -38,7 +37,6 @@
         :disabled="isTogglingLock || contextStore.loading"
         icon
         @click="toggleTermLocked"
-        @keydown.enter="toggleTermLocked"
       >
         <span class="sr-only">
           {{ isTogglingLock ? 'Toggling...' : (contextStore.isSelectedTermLocked ? 'Unlock' : 'Lock') }}
@@ -66,13 +64,12 @@
 
 <script setup>
 import {alertScreenReader, putFocusNextTick} from '@/lib/utils'
-import {computed, onMounted, ref} from 'vue'
-import {find, includes} from 'lodash'
-import {getEvaluationTerm, lockEvaluationTerm, unlockEvaluationTerm} from '@/api/evaluationTerms'
+import {computed, ref} from 'vue'
+import {includes} from 'lodash'
+import {lockEvaluationTerm, unlockEvaluationTerm} from '@/api/evaluationTerms'
 import {mdiLock, mdiLockOpen} from '@mdi/js'
 import {useContextStore} from '@/stores/context'
 import {useRoute, useRouter} from 'vue-router'
-import {useTheme} from 'vuetify'
 
 const props = defineProps({
   afterSelect: {
@@ -91,14 +88,6 @@ const contextStore = useContextStore()
 const isTogglingLock = ref(false)
 const query = useRoute().query
 const router = useRouter()
-const theme = useTheme()
-
-const selectMenuClass = computed(() => {
-  const clazz = {}
-  clazz[theme.global.name] = true
-  clazz['bg-grey-lighten-3 text-grey'] = contextStore.loading
-  return clazz
-})
 
 const model = computed({
   get() {
@@ -107,17 +96,6 @@ const model = computed({
   set(termId) {
     contextStore.setSelectedTerm(termId)
     props.afterSelect(termId)
-  }
-})
-
-onMounted(() => {
-  const termId = query.term
-  if (termId && find(contextStore.config.availableTerms, {id: termId})) {
-    setTerm(termId)
-  } else {
-    router.push({
-      query: {...query, term: contextStore.selectedTermId || contextStore.config.currentTermId}
-    })
   }
 })
 
@@ -132,28 +110,20 @@ const onChangeTerm = event => {
   }
 }
 
-const setTerm = termId => {
-  contextStore.selectTerm(termId).then(() => {
-    if (contextStore.selectedTermId) {
-      getEvaluationTerm(contextStore.selectedTermId).then(data => {
-        contextStore.setIsSelectedTermLocked(data.isLocked === true)
-      })
-    }
-  })
-}
-
 const toggleTermLocked = () => {
   isTogglingLock.value = true
   if (!contextStore.isSelectedTermLocked) {
     lockEvaluationTerm(contextStore.selectedTermId).then(data => {
       contextStore.setIsSelectedTermLocked(data.isLocked === true)
       alertScreenReader(`Locked ${contextStore.selectedTermName}`)
+      putFocusNextTick('toggle-term-locked')
       isTogglingLock.value = false
     })
   } else {
     unlockEvaluationTerm(contextStore.selectedTermId).then(data => {
       contextStore.setIsSelectedTermLocked(data.isLocked === true)
       alertScreenReader(`Unlocked ${contextStore.selectedTermName}`)
+      putFocusNextTick('toggle-term-locked')
       isTogglingLock.value = false
     })
   }
