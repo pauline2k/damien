@@ -35,15 +35,16 @@ export function validateDuplicable(evaluationIds: number[], fields: any) {
   return true
 }
 
-export function validateMarkAsDone(selectedEvaluations: any[]) {
-  let warningMessage
+export function validateMarkAsDone(selectedEvaluations: any[]): string | undefined {
+  let warningMessage: string | undefined = undefined
   const now = DateTime.now()
-  const evaluationsInProgress = filter(selectedEvaluations, e => now.isAfter(e.startDate))
+  const nowISODate = now.toISODate()
+  const evaluationsInProgress = filter(selectedEvaluations, e => nowISODate > e.startDate)
   if (evaluationsInProgress.length) {
     // Grab the first in-progress evaluation, to give the user an example of the problem.
     const e = evaluationsInProgress[0]
     const course = `${e.subjectArea} ${e.catalogId} ${e.instructionFormat} ${e.sectionNumber}`
-    let startDate = DateTime.fromISO(e.startDate)
+    let startDate: any = DateTime.fromISO(e.startDate)
     startDate = startDate.toFormat(startDate.year === now.year ? 'MMMM d' : 'DDD')
 
     if (evaluationsInProgress.length === 1) {
