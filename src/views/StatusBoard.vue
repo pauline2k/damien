@@ -132,15 +132,14 @@
     </v-card>
     <v-dialog
       v-model="isCreatingNotification"
-      aria-labelledby="send-notification-section-header"
-      min-width="600"
+      aria-labelledby="send-notification-header"
       persistent
-      scrollable
-      width="60%"
     >
       <NotificationForm
         v-if="isCreatingNotification"
         :after-send="afterSendNotification"
+        class="w-75"
+        :class="{'w-100': display.smAndDown.value}"
         :on-cancel="cancelSendNotification"
         :recipients="notificationRecipients"
       />
@@ -159,6 +158,7 @@ import {each, filter as _filter, get, includes, indexOf, isEmpty, kebabCase, map
 import {getDepartmentsEnrolled} from '@/api/departments'
 import {mdiCheckCircle} from '@mdi/js'
 import {useContextStore} from '@/stores/context'
+import {useDisplay} from 'vuetify'
 
 const contextStore = useContextStore()
 const blockers = ref({})
@@ -171,6 +171,7 @@ const departmentHeaders = [
   {key: 'totalConfirmed', class: 'px-2', headerProps: {width: '10%'}, sortable: true, title: 'Confirmed', value: 'totalConfirmed'},
   {key: 'note', class: 'px-2', headerProps: {width: '30%'}, sortable: true, title: 'Notes', value: 'note.note'}
 ]
+const display = useDisplay()
 const isCreatingNotification = ref(false)
 const selectedDepartmentIds = ref([])
 const sortBy = ref([{key: 'deptName', order: 'asc'}])

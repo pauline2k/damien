@@ -523,13 +523,12 @@
     <v-dialog
       id="error-dialog"
       v-model="errorDialog"
-      width="400"
       role="alertdialog"
       aria-labelledby="error-dialog-title"
       aria-describedby="error-dialog-text"
     >
-      <v-card>
-        <v-card-title id="error-dialog-title" tabindex="-1">Error</v-card-title>
+      <v-card class="modal-content" width="400">
+        <v-card-title id="error-dialog-title">Error</v-card-title>
         <v-card-text id="error-dialog-text" class="pt-3">{{ errorDialogText }}</v-card-text>
         <v-divider />
         <v-card-actions>
@@ -540,7 +539,8 @@
               class="mr-2"
               color="primary"
               text="OK"
-              @click="dismissErrorDialog"
+              variant="flat"
+              @click="departmentStore.dismissErrorDialog"
             />
           </div>
         </v-card-actions>
@@ -596,7 +596,7 @@ const props = defineProps({
 
 const contextStore = useContextStore()
 const departmentStore = useDepartmentStore()
-const {disableControls, dismissErrorDialog, errorDialog, errorDialogText, evaluations, selectedEvaluationIds} = storeToRefs(departmentStore)
+const {disableControls, errorDialog, errorDialogText, evaluations, selectedEvaluationIds} = storeToRefs(departmentStore)
 
 const departmentForms = ref([])
 const editRowId = ref(undefined)
@@ -645,6 +645,12 @@ const someEvaluationsSelected = computed(() => {
 })
 const visibleEvaluations = computed(() => {
   return filter(evaluations.value, isStatusFilterEnabled)
+})
+
+watch(errorDialog, isOpen => {
+  if (isOpen) {
+    putFocusNextTick('error-dialog-ok-btn')
+  }
 })
 
 watch(selectedFilterTypes, types => {

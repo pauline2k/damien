@@ -53,11 +53,7 @@
             role="checkbox"
             tabindex="0"
           />
-          <label
-            class="v-label ml-1"
-            :class="theme.global.current.value.dark ? 'theme--dark' : 'theme--light'"
-            :for="`checkbox-communications-${contactId}`"
-          >
+          <label class="v-label ml-1" :for="`checkbox-communications-${contactId}`">
             Receive notifications
           </label>
         </div>
@@ -162,7 +158,6 @@ import {computed, onMounted, ref, watch} from 'vue'
 import {getUserDepartmentForms} from '@/api/user'
 import {storeToRefs} from 'pinia'
 import {useDepartmentStore} from '@/stores/department/department-edit-session'
-import {useTheme} from 'vuetify'
 
 const props = defineProps({
   afterSave: {
@@ -195,7 +190,6 @@ const firstName = ref(undefined)
 const isSaving = ref(false)
 const lastName = ref(undefined)
 const permissions = ref(undefined)
-const theme = useTheme()
 const uid = ref(undefined)
 const userId = ref(undefined)
 const valid = ref(true)
