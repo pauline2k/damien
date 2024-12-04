@@ -14,6 +14,7 @@
         :headers="departmentHeaders"
         hide-default-footer
         :items="departments"
+        :items-per-page="-1"
         :loading="contextStore.loading || !contextStore.selectedTermId"
         must-sort
         :sort-by="sortBy"
