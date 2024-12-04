@@ -49,11 +49,11 @@
       color="secondary"
       permanent
       :rail="isSidebarCollapsed"
-      rail-width="50"
+      rail-width="56"
       role="navigation"
       :scrim="false"
       tag="nav"
-      width="150"
+      width="184"
     >
       <template #prepend>
         <h2 id="nav-header" class="sr-only" tabindex="-1">Main Menu</h2>
@@ -63,13 +63,13 @@
           <v-btn
             id="sidebar-toggle-btn"
             :aria-hidden="true"
-            class="px-0"
+            class="font-size-16 px-0"
             color="primary-contrast"
             variant="tonal"
-            min-width="34"
+            min-width="40"
             @click="toggleSidebarCollapsed"
           >
-            <v-icon :icon="isSidebarCollapsed ? mdiArrowExpandRight : mdiArrowCollapseLeft" />
+            <v-icon :icon="isSidebarCollapsed ? mdiArrowExpandRight : mdiArrowCollapseLeft" size="x-large" />
           </v-btn>
         </div>
       </template>
@@ -77,26 +77,37 @@
         v-for="(item, index) in navItems"
         :id="`sidebar-link-${index}`"
         :key="index"
-        class="text-primary-contrast py-4 px-3"
+        class="font-size-16 text-primary-contrast"
+        :class="{'py-4 px-3': isSidebarCollapsed, 'pa-4': !isSidebarCollapsed}"
         link
         role="link"
         @click="toRoute(item.path)"
       >
         <div class="align-center d-flex">
-          <v-icon :icon="item.icon" :title="isSidebarCollapsed ? item.title : undefined" />
-          <div class="ml-3 text-no-wrap" role="link">
+          <v-icon
+            :icon="item.icon"
+            size="x-large"
+            :title="isSidebarCollapsed ? item.title : undefined"
+          />
+          <div class="ml-4 text-no-wrap" role="link">
             {{ item.title }}
           </div>
         </div>
       </v-list-item>
       <v-list-item
         :id="`sidebar-link-${size(navItems)}`"
-        class="text-primary-contrast py-4 px-3"
+        class="text-primary-contrast"
+        :class="{'py-4 px-3': isSidebarCollapsed, 'pa-4': !isSidebarCollapsed}"
         @click="toggleColorScheme"
       >
         <div class="align-center d-flex">
-          <v-icon aria-label="Lightbulb icon" :icon="mdiLightbulb" />
-          <div class="ml-3 text-no-wrap" role="button">
+          <v-icon
+            aria-label="Lightbulb icon"
+            :icon="mdiLightbulb"
+            size="x-large"
+            :title="isSidebarCollapsed ? `${theme.global.current.value.dark ? 'Light' : 'Dark'} mode` : undefined"
+          />
+          <div class="font-size-16 ml-4 text-no-wrap" role="button">
             {{ theme.global.current.value.dark ? 'Light' : 'Dark' }} mode
           </div>
         </div>
