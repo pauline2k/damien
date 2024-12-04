@@ -1,11 +1,5 @@
 <template>
-  <v-expansion-panel
-    :id="`department-contact-${index}`"
-    :class="{
-      'theme--light v-sheet--outlined': isEditing && !theme.global.current.value.dark,
-      'theme--dark v-sheet--outlined': isEditing && theme.global.current.value.dark
-    }"
-  >
+  <v-expansion-panel :id="`department-contact-${index}`">
     <v-expansion-panel-title class="pa-2 rounded-b-0 height-unset">
       <div :id="`dept-contact-${contact.id}-name`" class="font-weight-bold">{{ fullName }}</div>
     </v-expansion-panel-title>
@@ -124,7 +118,6 @@ import {alertScreenReader, putFocusNextTick} from '@/lib/utils'
 import {sortBy} from 'lodash'
 import {useContextStore} from '@/stores/context'
 import {useDepartmentStore} from '@/stores/department/department-edit-session'
-import {useTheme} from 'vuetify'
 import {mdiCheckCircle, mdiMinusCircle} from '@mdi/js'
 import {storeToRefs} from 'pinia'
 
@@ -153,7 +146,6 @@ const fullName = computed(() => `${props.contact.firstName} ${props.contact.last
 const isConfirming = ref(false)
 const isDeleting = ref(false)
 const isEditing = ref(false)
-const theme = useTheme()
 
 watch(isConfirming, () => {
   departmentStore.setDisableControls(isConfirming.value)

@@ -15,7 +15,7 @@
         </v-banner>
       </template>
     </PageHeader>
-    <v-container class="pa-0 mx-0" fluid>
+    <v-container v-if="!contextStore.loading" class="pa-0 mx-0" fluid>
       <v-row>
         <v-col cols="12" md="6" lg="3">
           <v-card

@@ -1,7 +1,11 @@
 <template>
-  <v-card class="modal-content bg-surface-light" flat>
+  <v-card
+    class="modal-content bg-surface-light"
+    flat
+    min-width="400px"
+  >
     <v-card-title :class="{'text-muted': isSending}">
-      <h3>
+      <h3 id="send-notification-header">
         Send Notification
       </h3>
     </v-card-title>

@@ -10,7 +10,7 @@
         <TermSelect after-select="refresh" :term-ids="get(department, 'enrolledTerms')" />
       </template>
     </PageHeader>
-    <v-container v-if="!contextStore.loading" class="mx-0 pb-2 pt-1 px-0" fluid>
+    <v-container class="mx-0 pb-2 pt-1 px-0" fluid>
       <v-row justify="start">
         <v-col cols="12" md="6">
           <div class="border-sm h-100 pa-3">
