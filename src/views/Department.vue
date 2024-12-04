@@ -7,7 +7,7 @@
         <span v-if="contextStore.selectedTermName" class="mr-2">&mdash;{{ contextStore.selectedTermName }}</span>
       </span>
       <template #append>
-        <TermSelect after-select="refresh" :term-ids="get(department, 'enrolledTerms')" />
+        <TermSelect :after-select="refresh" :term-ids="get(department, 'enrolledTerms')" />
       </template>
     </PageHeader>
     <v-container class="mx-0 pb-2 pt-1 px-0" fluid>
