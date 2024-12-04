@@ -1,6 +1,6 @@
 <template>
   <div class="align-center d-flex flex-wrap">
-    <div class="mr-3 pt-1">
+    <div class="mr-3">
       <label
         id="select-term-label"
         for="select-term"

@@ -1,11 +1,11 @@
 <template>
   <div class="page-margins">
-    <div class="align-center d-flex flex-wrap justify-space-between">
-      <h1 id="page-title" class="align-self-start" tabindex="-1">
-        Publish<span v-if="contextStore.selectedTermName"> &mdash;&nbsp;{{ contextStore.selectedTermName }}</span>
-      </h1>
-      <TermSelect :after-select="refresh" />
-    </div>
+    <PageHeader>
+      Publish<span v-if="contextStore.selectedTermName"> &mdash;&nbsp;{{ contextStore.selectedTermName }}</span>
+      <template #append>
+        <TermSelect :after-select="refresh" />
+      </template>
+    </PageHeader>
     <div v-if="!contextStore.loading" class="align-start d-flex justify-space-between">
       <div>
         <div v-if="size(confirmed)">
@@ -105,6 +105,7 @@
 
 <script setup>
 import EvaluationTable from '@/components/evaluation/EvaluationTable'
+import PageHeader from '@/components/util/PageHeader'
 import TermSelect from '@/components/util/TermSelect'
 import {DateTime} from 'luxon'
 import {alertScreenReader, putFocusNextTick, toLocaleFromISO} from '@/lib/utils'
