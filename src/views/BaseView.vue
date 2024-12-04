@@ -77,6 +77,7 @@
         v-for="(item, index) in navItems"
         :id="`sidebar-link-${index}`"
         :key="index"
+        :aria-current="startsWith(route.path, item.path) ? 'page' : null"
         class="font-size-16"
         :class="{
           'py-4 px-3': isSidebarCollapsed,
