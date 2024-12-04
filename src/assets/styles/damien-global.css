@@ -94,6 +94,9 @@
   margin: auto auto 24px auto !important;
   padding: 16px 6px 18px !important;
 }
+.modal-content .v-card-title {
+  font-size: 24px;
+}
 .modal-footer {
   padding: 0 24px !important;
 }

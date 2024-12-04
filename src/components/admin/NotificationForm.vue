@@ -61,7 +61,7 @@
           v-model="subject"
           class="bg-surface my-1"
           color="tertiary"
-          dense
+          density="compact"
           :disabled="isSending"
           hide-details="auto"
           variant="outlined"

@@ -62,7 +62,7 @@
               :id="`dept-contact-${contact.id}-actions`"
               class="pl-0"
               color="surface"
-              dense
+              density="compact"
               flat
               height="unset"
               tag="div"
