@@ -1,11 +1,11 @@
 <template>
   <div class="page-margins">
-    <div class="align-center d-flex flex-wrap justify-space-between">
-      <h1 id="page-title" tabindex="-1">
-        Evaluation Status Dashboard &mdash;&nbsp;{{ contextStore.selectedTermName }}
-      </h1>
-      <TermSelect />
-    </div>
+    <PageHeader>
+      Evaluation Status Dashboard &mdash;&nbsp;{{ contextStore.selectedTermName }}
+      <template #append>
+        <TermSelect />
+      </template>
+    </PageHeader>
     <v-card v-if="!contextStore.loading">
       <v-data-table
         id="department-table"
@@ -150,6 +150,7 @@
 
 <script setup>
 import NotificationForm from '@/components/admin/NotificationForm'
+import PageHeader from '@/components/util/PageHeader'
 import SortableTableHeader from '@/components/util/SortableTableHeader'
 import TermSelect from '@/components/util/TermSelect'
 import {alertScreenReader, getCatalogListings, putFocusNextTick, toLocaleFromISO} from '@/lib/utils'

@@ -1,22 +1,15 @@
 <template>
   <div v-if="!contextStore.loading" class="page-margins">
-    <div class="align-center d-flex flex-wrap justify-space-between">
-      <div>
-        <h1
-          v-if="get(department, 'deptName')"
-          id="page-title"
-          tabindex="-1"
-        >
-          {{ department.deptName }}
-          <span v-if="size(getCatalogListings(department))">
-            ({{ getCatalogListings(department).join(', ') }})
-          </span>
-          <span v-if="contextStore.selectedTermName" class="mr-2">&mdash;</span>
-          {{ contextStore.selectedTermName }}
-        </h1>
-      </div>
-      <TermSelect :after-select="refresh" :term-ids="get(department, 'enrolledTerms')" />
-    </div>
+    <PageHeader>
+      <span v-if="get(department, 'deptName')">
+        {{ department.deptName }}
+        <span v-if="size(getCatalogListings(department))">({{ getCatalogListings(department).join(', ') }})</span>
+        <span v-if="contextStore.selectedTermName" class="mr-2">&mdash;{{ contextStore.selectedTermName }}</span>
+      </span>
+      <template #append>
+        <TermSelect after-select="refresh" :term-ids="get(department, 'enrolledTerms')" />
+      </template>
+    </PageHeader>
     <v-container v-if="!contextStore.loading" class="mx-0 pb-2 pt-1 px-0" fluid>
       <v-row justify="start">
         <v-col cols="12" md="6">
@@ -142,6 +135,7 @@ import DepartmentNote from '@/components/admin/DepartmentNote'
 import EditDepartmentContact from '@/components/admin/EditDepartmentContact'
 import EvaluationTable from '@/components/evaluation/EvaluationTable'
 import NotificationForm from '@/components/admin/NotificationForm'
+import PageHeader from '@/components/util/PageHeader'
 import TermSelect from '@/components/util/TermSelect'
 import {NUMBER_OF_THE_BEAST, useDepartmentStore} from '@/stores/department/department-edit-session'
 import {alertScreenReader, getCatalogListings, putFocusNextTick} from '@/lib/utils'

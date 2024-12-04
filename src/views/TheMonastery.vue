@@ -1,17 +1,20 @@
 <template>
   <div class="page-margins">
-    <div class="pb-2 d-flex">
-      <h1 id="page-title" tabindex="-1">Departments</h1>
-      <v-spacer class="d-flex justify-center"></v-spacer>
-      <v-banner
-        v-if="config.isVueAppDebugMode && config.easterEggMonastery && theme.current.dark"
-        shaped
-        single-line
-        class="pr-4 my-auto"
-      >
-        Welcome to <a :href="config.easterEggMonastery" target="_blank">The Monastery</a>
-      </v-banner>
-    </div>
+    <PageHeader>
+      Departments
+      <template #append>
+        <v-banner
+          v-if="config.isVueAppDebugMode && config.easterEggMonastery && theme.current.value.dark"
+          border="sm"
+          class="text-no-wrap"
+          single-line
+          max-width="13rem"
+          min-width="13rem"
+        >
+          Welcome to&nbsp;<a :href="config.easterEggMonastery" target="_blank">The Monastery</a>
+        </v-banner>
+      </template>
+    </PageHeader>
     <v-card v-if="!contextStore.loading">
       <v-data-table
         id="department-table"
@@ -118,6 +121,7 @@
 
 <script setup>
 import BooleanIcon from '@/components/util/BooleanIcon'
+import PageHeader from '@/components/util/PageHeader'
 import {getCatalogListings} from '@/lib/utils'
 import {getDepartmentsEnrolled} from '@/api/departments'
 import {isEmpty, size} from 'lodash'

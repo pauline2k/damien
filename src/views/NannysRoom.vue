@@ -1,18 +1,20 @@
 <template>
   <div class="page-margins pb-6">
-    <div class="d-flex pl-2 py-3">
-      <h1 id="page-title" tabindex="-1">
-        Settings
-      </h1>
-      <v-banner
-        v-if="config.isVueAppDebugMode && config.easterEggMonastery && theme.current.dark"
-        class="pr-4 my-auto"
-        shaped
-        single-line
-      >
-        <a :href="config.easterEggNannysRoom" target="_blank">The Nanny's Room</a>
-      </v-banner>
-    </div>
+    <PageHeader>
+      Settings
+      <template #append>
+        <v-banner
+          v-if="config.isVueAppDebugMode && config.easterEggMonastery && theme.current.value.dark"
+          border="sm"
+          class="text-no-wrap"
+          single-line
+          max-width="14.5rem"
+          min-width="14.5rem"
+        >
+          Welcome to&nbsp;<a :href="config.easterEggNannysRoom" target="_blank">The Nanny's Room</a>
+        </v-banner>
+      </template>
+    </PageHeader>
     <v-container class="pa-0 mx-0" fluid>
       <v-row>
         <v-col cols="12" md="6" lg="3">
@@ -447,6 +449,7 @@
 <script setup>
 import ConfirmDialog from '@/components/util/ConfirmDialog'
 import EditServiceAnnouncement from '@/components/admin/EditServiceAnnouncement'
+import PageHeader from '@/components/util/PageHeader'
 import ProgressButton from '@/components/util/ProgressButton.vue'
 import SortableTableHeader from '@/components/util/SortableTableHeader'
 import {alertScreenReader, putFocusNextTick} from '@/lib/utils'
