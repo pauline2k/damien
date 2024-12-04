@@ -143,10 +143,10 @@
                   </td>
                   <td :id="`preview-${index}-startDate`" class="bulk-action-startDate-col pa-1">
                     <div v-if="evaluation.startDate" :class="{'text-decoration-line-through text-accent': action === 'Edit' && showSelectedStartDate(evaluation)}">
-                      {{ DateTime.fromISO(new Date(evaluation.startDate).toISOString()).toFormat("MM/dd/yy") }}
+                      {{ DateTime.fromJSDate(evaluation.startDate).toFormat('MM/dd/yy') }}
                     </div>
                     <div v-if="action === 'Edit' && showSelectedStartDate(evaluation)">
-                      {{ DateTime.fromISO(new Date(selectedStartDate).toISOString()).toFormat("MM/dd/yy") }}
+                      {{ DateTime.fromJSDate(selectedStartDate).toFormat('MM/dd/yy') }}
                     </div>
                   </td>
                 </tr>
