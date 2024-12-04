@@ -289,7 +289,7 @@
               <td
                 :id="`evaluation-${rowIndex}-instructor`"
                 class="evaluation-instructor px-1"
-                :class="{'font-weight-bold py-2': isEditing(evaluation)}"
+                :class="{'font-weight-bold py-2': isEditing(evaluation), 'align-middle': !isEditing(evaluation)}"
               >
                 <div v-if="evaluation.instructor">
                   {{ evaluation.instructor.firstName }}

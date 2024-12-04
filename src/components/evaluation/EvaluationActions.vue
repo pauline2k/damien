@@ -112,10 +112,10 @@ import {chain, each, every, filter as _filter, get, has, includes, map, uniq} fr
 import {computed, onMounted, ref} from 'vue'
 import {mdiAlertCircle} from '@mdi/js'
 import {storeToRefs} from 'pinia'
-import {toFormatFromISO} from '@/lib/utils'
 import {updateEvaluations} from '@/api/departments'
 import {useContextStore} from '@/stores/context'
 import {validateConfirmable, validateDuplicable, validateMarkAsDone} from '@/stores/department/utils'
+import {DateTime} from 'luxon'
 
 const departmentStore = useDepartmentStore()
 const {activeDepartmentForms, department, disableControls, evaluations, selectedEvaluationIds} = storeToRefs(departmentStore)
@@ -300,7 +300,7 @@ const getEvaluationFieldsForUpdate = key => {
       fields.instructorUid = get(bulkUpdateOptions.value.instructor, 'uid')
     }
     if (bulkUpdateOptions.value.startDate) {
-      fields.startDate = toFormatFromISO(bulkUpdateOptions.value.startDate, 'y-LL-dd')
+      fields.startDate = DateTime.fromJSDate(bulkUpdateOptions.value.startDate).toFormat('yyyy-MM-dd')
     }
     if (key === 'duplicate') {
       if (bulkUpdateOptions.value.midtermFormEnabled) {
