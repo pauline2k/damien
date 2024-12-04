@@ -53,7 +53,7 @@
       role="navigation"
       :scrim="false"
       tag="nav"
-      width="184"
+      width="220"
     >
       <template #prepend>
         <h2 id="nav-header" class="sr-only" tabindex="-1">Main Menu</h2>
@@ -77,37 +77,48 @@
         v-for="(item, index) in navItems"
         :id="`sidebar-link-${index}`"
         :key="index"
-        class="font-size-16 text-primary-contrast"
-        :class="{'py-4 px-3': isSidebarCollapsed, 'pa-4': !isSidebarCollapsed}"
+        class="font-size-16"
+        :class="{
+          'py-4 px-3': isSidebarCollapsed,
+          'pa-4': !isSidebarCollapsed,
+          'bg-selected-nav-item': startsWith(route.path, item.path)
+        }"
+        :elevation="startsWith(route.path, item.path) ? 2 : 0"
         link
         role="link"
         @click="toRoute(item.path)"
       >
         <div class="align-center d-flex">
           <v-icon
+            :class="startsWith(route.path, item.path) ? 'text-white' : 'text-primary-contrast'"
             :icon="item.icon"
             size="x-large"
             :title="isSidebarCollapsed ? item.title : undefined"
           />
-          <div class="ml-4 text-no-wrap" role="link">
+          <div
+            class="ml-4 nav-drawer-letter-spacing text-no-wrap"
+            :class="startsWith(route.path, item.path) ? 'font-weight-bold text-white' : 'font-weight-medium text-primary-contrast'"
+            role="link"
+          >
             {{ item.title }}
           </div>
         </div>
       </v-list-item>
       <v-list-item
         :id="`sidebar-link-${size(navItems)}`"
-        class="text-primary-contrast"
+        class="font-size-16"
         :class="{'py-4 px-3': isSidebarCollapsed, 'pa-4': !isSidebarCollapsed}"
         @click="toggleColorScheme"
       >
         <div class="align-center d-flex">
           <v-icon
             aria-label="Lightbulb icon"
-            :icon="mdiLightbulb"
+            color="primary-contrast"
+            :icon="theme.global.current.value.dark ? mdiLightbulb : mdiLightbulbOutline"
             size="x-large"
             :title="isSidebarCollapsed ? `${theme.global.current.value.dark ? 'Light' : 'Dark'} mode` : undefined"
           />
-          <div class="font-size-16 ml-4 text-no-wrap" role="button">
+          <div class="font-weight-medium ml-4 nav-drawer-letter-spacing text-no-wrap text-primary-contrast" role="button">
             {{ theme.global.current.value.dark ? 'Light' : 'Dark' }} mode
           </div>
         </div>
@@ -131,7 +142,7 @@
           />
         </pre>
       </div>
-      <router-view :key="stripAnchorRef(route.fullPath)" class="px-4"></router-view>
+      <router-view :key="stripAnchorRef(route.fullPath)" class="px-4" />
     </v-main>
     <DamienFooter />
   </v-layout>
@@ -143,7 +154,7 @@ import Snackbar from '@/components/util/Snackbar'
 import Spinner from '@/components/util/Spinner'
 import {alertScreenReader, stripAnchorRef} from '@/lib/utils'
 import {computed, onMounted, ref} from 'vue'
-import {get, map, size} from 'lodash'
+import {get, map, size, startsWith} from 'lodash'
 import {getCasLogoutUrl} from '@/api/auth'
 import {
   mdiAccountGroup,
@@ -151,6 +162,7 @@ import {
   mdiArrowCollapseLeft,
   mdiArrowExpandRight,
   mdiLightbulb,
+  mdiLightbulbOutline,
   mdiListStatus,
   mdiLogout,
   mdiPlaylistEdit
@@ -231,6 +243,12 @@ const toRoute = path => router.push({path})
 </script>
 
 <style scoped>
+.bg-selected-nav-item {
+  background-color: #5886b1;
+}
+.nav-drawer-letter-spacing {
+  letter-spacing: 0.1em;
+}
 .service-announcement {
   background-color: #f0ad4e;
   color: #000;

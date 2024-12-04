@@ -55,6 +55,7 @@ onMounted(() => {
     () => {
       showCard.value = true
       alertScreenReader('Page not found')
+      putFocusNextTick(config.devAuthEnabled ? 'dev-auth-uid' : 'page-title')
     },
     100
   )
