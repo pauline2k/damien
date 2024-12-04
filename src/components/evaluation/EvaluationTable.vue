@@ -32,12 +32,12 @@
               class="select-all-evals align-center mt-0 pt-0"
               color="tertiary"
               density="compact"
-              :disabled="!!searchFilterResults.length"
+              :disabled="!searchFilterResults.length"
               :false-value="!someEvaluationsSelected && !allEvaluationsSelected"
               hide-details
               :indeterminate="someEvaluationsSelected"
               :input-value="someEvaluationsSelected || allEvaluationsSelected"
-              :value="allEvaluationsSelected"
+              :model-value="allEvaluationsSelected"
               @change="toggleSelectAll"
             >
               <template #label>
@@ -79,6 +79,7 @@
               height="30"
               size="small"
               :value="status"
+              :width="filterTypes[status].width"
             >
               <div class="align-center d-flex justify-space-between">
                 <v-icon
@@ -126,6 +127,7 @@
       :items="visibleEvaluations"
       :loading="contextStore.loading"
       must-sort
+      items-per-page="-1"
       :search="searchFilter"
       :sort-by="sortBy"
       @update:sort-by="onSort"
@@ -174,6 +176,7 @@
                   :color="`${hoverId === evaluation.id ? 'primary' : 'tertiary'}`"
                   :disabled="editRowId === evaluation.id"
                   hide-details
+                  :model-value="evaluation.isSelected"
                   @update:model-value="() => departmentStore.toggleSelectEvaluation(evaluation)"
                 />
               </td>
@@ -598,10 +601,10 @@ const editRowId = ref(undefined)
 const evaluationHeaders = ref([])
 const evaluationTypes = ref([])
 const filterTypes = {
-  unmarked: {label: 'None', enabled: true},
-  review: {label: 'To-Do', enabled: true},
-  confirmed: {label: 'Done', enabled: true},
-  ignore: {label: 'Ignore', enabled: false}
+  unmarked: {label: 'None', enabled: true, width: 112},
+  review: {label: 'To-Do', enabled: true, width: 114},
+  confirmed: {label: 'Done', enabled: true, width: 112},
+  ignore: {label: 'Ignore', enabled: false, width: 122}
 }
 const focusedEditButtonEvaluationId = ref(undefined)
 const hoverId = ref(undefined)
