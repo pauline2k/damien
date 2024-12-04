@@ -462,36 +462,22 @@
                     :icon="mdiAlertCircle"
                     title="Warning"
                   />
-                  <v-btn
+                  <ProgressButton
                     id="save-evaluation-edit-btn"
+                    :action="() => validateAndSave(evaluation)"
                     class="ma-2 evaluation-form-btn"
-                    color="primary"
-                    width="150px"
                     :disabled="disableControls || !rowValid || isSaving"
-                    @click.prevent="validateAndSave(evaluation)"
-                    @keypress.enter.prevent="validateAndSave(evaluation)"
-                  >
-                    <span v-if="!isSaving">Save</span>
-                    <v-progress-circular
-                      v-if="isSaving"
-                      :indeterminate="true"
-                      color="white"
-                      rotate="5"
-                      size="20"
-                      width="3"
-                    />
-                  </v-btn>
+                    :in-progress="isSaving"
+                    :text="isSaving ? 'Saving...' : 'Save'"
+                  />
                   <v-btn
                     id="cancel-evaluation-edit-btn"
-                    class="ma-2 evaluation-form-btn"
+                    class="evaluation-form-btn ma-2 text-primary"
                     :disabled="isSaving"
-                    variant="outlined"
-                    width="150px"
+                    text="Cancel"
+                    variant="flat"
                     @click="onCancelEdit(evaluation)"
-                    @keypress.enter.prevent="onCancelEdit(evaluation)"
-                  >
-                    Cancel
-                  </v-btn>
+                  />
                 </div>
               </td>
             </tr>
@@ -576,10 +562,11 @@ import ConfirmDialog from '@/components/util/ConfirmDialog'
 import EvaluationActions from '@/components/evaluation/EvaluationActions'
 import EvaluationError from '@/components/evaluation/EvaluationError'
 import PersonLookup from '@/components/admin/PersonLookup'
+import ProgressButton from '@/components/util/ProgressButton.vue'
 import SortableTableHeader from '@/components/util/SortableTableHeader'
 import {EVALUATION_STATUSES, useDepartmentStore} from '@/stores/department/department-edit-session'
 import {addInstructor} from '@/api/instructor'
-import {alertScreenReader, oxfordJoin, pluralize, putFocusNextTick, toFormatFromISO, toFormatFromJsDate, toLocaleFromISO} from '@/lib/utils'
+import {alertScreenReader, oxfordJoin, pluralize, putFocusNextTick, toFormatFromJsDate, toLocaleFromISO} from '@/lib/utils'
 import {clone, cloneDeep, each, filter, find, get, includes, isEmpty, keys, map, pickBy, size, some} from 'lodash'
 import {computed, nextTick, onMounted, ref, watch} from 'vue'
 import {mdiAlertCircle, mdiCheckCircle, mdiMagnify, mdiPlusCircle} from '@mdi/js'
@@ -913,7 +900,7 @@ const validateAndSave = evaluation => {
   markAsDoneWarning.value = null
   const departmentFormId = selectedDepartmentForm.value || get(evaluation, 'defaultDepartmentForm.id') || null
   const status = selectedEvaluationStatus.value === 'none' ? null : selectedEvaluationStatus.value
-  const startDate = selectedStartDate.value ? toFormatFromISO(selectedStartDate.value, 'y-LL-dd') : null
+  const startDate = selectedStartDate.value ? toFormatFromJsDate(selectedStartDate.value, 'y-LL-dd') : null
   const fields = {
     departmentFormId,
     evaluationTypeId: selectedEvaluationType.value,
