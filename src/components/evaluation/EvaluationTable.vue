@@ -38,6 +38,7 @@
               :indeterminate="someEvaluationsSelected"
               :input-value="someEvaluationsSelected || allEvaluationsSelected"
               :model-value="allEvaluationsSelected"
+              :ripple="false"
               @change="toggleSelectAll"
             >
               <template #label>
@@ -177,6 +178,7 @@
                   :disabled="editRowId === evaluation.id"
                   hide-details
                   :model-value="evaluation.isSelected"
+                  :ripple="false"
                   @update:model-value="() => departmentStore.toggleSelectEvaluation(evaluation)"
                 />
               </td>

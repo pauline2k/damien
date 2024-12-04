@@ -151,7 +151,6 @@ onMounted(() => {
       apply: onClickReview,
       completedText: 'Marked as to-do',
       inProgressText: 'Marking as to-do',
-      key: 'review',
       status: 'review',
       text: 'Mark as to-do'
     },
@@ -159,7 +158,6 @@ onMounted(() => {
       apply: onClickMarkDone,
       completedText: 'Marked as done',
       inProgressText: 'Marking as done',
-      key: 'confirm',
       status: 'confirmed',
       text: 'Mark as done'
     },
@@ -167,7 +165,6 @@ onMounted(() => {
       apply: onClickUnmark,
       completedText: 'Unmarked',
       inProgressText: 'Unmarking',
-      key: 'unmark',
       status: null,
       text: 'Unmark'
     },
@@ -175,7 +172,6 @@ onMounted(() => {
       apply: onClickIgnore,
       completedText: 'Ignored',
       inProgressText: 'Ignoring',
-      key: 'ignore',
       status: 'ignore',
       text: 'Ignore'
     },
@@ -183,7 +179,6 @@ onMounted(() => {
       apply: onClickDuplicate,
       completedText: 'Duplicated',
       inProgressText: 'Duplicating',
-      key: 'duplicate',
       text: 'Duplicate'
     },
     edit: {
@@ -360,7 +355,7 @@ const update = (fields, key) => {
     .map(e => e.courseNumber))
   const refresh = () => {
     return selectedCourseNumbers.length === 1
-      ? departmentStore.refreshSection({sectionId: selectedCourseNumbers[0], termId: useContextStore().selectedTermId})
+      ? departmentStore.refreshSection(selectedCourseNumbers[0], useContextStore().selectedTermId)
       : departmentStore.refreshAll()
   }
   updateEvaluations(
