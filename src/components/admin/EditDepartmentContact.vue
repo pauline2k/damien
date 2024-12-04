@@ -30,7 +30,7 @@
           :id="`input-email-${contactId}`"
           v-model="email"
           class="mt-1"
-          dense
+          density="compact"
           hide-details
           variant="outlined"
           required

@@ -2,16 +2,19 @@
   <v-dialog
     v-model="model"
     :aria-labelledby="`${idPrefix}-dialog-title`"
-    class="overflow-y-visible"
-    width="800"
     v-bind="$attrs"
     @click:outside="onClickCancel"
     @keydown.esc="onClickCancel"
   >
-    <v-card>
-      <v-card-title :id="`${idPrefix}-dialog-title`" tabindex="-1">{{ action }} {{ selectedEvaluationsDescription }}</v-card-title>
-      <v-card-text class="px-0 pb-0">
-        <v-container class="px-8 pb-4">
+    <v-card
+      class="modal-content"
+      min-width="700"
+      max-width="1000"
+      width="90%"
+    >
+      <v-card-title :id="`${idPrefix}-dialog-title`">{{ action }} {{ selectedEvaluationsDescription }}</v-card-title>
+      <v-card-text :id="`${idPrefix}-dialog-text`" class="px-0 pb-0">
+        <v-container class="px-16 pb-4">
           <slot name="status" :status="selectedEvaluationStatus" :on="{change: e => selectedEvaluationStatus = e.target.value}"></slot>
           <PersonLookup
             v-if="isObject(instructor)"
@@ -25,7 +28,6 @@
             list-label="Suggested Instructors List"
             :on-select-result="selectInstructor"
             :required="isInstructorRequired"
-            variant="solo"
           />
           <v-row v-if="midtermFormAvailable" class="d-flex align-center" dense>
             <v-col cols="4"></v-col>
@@ -33,8 +35,8 @@
               <v-checkbox
                 :id="`${idPrefix}-midterm-checkbox`"
                 v-model="midtermFormEnabled"
-                class="bulk-action-form-input text-no-wrap my-1"
                 color="tertiary"
+                density="comfortable"
                 :disabled="disableControls"
                 hide-details
                 label="Use midterm department forms"
@@ -62,38 +64,29 @@
           <v-row class="d-flex align-center" dense>
             <v-col cols="4">
               <label
-                :for="`${idPrefix}-start-date`"
+                :for="`${idPrefix}-start-date-input`"
                 class="v-label text-no-wrap"
               >
                 Evaluation Start Date
               </label>
             </v-col>
             <v-col cols="8">
-              <v-date-picker
-                v-model="selectedStartDate"
-                class="bulk-action-form-input"
+              <AccessibleDateInput
+                aria-label="Select Date"
+                :container-id="`${idPrefix}-dialog-text`"
+                :disabled="disableControls"
+                :get-value="() => selectedStartDate"
+                :id-prefix="`${idPrefix}-start-date`"
                 :min-date="get(validStartDates, 'min')"
                 :max-date="get(validStartDates, 'max')"
-                title-position="left"
-              >
-                <template #default="{ inputValue, inputEvents }">
-                  <input
-                    :id="`${idPrefix}-start-date`"
-                    class="datepicker-input input-override light my-0"
-                    :disabled="disableControls"
-                    maxlength="10"
-                    minlength="10"
-                    :value="inputValue"
-                    v-on="inputEvents"
-                  />
-                </template>
-              </v-date-picker>
+                :set-value="selectedDate => selectedStartDate = selectedDate"
+              />
             </v-col>
           </v-row>
         </v-container>
-        <div v-if="size(selectedEvaluations)" class="bulk-action-preview pt-2">
-          <v-table dense class="bulk-action-preview-table">
-            <caption class="bulk-action-preview-caption text-left"><div class="px-6 pb-3">Preview Your Changes</div></caption>
+        <div v-if="size(selectedEvaluations)" class="pt-2">
+          <v-table density="compact" class="bg-surface-variant bulk-action-preview-table">
+            <caption class="bulk-action-preview-caption font-weight-bold text-left"><div class="px-6 py-4">Preview Your Changes</div></caption>
             <thead>
               <tr>
                 <th
@@ -109,7 +102,7 @@
             <tbody>
               <template v-for="(evaluation, index) in selectedEvaluations" :key="index">
                 <tr>
-                  <td :id="`preview-${index}-status`" class="bulk-action-status-col pr-1">
+                  <td :id="`preview-${index}-status`" class="bulk-action-status-col pr-1 py-1">
                     <div v-if="evaluation.status" :class="{'text-decoration-line-through text-accent': action === 'Edit' && showSelectedStatus(evaluation)}">
                       {{ getStatusText(evaluation.status) }}
                     </div>
@@ -117,12 +110,12 @@
                       {{ getStatusText(selectedEvaluationStatus) }}
                     </div>
                   </td>
-                  <td :id="`preview-${index}-courseNumber`" class="bulk-action-courseNumber-col px-1">{{ evaluation.courseNumber }}</td>
-                  <td :id="`preview-${index}-courseName`" class="bulk-action-courseName-col px-1">
+                  <td :id="`preview-${index}-courseNumber`" class="bulk-action-courseNumber-col pa-1">{{ evaluation.courseNumber }}</td>
+                  <td :id="`preview-${index}-courseName`" class="bulk-action-courseName-col pa-1">
                     <div>{{ evaluation.subjectArea }} {{ evaluation.catalogId }}</div>
                     <div>{{ evaluation.instructionFormat }} {{ evaluation.sectionNumber }}</div>
                   </td>
-                  <td :id="`preview-${index}-instructor`" class="bulk-action-instructor-col px-1">
+                  <td :id="`preview-${index}-instructor`" class="bulk-action-instructor-col pa-1">
                     <div v-if="get(evaluation, 'instructor.uid')" :class="{'text-decoration-line-through text-accent': action === 'Edit' && showSelectedInstructor(evaluation)}">
                       {{ evaluation.instructor.firstName }} {{ evaluation.instructor.lastName }}
                       ({{ evaluation.instructor.uid }})
@@ -132,7 +125,7 @@
                       ({{ selectedInstructor.uid }})
                     </div>
                   </td>
-                  <td :id="`preview-${index}-departmentForm`" class="bulk-action-departmentForm-col px-1">
+                  <td :id="`preview-${index}-departmentForm`" class="bulk-action-departmentForm-col pa-1">
                     <div v-if="evaluation.departmentForm" :class="{'text-decoration-line-through text-accent': action === 'Edit' && showSelectedDepartmentForm(evaluation)}">
                       {{ evaluation.departmentForm.name }}
                     </div>
@@ -140,7 +133,7 @@
                       {{ selectedDepartmentFormName }}
                     </div>
                   </td>
-                  <td :id="`preview-${index}-evaluationType`" class="bulk-action-evaluationType-col px-1">
+                  <td :id="`preview-${index}-evaluationType`" class="bulk-action-evaluationType-col pa-1">
                     <div v-if="evaluation.evaluationType" :class="{'text-decoration-line-through text-accent text-accent': action === 'Edit' && showSelectedEvaluationType(evaluation)}">
                       {{ evaluation.evaluationType.name }}
                     </div>
@@ -148,7 +141,7 @@
                       {{ selectedEvaluationTypeName }}
                     </div>
                   </td>
-                  <td :id="`preview-${index}-startDate`" class="bulk-action-startDate-col px-1">
+                  <td :id="`preview-${index}-startDate`" class="bulk-action-startDate-col pa-1">
                     <div v-if="evaluation.startDate" :class="{'text-decoration-line-through text-accent': action === 'Edit' && showSelectedStartDate(evaluation)}">
                       {{ DateTime.fromISO(new Date(evaluation.startDate).toISOString()).toFormat("MM/dd/yy") }}
                     </div>
@@ -202,24 +195,14 @@
       <v-card-actions>
         <v-spacer />
         <div class="d-flex pa-2">
-          <v-btn
+          <ProgressButton
             id="apply-course-action-btn"
+            :action="onClickApply"
             class="mt-2 mr-2"
-            color="secondary"
             :disabled="disableApply"
-            min-width="85"
-            @click="onClickApply"
-          >
-            <span v-if="!isApplying">Apply</span>
-            <v-progress-circular
-              v-if="isApplying"
-              :indeterminate="true"
-              color="white"
-              rotate="5"
-              size="20"
-              width="3"
-            ></v-progress-circular>
-          </v-btn>
+            :in-progress="isApplying"
+            text="Apply"
+          />
           <v-btn
             id="cancel-duplicate-btn"
             class="mt-2 mr-2"
@@ -243,14 +226,16 @@
 </template>
 
 <script setup>
+import AccessibleDateInput from '@/components/util/AccessibleDateInput'
 import ConfirmDialog from '@/components/util/ConfirmDialog'
 import PersonLookup from '@/components/admin/PersonLookup'
+import ProgressButton from '@/components/util/ProgressButton'
 import {EVALUATION_STATUSES, useDepartmentStore} from '@/stores/department/department-edit-session'
 import {addInstructor} from '@/api/instructor'
 import {computed, onMounted, ref, watch} from 'vue'
 import {endsWith, find, get, isEmpty, isObject, map, max, min, reduce, size, toInteger} from 'lodash'
+import {putFocusNextTick, toFormatFromISO} from '@/lib/utils'
 import {storeToRefs} from 'pinia'
-import {toFormatFromISO} from '@/lib/utils'
 import {useContextStore} from '@/stores/context'
 import {DateTime} from 'luxon'
 
@@ -376,8 +361,17 @@ watch(midtermFormEnabled, v => {
 watch(() => props.isUpdating, v => {
   model.value = v
 })
-watch(model, () => {
+watch(model, isOpen => {
   reset()
+  if (isOpen) {
+    if (props.action === 'Edit') {
+      putFocusNextTick('update-evaluations-select-status')
+    } else if (props.midtermFormAvailable) {
+      putFocusNextTick(`${props.idPrefix}-midterm-checkbox`)
+    } else {
+      putFocusNextTick(isObject(props.instructor) ? `${props.idPrefix}-instructor-lookup` : `${props.idPrefix}-select-type`)
+    }
+  }
 })
 
 const getStatusText = status => {
@@ -473,7 +467,7 @@ const selectInstructor = suggestion => {
 
 <style>
 .bulk-action-form-input {
-  width: 250px !important;
+  max-width: 250px;
 }
 .bulk-action-preview-table > div {
   margin-right: -15px !important;
@@ -482,45 +476,37 @@ const selectInstructor = suggestion => {
 
 <style scoped>
 .bulk-action-courseName-col {
-  max-width: 6rem;
-  width: 6rem;
+  min-width: 6rem;
+  width: 15%;
 }
 .bulk-action-courseNumber-col {
-  max-width: 2.5rem;
-  width: 2.5rem;
+  min-width: 2.5rem;
+  width: 10%;
 }
 .bulk-action-departmentForm-col {
-  max-width: 6rem;
-  width: 6rem;
+  min-width: 6rem;
+  width: 15%;
 }
 .bulk-action-evaluationType-col {
-  max-width: 4rem;
-  width: 4rem;
+  min-width: 5rem;
+  width: 15%;
 }
 .bulk-action-instructor-col {
-  max-width: 7.5rem;
-  width: 7.5rem;
-}
-.bulk-action-preview {
-  overflow-x: hidden;
-  overflow-y: auto;
-  scrollbar-gutter: stable;
+  min-width: 7.5rem;
+  width: 25%;
 }
 .bulk-action-preview-caption {
   font-size: 16px;
   font-weight: 500;
 }
-.bulk-action-preview-table {
-  max-height: 200px;
-}
 .bulk-action-startDate-col {
-  max-width: 65px;
+  min-width: 65px;
   padding-right: 18px !important;
-  width: 65px;
+  width: 15%;
 }
 .bulk-action-status-col {
-  max-width: 3rem;
+  min-width: 3rem;
   padding-left: 16px !important;
-  width: 3rem;
+  width: 5%;
 }
 </style>

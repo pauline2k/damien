@@ -139,7 +139,7 @@ const props = defineProps({
     type: Boolean
   },
   inputClass: {
-    default: undefined,
+    default: '',
     required: false,
     type: String
   },
@@ -357,6 +357,7 @@ const validate = suggestion => {
   max-height: 38px;
 }
 :deep(.person-lookup .v-field__input) {
+  flex-wrap: nowrap;
   height: 38px;
   max-height: 38px;
   padding-inline-start: 12px !important;

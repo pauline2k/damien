@@ -25,7 +25,7 @@
             maxlength="5"
             label="Course Number"
             :rules="[rules.courseNumber, rules.notPresent]"
-            dense
+            density="compact"
             variant="outlined"
             required
             @keydown.enter.prevent="lookupSection"

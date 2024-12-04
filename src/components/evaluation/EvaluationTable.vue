@@ -427,15 +427,15 @@
                   />
                 </div>
                 <div v-if="allowEdits && isEditing(evaluation)" class="evaluation-period-edit">
-                  <label id="input-evaluation-start-date-label">
+                  <label for="evaluation-start-date-input">
                     Start date:
                   </label>
                   <AccessibleDateInput
                     aria-label="Select Date"
-                    container-id="input-evaluation-start-date"
+                    :container-id="`evaluation-${rowIndex}-period`"
                     :disabled="isSaving"
                     :get-value="() => selectedStartDate"
-                    id-prefix="search-options-from-date"
+                    id-prefix="evaluation-start-date"
                     :min-date="minStartDate(evaluation)"
                     :max-date="evaluation.maxStartDate"
                     :set-value="selectedDate => selectedStartDate = selectedDate"

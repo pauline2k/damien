@@ -117,7 +117,7 @@
     </div>
     <v-overlay :value="showTheOmenPoster" z-index="300">
       <v-card>
-        <v-toolbar dark color="secondary" dense>
+        <v-toolbar dark color="secondary" density="compact">
           <v-icon
             class="font-weight-bold pb-1 pl-0"
             :icon="mdiClose"
