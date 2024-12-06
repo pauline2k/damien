@@ -35,10 +35,10 @@ from selenium.webdriver.support.wait import WebDriverWait as Wait
 
 class DamienPages(Page):
 
-    STATUS_LINK = (By.XPATH, '//div[contains(@id, "sidebar-link")][contains(., "Status Board")]')
-    PUBLISH_PAGE_LINK = (By.XPATH, '//div[contains(@id, "sidebar-link")][contains(., "Publish")]')
-    GRP_MGMT_LINK = (By.XPATH, '//div[contains(@id, "sidebar-link")][contains(., "Group Management")]')
-    LIST_MGMT_LINK = (By.XPATH, '//div[contains(@id, "sidebar-link")][contains(., "List Management")]')
+    STATUS_LINK = (By.ID, 'sidebar-link-status')
+    PUBLISH_PAGE_LINK = (By.ID, 'sidebar-link-publish')
+    GRP_MGMT_LINK = (By.ID, 'sidebar-link-departments')
+    LIST_MGMT_LINK = (By.ID, 'sidebar-link-settings')
 
     ADD_CONTACT_LOOKUP_INPUT = (By.ID, 'person-lookup-input')
 
@@ -123,7 +123,7 @@ class DamienPages(Page):
 
     @staticmethod
     def add_contact_lookup_result(user):
-        return By.XPATH, f'//div[contains(@id, "list-item")][contains(., "({user.uid})")]'
+        return By.XPATH, f'//div[contains(@id, "person-lookup-option")]//span[contains(., "({user.uid})")]'
 
     def look_up_uid(self, uid, input_locator):
         app.logger.info(f'Looking up UID {uid}')
@@ -154,7 +154,7 @@ class DamienPages(Page):
 
     @staticmethod
     def notif_expand_dept_xpath(dept):
-        return f'//h5[contains(@id, "dept-head-")][text()="{dept.name}"]/..'
+        return f'//button[@id, "notification-recipients-dept-{dept.dept_id}"]'
 
     def notif_expand_dept_recipient_members(self, dept):
         app.logger.info(f'Expanding notification department {dept.name}')
@@ -166,13 +166,13 @@ class DamienPages(Page):
 
     def notif_dept_recipient_emails(self, dept):
         time.sleep(1)
-        els = self.elements((By.XPATH, f'{DamienPages.notif_expand_dept_xpath(dept)}/following-sibling::div//button/..'))
+        els = self.elements((By.XPATH, f'{DamienPages.notif_expand_dept_xpath(dept)}/following-sibling::div//button/preceding-sibling::div'))
         return list(map(lambda e: e.text.strip().replace(')', '').split(' (')[-1], els))
 
     @staticmethod
     def notif_dept_recipient_remove_btn(dept, user):
-        xpath = f'{DamienPages.notif_expand_dept_xpath(dept)}/following-sibling::div//span[contains(text(), "{user.email}")]/button'
-        return By.XPATH, xpath
+        xpath = f'/following-sibling::div//div[@id, "notification-recipient-{dept.dept_id}-{user.uid}")]/button'
+        return By.XPATH, f'{DamienPages.notif_expand_dept_xpath(dept)}{xpath}'
 
     def notif_remove_recipient(self, dept, user):
         app.logger.info(f'Removing {user.email} from {dept.name} recipient list')

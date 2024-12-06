@@ -52,7 +52,6 @@ class TestListManagement:
     alert = (f'FOO {test_id} ' * 15).strip()
 
     instructor = utils.get_test_user()
-    utils.hard_delete_user(instructor)
     instructor.first_name = instructor.first_name[::-1]
     instructor.last_name = instructor.last_name[::-1]
 

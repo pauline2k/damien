@@ -68,7 +68,7 @@ class StatusBoardAdminPage(DamienPages):
 
     @staticmethod
     def notif_select_dept_cbx(dept):
-        return By.XPATH, f'//label[text()=" {dept.name} "]/following-sibling::div//input'
+        return By.XPATH, f'//input[@id="checkbox-select-dept-{dept.dept_id}"]'
 
     def check_dept_notif_cbx(self, dept):
         app.logger.info(f'Clicking the notification checkbox for {dept.name}')

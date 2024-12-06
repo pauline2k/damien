@@ -52,41 +52,41 @@ class CourseDashboardEditsPage(CourseDashboards):
 
     @staticmethod
     def dept_contact_xpath(user):
-        return f'//div[contains(@id, "department-contact-")][contains(., "{user.first_name}") and contains(., "{user.last_name}")]'
+        return f'//div[@id="department-contact-{user.user_id}"]'
 
     def wait_for_contact(self, user):
         app.logger.info(f'Waiting for UID {user.uid} to appear')
         Wait(self.driver, utils.get_medium_timeout()).until(
-            ec.presence_of_element_located((By.XPATH, self.dept_contact_xpath(user))),
+            ec.presence_of_element_located((By.XPATH, f'{self.dept_contact_xpath(user)}//div[@id="dept-contact-{user.user_id}-details"]')),
         )
         time.sleep(1)
 
     def dept_contact_name(self, user):
-        return self.element((By.XPATH, f'{self.dept_contact_xpath(user)}//strong')).text
+        return self.element((By.XPATH, f'{self.dept_contact_xpath(user)}//div[@id="dept-contact-{user.user_id}-name"]')).text
 
     def expand_dept_contact(self, user):
         el = self.dept_contact_email_loc(user)
         if not self.is_present(el) or not self.element(el).is_displayed():
-            xpath = f'//button[contains(., "{user.first_name}") and contains(., "{user.last_name}")]'
+            xpath = f'{self.dept_contact_xpath(user)}//button[@id="department-contact-{user.user_id}-btn"]'
             self.wait_for_page_and_click_js((By.XPATH, xpath))
             time.sleep(1)
 
     def dept_contact_email_loc(self, user):
-        return By.XPATH, f'{self.dept_contact_xpath(user)}//div[contains(@id, "email")]'
+        return By.XPATH, f'{self.dept_contact_xpath(user)}//div[@id="dept-contact-{user.user_id}-email"]'
 
     def dept_contact_email(self, user):
         return self.element(self.dept_contact_email_loc(user)).text.strip()
 
     def dept_contact_comms_perms(self, user):
         return self.element(
-            (By.XPATH, f'{self.dept_contact_xpath(user)}//div[contains(@id, "notifications")]')).text.strip()
+            (By.XPATH, f'{self.dept_contact_xpath(user)}//div[@id="dept-contact-{user.user_id}-notifications"]')).text.strip()
 
     def dept_contact_blue_perms(self, user):
         return self.element(
-            (By.XPATH, f'{self.dept_contact_xpath(user)}//div[contains(@id, "permissions")]')).text.strip()
+            (By.XPATH, f'{self.dept_contact_xpath(user)}//div[@id="dept-contact-{user.user_id}-permissions"]')).text.strip()
 
     def dept_contact_dept_forms(self, user):
-        els = self.elements((By.XPATH, f'{self.dept_contact_xpath(user)}//span[contains(@id, "-form-")]'))
+        els = self.elements((By.XPATH, f'{self.dept_contact_xpath(user)}//span[contains(@id, "dept-contact-{user.user_id}-form-")]'))
         forms = list(map(lambda el: el.text.strip(), els))
         forms.sort()
         return forms
@@ -106,7 +106,7 @@ class CourseDashboardEditsPage(CourseDashboards):
     DUPE_CXL_BUTTON = (By.ID, 'cancel-duplicate-btn')
     USE_MIDTERM_FORM_CBX = (By.ID, 'duplicate-evaluations-midterm-checkbox')
     USE_START_DATE_INPUT = (By.ID, 'duplicate-evaluations-start-date')
-    ACTION_APPLY_BUTTON = (By.XPATH, '//button[contains(., "Apply")]')
+    ACTION_APPLY_BUTTON = (By.ID, 'apply-course-action-btn')
 
     def edit_button_is_enabled(self):
         time.sleep(1)
