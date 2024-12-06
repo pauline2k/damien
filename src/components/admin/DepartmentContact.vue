@@ -1,10 +1,15 @@
 <template>
-  <v-expansion-panel :id="`department-contact-${index}`">
-    <v-expansion-panel-title class="pa-2 rounded-b-0 height-unset">
+  <v-expansion-panel :id="`department-contact-${contact.id}`">
+    <v-expansion-panel-title :id="`department-contact-${contact.id}-btn`" class="pa-2 rounded-b-0 height-unset">
       <div :id="`dept-contact-${contact.id}-name`" class="font-weight-bold">{{ fullName }}</div>
     </v-expansion-panel-title>
     <v-expansion-panel-text class="edit-contact-container">
-      <v-container v-if="!isEditing" class="pb-0 px-0" fluid>
+      <v-container
+        v-if="!isEditing"
+        :id="`dept-contact-${contact.id}-details`"
+        class="pb-0 px-0"
+        fluid
+      >
         <v-row :id="`dept-contact-${contact.id}-email`">
           <v-col class="px-2 pt-1" cols="12">{{ contact.email }}</v-col>
         </v-row>

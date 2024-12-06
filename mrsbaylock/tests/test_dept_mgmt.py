@@ -50,7 +50,7 @@ dept_2_role = UserDeptRole(dept_2.dept_id, receives_comms=False)
 dept_2_user = utils.get_test_user(dept_2_role)
 
 test_email = Email(subject=None, body=None)
-utils.hard_delete_user(dept_1_user)
+utils.delete_department_membership(dept_1, dept_1_user)
 utils.delete_dept_note(term, dept_1)
 dept_1.users = utils.get_dept_users(dept_1)
 

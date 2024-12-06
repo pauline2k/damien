@@ -58,11 +58,11 @@
           <template v-for="(department, index) in items" :key="department.name">
             <tr :id="`department-${index}`">
               <td>
-                <label class="sr-only" :for="`checkbox-select-dept-${kebabCase(department.deptName)}`">
+                <label class="sr-only" :for="`checkbox-select-dept-${department.id}`">
                   {{ department.deptName }}
                 </label>
                 <v-checkbox
-                  :id="`checkbox-select-dept-${kebabCase(department.deptName)}`"
+                  :id="`checkbox-select-dept-${department.id}`"
                   aria-controls="open-notification-form-btn"
                   class="align-center mt-0 pt-0"
                   color="tertiary"

@@ -31,7 +31,6 @@ from damien import db, std_commit
 from flask import current_app as app
 from mrsbaylock.models.department import Department
 from mrsbaylock.models.department_note import DepartmentNote
-from mrsbaylock.models.instructor import Instructor
 from mrsbaylock.models.term import Term
 from mrsbaylock.models.user import User
 from mrsbaylock.models.user_dept_role import UserDeptRole
@@ -183,6 +182,7 @@ def get_all_users():
 
 
 def get_user(uid):
+    user = None
     users = get_all_users()
     for u in users:
         if u.uid == uid:
@@ -195,7 +195,7 @@ def get_user_id(user):
     app.logger.debug(sql)
     result = db.session.execute(text(sql)).first()
     std_commit(allow_test_environment=True)
-    return result['id']
+    return result['id'] if result else None
 
 
 def get_dept_users(dept, all_users=None, exclude_uid=None):
@@ -217,7 +217,7 @@ def get_user_dept_role(user, dept):
 
 
 def get_test_user(dept_role=None, blue_permissions=None):
-    user = Instructor({
+    user = User({
         'uid': app.config['TEST_DEPT_CONTACT_UID'],
         'csid': app.config['TEST_DEPT_CONTACT_CSID'],
         'first_name': app.config['TEST_DEPT_CONTACT_FIRST_NAME'],
@@ -225,6 +225,7 @@ def get_test_user(dept_role=None, blue_permissions=None):
         'email': app.config['TEST_DEPT_CONTACT_EMAIL'],
         'dept_forms': app.config['TEST_DEPT_CONTACT_FORMS'].split(','),
     })
+    user.user_id = get_user_id(user)
     user.blue_permissions = blue_permissions
     if dept_role:
         user.dept_roles.append(dept_role)
@@ -241,6 +242,15 @@ def create_admin_user(user):
             '{user.csid}', '{user.uid}', '{user.first_name}', '{user.last_name}', '{user.email}', TRUE, NULL,
             NOW(), NOW(), NULL
     """
+    app.logger.debug(sql)
+    db.session.execute(text(sql))
+    std_commit(allow_test_environment=True)
+
+
+def delete_department_membership(department, user):
+    sql = f"""DELETE FROM department_members
+               WHERE user_id = (SELECT id from users where uid = '{user.uid}')
+                 AND department_id = {department.dept_id}"""
     app.logger.debug(sql)
     db.session.execute(text(sql))
     std_commit(allow_test_environment=True)

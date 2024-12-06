@@ -42,7 +42,7 @@ class DeptDetailsAdminPage(CourseDashboardEditsPage):
         return By.XPATH, f'//option[@id="term-option-{term.term_id}"]'
 
     def select_term(self, term):
-        app.logger.info(f'Selecting term {term.name}')
+        app.logger.info(f'Selecting term {term.term_id}')
         self.wait_for_page_and_click_js(DeptDetailsAdminPage.TERM_SELECT)
         self.wait_for_element_and_click(DeptDetailsAdminPage.term_option_locator(term))
         time.sleep(1)
@@ -53,19 +53,19 @@ class DeptDetailsAdminPage(CourseDashboardEditsPage):
     ADD_CONTACT_EMAIL = (By.ID, 'input-email-add-contact')
     EMAIL_REQUIRED_MSG = (By.XPATH, '//div[text()="E-mail is required"]')
     EMAIL_INVALID_MSG = (By.XPATH, '//div[text()="E-mail must be valid"]')
-    CONTACT_COMMS_CBX = (By.XPATH, '//div[contains(@id, "checkbox-communications-")]')
+    CONTACT_COMMS_CBX = (By.XPATH, '//input[contains(@id, "checkbox-communications-")]')
     CONTACT_NO_BLUE_RADIO = (By.XPATH, '//input[contains(@id, "radio-no-blue-")]/..')
     CONTACT_REPORTS_RADIO = (By.XPATH, '//input[contains(@id, "radio-reports-only-")]/..')
     CONTACT_RESPONSES_RADIO = (By.XPATH, '//input[contains(@id, "radio-response-rates-")]/..')
-    ADD_CONTACT_DEPT_FORM_SELECT = (By.XPATH, '//legend[text()=" Department Forms "]/following-sibling::div//div[@class="v-input__control"]')
-    ADD_CONTACT_DEPT_FORM_INPUT = (By.XPATH, '//legend[text()=" Department Forms "]/following-sibling::div//input')
-    ADD_CONTACT_DEPT_FORM_OPTION = (By.XPATH, '//li[@role="option"]')
+    ADD_CONTACT_DEPT_FORM_SELECT = (By.XPATH, '//label[text()=" Department Forms "]/following-sibling::div//div[@class="v-input__control"]')
+    ADD_CONTACT_DEPT_FORM_INPUT = (By.ID, 'select-deptForms-add-contact')
+    ADD_CONTACT_DEPT_FORM_OPTION = (By.XPATH, '//div[@role="option"]')
     ADD_CONTACT_SAVE_BUTTON = (By.ID, 'save-dept-contact-add-contact-btn')
     ADD_CONTACT_CANCEL_BUTTON = (By.ID, 'cancel-dept-contact-add-contact-btn')
 
     @staticmethod
     def dept_contact_form_option(form):
-        return By.XPATH, f'//div[@class="v-list-item__title"]/span[text()="{form}"]'
+        return By.XPATH, f'//div[@class="v-list-item-title" and text()="{form}"]'
 
     @staticmethod
     def dept_contact_form_remove_button(form):
@@ -79,7 +79,7 @@ class DeptDetailsAdminPage(CourseDashboardEditsPage):
         self.when_not_present(DeptDetailsAdminPage.ADD_CONTACT_CANCEL_BUTTON, 1)
 
     def enter_new_contact_email(self, email):
-        app.logger.info(f'Entering email {email}')
+        app.logger.info(f'Entering email "{email}"')
         self.remove_and_enter_chars(DeptDetailsAdminPage.ADD_CONTACT_EMAIL, email)
 
     def clear_dept_form_input(self, user=None):
@@ -176,7 +176,7 @@ class DeptDetailsAdminPage(CourseDashboardEditsPage):
         self.wait_for_page_and_click_js(self.dept_contact_edit_button(user))
 
     def enter_dept_contact_email_edit(self, user, email):
-        app.logger.info(f'Entering email {email} for UID {user.uid}')
+        app.logger.info(f'Entering email "{email}" for UID {user.uid}')
         self.remove_and_enter_chars(DeptDetailsAdminPage.dept_contact_email_edit_input(user), email)
 
     def edit_contact(self, user, dept):
@@ -205,6 +205,7 @@ class DeptDetailsAdminPage(CourseDashboardEditsPage):
         self.wait_for_element_and_click(DeptDetailsAdminPage.DELETE_CANCEL_BUTTON)
 
     DEPT_NOTE = (By.ID, 'dept-note')
+    DEPT_NOTE_EMPTY = (By.ID, 'dept-note-no-data')
     DEPT_NOTE_EDIT_BUTTON = (By.ID, 'edit-dept-note-btn')
     DEPT_NOTE_TEXTAREA = (By.ID, 'dept-note-textarea')
     DEPT_NOTE_SAVE_BUTTON = (By.ID, 'save-dept-note-btn')
@@ -230,8 +231,10 @@ class DeptDetailsAdminPage(CourseDashboardEditsPage):
         if note:
             self.wait_for_note()
             assert self.element(DeptDetailsAdminPage.DEPT_NOTE).text.strip() == note.strip()
+            assert not self.is_present(DeptDetailsAdminPage.DEPT_NOTE_EMPTY)
         else:
             self.when_not_present(DeptDetailsAdminPage.DEPT_NOTE, utils.get_short_timeout())
+            assert self.is_present(DeptDetailsAdminPage.DEPT_NOTE_EMPTY)
 
     def cxl_dept_note(self):
         app.logger.info('Canceling dept note')

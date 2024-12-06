@@ -75,7 +75,7 @@
       </template>
       <v-list-item
         v-for="(item, index) in navItems"
-        :id="`sidebar-link-${index}`"
+        :id="`sidebar-link-${item.id}`"
         :key="index"
         :aria-current="startsWith(route.path, item.path) ? 'page' : null"
         class="font-size-16"
@@ -99,7 +99,6 @@
           <div
             class="ml-4 nav-drawer-letter-spacing text-no-wrap"
             :class="startsWith(route.path, item.path) ? 'font-weight-bold text-white' : 'font-weight-medium text-primary-contrast'"
-            role="link"
           >
             {{ item.title }}
           </div>
@@ -191,10 +190,10 @@ onMounted(() => {
   setPreferredSidebarState()
   if (currentUser.isAdmin) {
     navItems.value = [
-      {title: 'Status', icon: mdiListStatus, path: '/status'},
-      {title: 'Publish', icon: mdiAlertCircle, path: '/publish'},
-      {title: 'Departments', icon: mdiAccountGroup, path: '/departments'},
-      {title: 'Settings', icon: mdiPlaylistEdit, path: '/lists'}
+      {id: 'status', title: 'Status', icon: mdiListStatus, path: '/status'},
+      {id: 'publish', title: 'Publish', icon: mdiAlertCircle, path: '/publish'},
+      {id: 'departments', title: 'Departments', icon: mdiAccountGroup, path: '/departments'},
+      {id: 'lists', title: 'Settings', icon: mdiPlaylistEdit, path: '/lists'}
     ]
   } else if (size(currentUser.departments)) {
     navItems.value = map(currentUser.departments, department => {
